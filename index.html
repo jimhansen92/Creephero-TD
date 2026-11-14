@@ -1626,7 +1626,7 @@ function openBox(){
  if(S.gold<BOXC){toast('Inte tillräckligt med guld');return}
  if(S.score<BOXP){toast('Kräver '+BOXP.toLocaleString('sv-SE')+' poäng');return}
  const IT=i=>i==='aura'?AURA:i==='gold'?{i:'🪙',n:'Guld',t:''}:T[i];
- const pool=T.map((d,i)=>d.pts?i:-1).filter(i=>i>=0);pool.push('aura','gold');const w=pool.map(i=>typeof i==='string'?BOXW[i]:(BOXW[T[i].n]||30)),tot=w.reduce((a,b)=>a+b,0);
+ const own=i=>S.inv.includes(i)||S.tw.some(t=>t.k==i)||S.o.some(o=>o.k==i);let pool=T.map((d,i)=>d.pts?i:-1).filter(i=>i>=0);const fresh=pool.filter(i=>!own(i));if(fresh.length)pool=fresh;pool.push('aura','gold');const w=pool.map(()=>1),tot=w.length;
  let r=Math.random()*tot,res=pool[pool.length-1];for(let j=0;j<pool.length;j++){r-=w[j];if(r<=0){res=pool[j];break}}
  S.gold-=BOXC;S.score-=BOXP;S.bx=1;S.menu='';sync();sfxBoxStart();
  const SS=S,el=$('bx');let n=0,N=16;
