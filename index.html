@@ -226,7 +226,7 @@ const T=[
 {n:'Häxan',c:600,r:3.8,slowAir:.45,curse:.5,pts:30000,col:'#a060d0',kind:'witch',ty:'Förhäxning',i:'🧙‍♀️',k:'Y',t:'Specialvapen: saktar ner flygande fiender och förhäxar tre slumpade vanliga gubbar varje nivå så de gör 50 % mer skada. Uppgradera henne för att förhäxa fler.'},
 {n:'Skogshuggaren',c:600,r:1,lumber:1,pts:30000,col:'#5a8a3a',kind:'lumber',ty:'Skogsarbetare',i:'🪓',k:'K',t:'Specialvapen: springer runt utanför banan och hugger ner träd. Ger extra poäng efter varje runda: 5 % (nivå 1), 8 % (nivå 2) och 12 % (nivå 3). Träden växer upp långsamt igen.'},
 {n:'Dubbelgångaren',c:600,r:1,dbl:1,pts:30000,col:'#9aa0c8',kind:'dbl',ty:'Kopiering',i:'🪞',k:'N',t:'Specialvapen: gör en kopia av valfri gubbe på spelplanen. Kopian får samma typ, nivå och gren.'},
-{n:'Kråkmannen',c:600,d:80,r:1,ap:.3,crow:1,pts:30000,col:'#4a4a5a',kind:'crow',ty:'Fågel',i:'🐦',k:'T',t:'Specialvapen: en kråka flyger i cirkel runt borgen och skadar alla fiender, både på marken och i luften, som den flyger igenom.'}];
+{n:'Kråkträdet',c:600,d:80,r:1,ap:.3,crow:1,pts:30000,col:'#6a5a4a',kind:'crow',ty:'Fågel',i:'🌳',k:'T',t:'Specialvapen: ett träd utan blad med ett skatbo. Därifrån flyger en kråka i cirkel runt borgen och skadar alla fiender, både på marken och i luften, som den flyger igenom.'}];
 const MAXL=50;
 const XG=1000,XP=5000,BOXC=600,BOXP=30000,BOXW={Frostmagikern:40,Draken:35,'Jätten':25,Vargen:30,Häxan:30,Skogshuggaren:25,Dubbelgångaren:22,aura:30,gold:28},SHMAX=20,AURA={i:'🛡️',n:'Skyddsaura',t:'En gyllene aura lägger sig runt Guds kyrka (+10 sköld). Den tar skadan före dina vanliga HP.'};
 const BOXIMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="48" font-size="42" text-anchor="middle">🎁</text></svg>');
@@ -684,12 +684,16 @@ function mkModel(k,lv,br){
 }else if(d.kind=='crow'){
   ad(new THREE.CylinderGeometry(.42,.46,.05,18),0x2a2a34,0,.025,0);
   const sr=ad(new THREE.TorusGeometry(.4,.025,6,20),0x8a8aa8,0,.06,0);sr.rotation.x=Math.PI/2;
-  ad(new THREE.ConeGeometry(.2,.58,10),0x2a2a38,0,.31,0);ad(sph(.11),0xe0b890,0,.66,0);
-  ad(new THREE.CylinderGeometry(.16,.16,.03,10),0x1a1a24,0,.76,0);ad(new THREE.CylinderGeometry(.09,.1,.14,9),0x1a1a24,0,.84,0);
-  ad(new THREE.ConeGeometry(.025,.1,5),0xd09030,.12,.64,0).rotation.z=-Math.PI/2;
-  const arm=ad(new THREE.CylinderGeometry(.03,.03,.26,6),0x2a2a38,.16,.46,0);arm.rotation.z=-.9;
   const cw=u.cw=new THREE.Group();g.add(cw);cw.visible=false;
   const wp=(par,geo,col,x,y,z)=>{const m=ad(geo,col,x,y,z);g.remove(m);par.add(m);return m};
+  const WD=0x4a3a2c;
+  wp(g,new THREE.CylinderGeometry(.06,.12,.72,8),WD,0,.38,0);wp(g,new THREE.CylinderGeometry(.14,.17,.06,8),WD,0,.04,0);
+  const limb=(par,len,az,ax,rad,dep)=>{const gr=new THREE.Group();gr.rotation.set(ax,0,az);par.add(gr);wp(gr,new THREE.CylinderGeometry(rad*.6,rad,len,6),WD,0,len/2,0);
+   if(dep>0){const tp=new THREE.Group();tp.position.y=len;gr.add(tp);limb(tp,len*.75,.7,.2,rad*.6,dep-1);limb(tp,len*.65,-.8,-.5,rad*.55,dep-1)}};
+  for(const[y,len,az,ax]of[[.66,.5,-.75,0],[.7,.46,.8,.35],[.58,.42,.5,-1],[.62,.42,-.55,1.1],[.74,.34,.1,-.7]]){const gp=new THREE.Group();gp.position.set(0,y,0);g.add(gp);limb(gp,len,az,ax,.045,1)}
+  wp(g,sph(.15),0x5a4026,.04,.98,0).scale.set(1.25,.85,1.05);
+  for(let i=0;i<9;i++){const a=i*.7,st=wp(g,new THREE.CylinderGeometry(.012,.012,.2,4),i%2?0x6a4a2a:0x3a2a1c,.04+Math.cos(a)*.14,.96+Math.sin(i*1.3)*.09,Math.sin(a)*.12);st.rotation.set(Math.sin(a*2)*1.2,0,Math.cos(a)*1.3)}
+  wp(g,sph(.045),0x0a0806,.17,.96,0);
   wp(cw,sph(.09),0x15151c,0,0,0).scale.set(1.6,.8,.8);wp(cw,sph(.055),0x15151c,.14,.03,0);
   wp(cw,new THREE.ConeGeometry(.022,.08,5),0xd09030,.21,.03,0).rotation.z=-Math.PI/2;
   wp(cw,sph(.012),0xffffff,.17,.06,.035);wp(cw,sph(.012),0xffffff,.17,.06,-.035);
@@ -699,7 +703,14 @@ function mkModel(k,lv,br){
 }else if(d.kind=='lumber'){
   ad(new THREE.CylinderGeometry(.42,.46,.05,18),0x4a3422,0,.025,0);
   const sr=ad(new THREE.TorusGeometry(.4,.025,6,20),0x6aa040,0,.06,0);sr.rotation.x=Math.PI/2;
-  ad(new THREE.CylinderGeometry(.1,.13,.16,8),0x6a4a2a,0,.1,0);
+  {const LG=[0x7a5230,0x6a4528,0x86593a];
+   for(let i=0;i<4;i++){const y=.1+i*.085;
+    for(const z of[-.2,.2])ad(new THREE.CylinderGeometry(.045,.045,.52,7),LG[(i+(z>0))%3],0,y,z).rotation.z=Math.PI/2;
+    for(const x of[-.23,.23])ad(new THREE.CylinderGeometry(.045,.045,.44,7),LG[(i+(x>0)+1)%3],x,y,0).rotation.x=Math.PI/2}
+   for(const sz of[-1,1])ad(bx(.56,.03,.32),0x5a3220,0,.46,sz*.13).rotation.x=sz*-.62;
+   ad(bx(.58,.03,.04),0x4a2818,0,.55,0);
+   ad(bx(.12,.19,.02),0x3a2414,.0,.17,.225);ad(bx(.08,.08,.02),0xffd070,.16,.26,.225,0xc89020);
+   ad(bx(.07,.2,.07),0x7a7a7a,-.17,.52,-.07);ad(bx(.09,.025,.09),0x5a5a5a,-.17,.63,-.07)}
   const lj=u.lj=new THREE.Group();g.add(lj);
   const wp=(par,geo,col,x,y,z,em)=>{const m=ad(geo,col,x,y,z,em);g.remove(m);par.add(m);return m};
   u.ll=[];for(const z of[-.06,.06]){const lg=new THREE.Group();lg.position.set(0,.2,z);wp(lg,new THREE.CylinderGeometry(.04,.04,.2,6),0x3a3a48,0,-.1,0);wp(lg,bx(.1,.04,.06),0x2a1e14,.02,-.21,0);lj.add(lg);u.ll.push(lg)}
@@ -852,7 +863,7 @@ function detail(k,l,t){
  if(d.wall)return nm+ln(C.p,'Special: Blockerar vägen. Bygg gångar och labyrinter.');
  const tg=d.air&&d.gr?'mark och luft':d.air?'bara luft':'bara mark',sp=[];
  if(d.slowAir){return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: –')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,`Special: Saktar flygande fiender ${Math.round((d.slowAir+.05*(l-1))*100)} %. Varje nivå förhäxar hon ${3+(l-1)} slumpade vanliga gubbar (inga supergubbar) som gör ${Math.round(d.curse*100)} % mer skada under nivån. Varje uppgradering ger en gubbe till.`)+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.crow){return nm+`<small style="color:#9a8f78">${d.ty}, cirkulerar runt borgen</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per träff`)+'<br>'+ln(C.y,'Träffar varje fiende högst ca 3 gånger per sekund')+'<br>'+ln(C.b,'Fly dmg: ja, samma skada')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: En kråka flyger runt borgen i en cirkel och skadar allt den flyger igenom, både på marken och i luften. Flera Kråkmän ger flera kråkor.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
+ if(d.crow){return nm+`<small style="color:#9a8f78">${d.ty}, cirkulerar runt borgen</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per träff`)+'<br>'+ln(C.y,'Träffar varje fiende högst ca 3 gånger per sekund')+'<br>'+ln(C.b,'Fly dmg: ja, samma skada')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: En kråka flyger runt borgen i en cirkel och skadar allt den flyger igenom, både på marken och i luften. Flera kråkträd ger flera kråkor.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.dbl){return nm+`<small style="color:#9a8f78">${d.ty}</small><br>`+ln(C.p,'Special: Gör en kopia av valfri gubbe på spelplanen (samma typ, nivå och gren). Välj Kopiera och tryck sedan på gubben. Gäller en gång.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.lumber){const P=[5,8,12];return nm+`<small style="color:#9a8f78">${d.ty}, utanför banan</small><br>`+ln(C.y,`Poängbonus: +${P[Math.min(2,l-1)]} % per runda`)+'<br>'+ln(C.w,l<3?`Nästa nivå: +${P[l]} %`:'Max nivå')+'<br>'+ln(C.p,'Special: Springer runt utanför banan och hugger ner träd. Bonusen är en procent av poängen du fick under rundan. Träden växer upp långsamt igen.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.wolf){return nm+`<small style="color:#9a8f78">${d.ty}, bara markfiender</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per bett`)+'<br>'+ln(C.y,`Attackspeed: ${d.f}/s`)+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: Sover där du placerar den. Springer efter närmaste vanliga markfiende och biter (tar inte bossar eller flygare). När alla är döda går den tillbaka och sover.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
