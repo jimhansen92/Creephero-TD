@@ -225,7 +225,7 @@ const T=[
 {n:'Vargen',c:600,d:60,r:1,f:1.3,gr:1,ap:.2,wolf:1,pts:30000,col:'#8c9099',kind:'wolf',ty:'Jägare',i:'🐺',k:'W',t:'Specialvapen: sover där du placerar den, springer sedan efter vanliga markfiender och biter dem. När alla är döda går den tillbaka och somnar.'},
 {n:'Häxan',c:600,r:3.8,slowAir:.45,curse:.5,pts:30000,col:'#a060d0',kind:'witch',ty:'Förhäxning',i:'🧙‍♀️',k:'Y',t:'Specialvapen: saktar ner flygande fiender och förhäxar tre slumpade vanliga gubbar varje nivå så de gör 50 % mer skada. Uppgradera henne för att förhäxa fler.'}];
 const MAXL=50;
-const BOXC=600,BOXP=30000,BOXW={Frostmagikern:40,Draken:35,'Jätten':25,Vargen:30,Häxan:30,aura:30,gold:28},SHMAX=20,AURA={i:'🛡️',n:'Skyddsaura',t:'En gyllene aura lägger sig runt Guds kyrka (+10 sköld). Den tar skadan före dina vanliga HP.'};
+const XG=1000,XP=5000,BOXC=600,BOXP=30000,BOXW={Frostmagikern:40,Draken:35,'Jätten':25,Vargen:30,Häxan:30,aura:30,gold:28},SHMAX=20,AURA={i:'🛡️',n:'Skyddsaura',t:'En gyllene aura lägger sig runt Guds kyrka (+10 sköld). Den tar skadan före dina vanliga HP.'};
 const BOXIMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="48" font-size="42" text-anchor="middle">🎁</text></svg>');
 const LV=[0,1,2,3,5,4,6,7,10,9,11,8,12,13,15,16,17,18,20,19,21,14,22,24,25,26,27,23,28,29];
 const evt=L=>L>30?Math.min(L-1,49):LV[L-1];
@@ -1084,7 +1084,7 @@ function showLb(){
  if(S.lbDone){return}
  S.lbDone=1;
  const win=S.st=='seger',nm=(()=>{try{return localStorage.getItem('wh40kname')||'Spelare'}catch(x){return'Spelare'}})();
- LBREC={id:Date.now()+'-'+Math.random().toString(36).slice(2,6),n:nm,L:win?MAXL:S.L,sc:S.score,win:win?1:0};
+ LBREC={id:Date.now()+'-'+Math.random().toString(36).slice(2,6),n:nm,L:win?MAXL:S.L,sc:Math.max(0,S.score-(S.xp||0)),win:win?1:0};
  const a=lbLoad();a.push(LBREC);lbSave(a);
  el.innerHTML=`<h2 class="${win?'w':''}">${win?'🏆 Imperiet segrar!':'💀 Borgen har fallit'}</h2><div id="lbl"></div>`
   +`<div class="nm">Ditt namn: <input id="lbn" maxlength="18" value="${esc(nm)}"></div><div class="bt"><button id="lbp">▶ Spela igen</button></div>`;
@@ -1099,7 +1099,7 @@ function scHtml(){
  const D=S.ST,rows=Object.entries(D.k).map(([k,v])=>{const t=k=='h'?{n:'Hjälten',i:'⭐'}:T[+k];return{n:t.i+' '+t.n,d:v.d,k:v.k}}).sort((a,b)=>b.d-a.d),mx=Math.max(1,...rows.map(r=>r.d)),tot=Math.max(1,D.dmg);
  const tm2=Math.floor(D.time),ts=Math.floor(tm2/60)+':'+String(tm2%60).padStart(2,'0'),ge=D.gk+D.gb+D.gi;
  let h='<h2><span>📊 Resultattavla</span><button id="scx">✕</button></h2><div class="g">'
-  +`<div><small>Nivå</small><b>${S.L} / ${MAXL}</b></div><div><small>Poäng</small><b>${fmt(S.score)}</b></div><div><small>Liv kvar</small><b>${S.lives} / 20</b></div>`
+  +`<div><small>Nivå</small><b>${S.L} / ${MAXL}</b></div><div><small>Poäng</small><b>${fmt(Math.max(0,S.score-(S.xp||0)))}</b></div><div><small>Liv kvar</small><b>${S.lives} / 20</b></div>`
   +`<div><small>Guld nu</small><b>🪙 ${fmt(S.gold)}</b></div><div><small>Guld intjänat totalt</small><b>🪙 ${fmt(ge)}</b></div><div><small>Från fiender / bonus / ränta</small><b style="font-size:1em">${fmt(D.gk)} / ${fmt(D.gb)} / ${fmt(D.gi)}</b></div>`
   +`<div><small>Dödade fiender</small><b>${fmt(D.kills)}</b></div><div><small>Genomsläppta</small><b>${fmt(D.leaks)}</b></div><div><small>Total skada</small><b>${fmt(D.dmg)}</b></div>`
   +`<div><small>Byggda gubbar</small><b>${fmt(D.built)}</b></div><div><small>Speltid i strid</small><b>${ts}</b></div></div>`;
@@ -1483,6 +1483,7 @@ function flyList(){
  const L=[];
  T.map((d,i)=>({k:d.k,i:d.i,n:d.n,x:d.c,bt:i,img:d.img})).filter(x=>!T[x.bt].pts).sort((a,b)=>a.x-b.x).forEach(x=>L.push(x));
  L.push({k:'L',i:'🎁',n:'Mystery box',x:BOXC,pts:BOXP,box:1,img:BOXIMG});
+ L.push({k:'H',i:'💱',n:'Växla till poäng',x:XG,xch:1});
  [...new Set(S.inv)].reverse().forEach(b=>{const d=T[b];L.unshift({k:d.k,i:d.i,n:d.n,x:0,bt:b,img:d.img,fr:S.inv.filter(q=>q==b).length})});
  return L;
 }
@@ -1500,6 +1501,7 @@ function fitMenu(){
 }
 function fbHtml(x,i){
  const on=S.bt===x.bt&&x.bt!=null?' on':'';
+ if(x.xch)return `<button class="fb sup${S.gold<XG?' poor':''}" data-i="${i}"><span class="k">${x.k}</span><div style="font-size:34px;line-height:1.3">💱</div><b>Växla poäng</b><em>${XG} guld</em><i>+${XP.toLocaleString('sv-SE')} poäng</i><small>Du har ${Math.floor(S.score).toLocaleString('sv-SE')} poäng</small></button>`;
  if(x.box)return `<button class="fb sup${S.gold<x.x||S.score<x.pts?' poor':''}" data-i="${i}"><span class="k">${x.k}</span><img src="${x.img}" alt=""><b>${x.n}</b><em>${x.x} guld</em><i>${S.score<x.pts?'🔒 ':''}${x.pts.toLocaleString('sv-SE')} poäng</i><small>Supergubbe eller skyddsaura</small></button>`;
  const d=T[x.bt];
  if(x.fr)return `<button class="fb sup${on}" data-i="${i}" data-b="${x.bt}"><span class="k">${x.k}</span><img src="${x.img}" alt=""><b>${x.n}</b><em>Gratis</em><i>${x.fr} st att placera</i><small>Från Mystery box</small></button>`;
@@ -1595,6 +1597,7 @@ function multi(){
 function act(e){
  if(!e)return;
  if(S.st=='strid'&&e.a=='sell'){toast('Du kan inte sälja under en pågående nivå');return}
+ if(e.xch){if(S.gold<XG){toast('Du behöver '+XG+' guld');return}S.gold-=XG;S.score+=XP;S.xp=(S.xp||0)+XP;toast('+'+XP.toLocaleString('sv-SE')+' poäng');sfxPlop(1);sync();return}
  if(e.box){openBox();return}
  if(e.bt!=null){S.bt=S.bt===e.bt?null:e.bt;S.menu='';S.dance=0;S.pvk=null}
  else if(e.a=='build')S.menu=S.menu?'':'bygg';
