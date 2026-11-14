@@ -225,7 +225,8 @@ const T=[
 {n:'Vargen',c:600,d:60,r:1,f:1.3,gr:1,ap:.2,wolf:1,pts:30000,col:'#8c9099',kind:'wolf',ty:'Jägare',i:'🐺',k:'W',t:'Specialvapen: sover där du placerar den, springer sedan efter vanliga markfiender och biter dem. När alla är döda går den tillbaka och somnar.'},
 {n:'Häxan',c:600,r:3.8,slowAir:.45,curse:.5,pts:30000,col:'#a060d0',kind:'witch',ty:'Förhäxning',i:'🧙‍♀️',k:'Y',t:'Specialvapen: saktar ner flygande fiender och förhäxar tre slumpade vanliga gubbar varje nivå så de gör 50 % mer skada. Uppgradera henne för att förhäxa fler.'},
 {n:'Skogshuggaren',c:600,r:1,lumber:1,pts:30000,col:'#5a8a3a',kind:'lumber',ty:'Skogsarbetare',i:'🪓',k:'K',t:'Specialvapen: springer runt utanför banan och hugger ner träd. Ger extra poäng efter varje runda: 5 % (nivå 1), 8 % (nivå 2) och 12 % (nivå 3). Träden växer upp långsamt igen.'},
-{n:'Dubbelgångaren',c:600,r:1,dbl:1,pts:30000,col:'#9aa0c8',kind:'dbl',ty:'Kopiering',i:'🪞',k:'N',t:'Specialvapen: gör en kopia av valfri gubbe på spelplanen. Kopian får samma typ, nivå och gren.'}];
+{n:'Dubbelgångaren',c:600,r:1,dbl:1,pts:30000,col:'#9aa0c8',kind:'dbl',ty:'Kopiering',i:'🪞',k:'N',t:'Specialvapen: gör en kopia av valfri gubbe på spelplanen. Kopian får samma typ, nivå och gren.'},
+{n:'Kråkmannen',c:600,d:80,r:1,ap:.3,crow:1,pts:30000,col:'#4a4a5a',kind:'crow',ty:'Fågel',i:'🐦',k:'T',t:'Specialvapen: en kråka flyger i cirkel runt borgen och skadar alla fiender, både på marken och i luften, som den flyger igenom.'}];
 const MAXL=50;
 const XG=1000,XP=5000,BOXC=600,BOXP=30000,BOXW={Frostmagikern:40,Draken:35,'Jätten':25,Vargen:30,Häxan:30,Skogshuggaren:25,Dubbelgångaren:22,aura:30,gold:28},SHMAX=20,AURA={i:'🛡️',n:'Skyddsaura',t:'En gyllene aura lägger sig runt Guds kyrka (+10 sköld). Den tar skadan före dina vanliga HP.'};
 const BOXIMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="48" font-size="42" text-anchor="middle">🎁</text></svg>');
@@ -680,6 +681,21 @@ function mkModel(k,lv,br){
    for(const s of[-1,1])ad(sph(.022),0x151525,.1,.78,z+s*.05);
   }
   const rg=ad(new THREE.TorusGeometry(.26,.015,6,24),0xd8dcff,0,.5,0,0x7078d0);rg.rotation.x=Math.PI/2;
+}else if(d.kind=='crow'){
+  ad(new THREE.CylinderGeometry(.42,.46,.05,18),0x2a2a34,0,.025,0);
+  const sr=ad(new THREE.TorusGeometry(.4,.025,6,20),0x8a8aa8,0,.06,0);sr.rotation.x=Math.PI/2;
+  ad(new THREE.ConeGeometry(.2,.58,10),0x2a2a38,0,.31,0);ad(sph(.11),0xe0b890,0,.66,0);
+  ad(new THREE.CylinderGeometry(.16,.16,.03,10),0x1a1a24,0,.76,0);ad(new THREE.CylinderGeometry(.09,.1,.14,9),0x1a1a24,0,.84,0);
+  ad(new THREE.ConeGeometry(.025,.1,5),0xd09030,.12,.64,0).rotation.z=-Math.PI/2;
+  const arm=ad(new THREE.CylinderGeometry(.03,.03,.26,6),0x2a2a38,.16,.46,0);arm.rotation.z=-.9;
+  const cw=u.cw=new THREE.Group();g.add(cw);cw.visible=false;
+  const wp=(par,geo,col,x,y,z)=>{const m=ad(geo,col,x,y,z);g.remove(m);par.add(m);return m};
+  wp(cw,sph(.09),0x15151c,0,0,0).scale.set(1.6,.8,.8);wp(cw,sph(.055),0x15151c,.14,.03,0);
+  wp(cw,new THREE.ConeGeometry(.022,.08,5),0xd09030,.21,.03,0).rotation.z=-Math.PI/2;
+  wp(cw,sph(.012),0xffffff,.17,.06,.035);wp(cw,sph(.012),0xffffff,.17,.06,-.035);
+  wp(cw,bx(.13,.012,.07),0x15151c,-.16,.0,0);
+  u.cwg=[];for(const z of[-1,1]){const w=new THREE.Group();w.position.set(0,.02,z*.05);wp(w,bx(.1,.012,.22),0x1c1c26,0,0,z*.11);cw.add(w);u.cwg.push(w)}
+  cw.scale.setScalar(1.6);
 }else if(d.kind=='lumber'){
   ad(new THREE.CylinderGeometry(.42,.46,.05,18),0x4a3422,0,.025,0);
   const sr=ad(new THREE.TorusGeometry(.4,.025,6,20),0x6aa040,0,.06,0);sr.rotation.x=Math.PI/2;
@@ -836,6 +852,7 @@ function detail(k,l,t){
  if(d.wall)return nm+ln(C.p,'Special: Blockerar vägen. Bygg gångar och labyrinter.');
  const tg=d.air&&d.gr?'mark och luft':d.air?'bara luft':'bara mark',sp=[];
  if(d.slowAir){return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: –')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,`Special: Saktar flygande fiender ${Math.round((d.slowAir+.05*(l-1))*100)} %. Varje nivå förhäxar hon ${3+(l-1)} slumpade vanliga gubbar (inga supergubbar) som gör ${Math.round(d.curse*100)} % mer skada under nivån. Varje uppgradering ger en gubbe till.`)+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
+ if(d.crow){return nm+`<small style="color:#9a8f78">${d.ty}, cirkulerar runt borgen</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per träff`)+'<br>'+ln(C.y,'Träffar varje fiende högst ca 3 gånger per sekund')+'<br>'+ln(C.b,'Fly dmg: ja, samma skada')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: En kråka flyger runt borgen i en cirkel och skadar allt den flyger igenom, både på marken och i luften. Flera Kråkmän ger flera kråkor.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.dbl){return nm+`<small style="color:#9a8f78">${d.ty}</small><br>`+ln(C.p,'Special: Gör en kopia av valfri gubbe på spelplanen (samma typ, nivå och gren). Välj Kopiera och tryck sedan på gubben. Gäller en gång.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.lumber){const P=[5,8,12];return nm+`<small style="color:#9a8f78">${d.ty}, utanför banan</small><br>`+ln(C.y,`Poängbonus: +${P[Math.min(2,l-1)]} % per runda`)+'<br>'+ln(C.w,l<3?`Nästa nivå: +${P[l]} %`:'Max nivå')+'<br>'+ln(C.p,'Special: Springer runt utanför banan och hugger ner träd. Bonusen är en procent av poängen du fick under rundan. Träden växer upp långsamt igen.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.wolf){return nm+`<small style="color:#9a8f78">${d.ty}, bara markfiender</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per bett`)+'<br>'+ln(C.y,`Attackspeed: ${d.f}/s`)+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: Sover där du placerar den. Springer efter närmaste vanliga markfiende och biter (tar inte bossar eller flygare). När alla är döda går den tillbaka och sover.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
@@ -1076,6 +1093,7 @@ function sfxAtk(k,x){
    case 'giant':T('sine',90,35,.22,.2);N('lowpass',700,150,.18,.12);break;
    case 'rock':T('sine',70,30,.4,.22);N('lowpass',900,100,.35,.12);break;
    case 'dragon':N('lowpass',900,250,.45,.14);T('sawtooth',100,55,.4,.08,0,[18,5]);break;
+   case 'crow':T('sawtooth',900,420,.14,.1,0,[18,5]);N('bandpass',2200,1200,.08,.06,.02,2);break;
    case 'lumber':N('bandpass',1400,500,.07,.12,0,2);T('triangle',220,110,.09,.1);break;
    case 'wolf':T('sawtooth',170,80,.18,.12,0,[32,12]);N('bandpass',2000,800,.07,.1,.02,2);T('sine',90,50,.1,.1,.05);break;
    case 'hero':T('sawtooth',500,1300,.09,.05);N('highpass',4000,6000,.08,.04);break;
@@ -1303,7 +1321,7 @@ function wolfVis(t){
  u.wz.visible=sl;if(sl){u.wz.position.y=.62+.05*Math.sin(tm*2);u.wz.material.opacity=.7+.3*Math.sin(tm*2)}
 }
 function copyTower(t,s){
- const nm=T[s.k].n;t.k=s.k;t.l=s.l;t.br=s.br;t.cd=0;t.wx=null;t.lx=null;t.ls=null;t.hex=0;
+ const nm=T[s.k].n;t.k=s.k;t.l=s.l;t.br=s.br;t.cd=0;t.wx=null;t.lx=null;t.ls=null;t.ca=null;t.cx=null;t.hex=0;
  remodel(t);sfxPlop(2);burst(t.x,t.y,'#c8d0ff',14,1);toast('Dubbelgångaren blev en kopia av '+nm);
 }
 function treesReset(){for(const q of FOR.tr){q.busy=0;if(q.g<1)treeSet(q,1)}}
@@ -1338,6 +1356,27 @@ function lumberVis(t){
  u.ll.forEach((lg,i)=>{lg.rotation.z=run?Math.sin(tm*14+(i?Math.PI:0))*.7:0});
  u.la.rotation.z=ch?-.9+Math.sin(tm*10.5)*.9:run?Math.sin(tm*14)*.3:0;
 }
+function crowU(t,dt){
+ const cs=S.tw.filter(x=>T[x.k].crow),idx=Math.max(0,cs.indexOf(t)),d=T[t.k];
+ if(t.ca==null)t.ca=idx*Math.PI;
+ t.ca+=2.2*dt;const R=3.2+(idx%2)*.8;
+ t.cx=BASE[0]+.5+Math.cos(t.ca)*R;t.cy=BASE[1]+.5+Math.sin(t.ca)*R;
+ if(S.st!='strid')return;
+ let hitn=0;
+ for(const c of S.en){
+  if(c.dead||(c.ct||0)>tm)continue;
+  if(Math.hypot(c.x-t.cx,c.y-t.cy)<1.0){c.ct=tm+.35;CUR=t.k;hit(c,dmg(t),d.ap);CUR=null;burst(c.x,c.y,'#25252f',3,c.e.air?1:.5);hitn++}
+ }
+ if(hitn)sfxAtk('crow',t.cx);
+}
+function crowVis(t){
+ const u=t.u,w=u&&u.cw;if(!w)return;
+ if(t.cx==null){w.visible=false;return}
+ w.visible=true;
+ w.position.set(t.cx-t.x,.95+.1*Math.sin(tm*3+t.ca),t.cy-t.y);
+ w.rotation.y=-(t.ca+Math.PI/2);
+ u.cwg.forEach((g,i)=>{g.rotation.x=(i?-1:1)*Math.sin(tm*16)*.8});
+}
 function hexVis(t){
  if(t.hxm&&t.m)t.m.remove(t.hxm);
  const g=new THREE.Group(),r=new THREE.Mesh(new THREE.TorusGeometry(.46,.03,6,28),new THREE.MeshBasicMaterial({color:0xb060ff,transparent:true,opacity:.8}));r.rotation.x=Math.PI/2;r.position.y=.05;g.add(r);
@@ -1348,7 +1387,7 @@ function hexClear(){for(const t of S.tw){if(t.hex){t.hex=0;if(t.hxm&&t.m)t.m.rem
 function hexWave(){
  hexClear();
  const ws=S.tw.filter(t=>T[t.k].curse);if(!ws.length)return;
- const pool=S.tw.filter(t=>{const d=T[t.k];return!d.pts&&!d.wall&&!d.buff&&!d.stun&&!d.wolf&&!d.lumber&&!d.dbl&&!d.slowAir&&!d.curse});
+ const pool=S.tw.filter(t=>{const d=T[t.k];return!d.pts&&!d.wall&&!d.buff&&!d.stun&&!d.wolf&&!d.lumber&&!d.dbl&&!d.crow&&!d.slowAir&&!d.curse});
  const nm=[];
  for(const w of ws){const n=3+((w.l||1)-1);w.fl=tm;for(let k=0;k<n&&pool.length;k++){const t=pool.splice(Math.floor(Math.random()*pool.length),1)[0];t.hex=1;hexVis(t);nm.push(T[t.k].n)}}
  if(nm.length){sfxHex();toast('Häxan förhäxade '+nm.length+' gubbar: '+nm.join(', ')+' (+50 % skada denna nivå)')}
@@ -1364,7 +1403,7 @@ function leak(c){S.ST.leaks++;let d=c.e.boss?(c.e.mini?3:5):1;c.dead=1;S.leak=1;
  if(d>0){S.lives-=d;baseHit(d)}}
 function update(dt){
  if(S.st=='slut'||S.st=='seger')return;
- CUR=null;heroU(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt)}lumberGrow(dt);
+ CUR=null;heroU(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt)}lumberGrow(dt);
  pts(dt);rocks(dt);applyBuffs();
  if(S.st=='strid'){
   S.ST.time+=dt;const q=S.q;
@@ -1378,7 +1417,7 @@ function update(dt){
   for(const c of S.en)c.sf=1;
   for(const c of S.en)if(c.burn>0&&!c.dead){c.burn-=dt;const h0=c.hf;CUR=c.bk==null?null:c.bk;hit(c,c.bdps*dt,1,1);CUR=null;c.hf=h0}
   for(const t of S.tw){
-   const d=T[t.k];if(d.wall||d.buff||d.wolf||d.lumber||d.dbl)continue;CUR=t.k;
+   const d=T[t.k];if(d.wall||d.buff||d.wolf||d.lumber||d.dbl||d.crow)continue;CUR=t.k;
    if(d.stun){
     t.cd-=dt;
     if(t.cd<=0){
@@ -1460,7 +1499,7 @@ function render(){
  hlegs.forEach((g,i)=>{g.rotation.z=mvg?Math.sin(tm*14+(i%2?Math.PI:0)+(i>1?Math.PI*.5:0))*.55:0});
  const pc=$('pt').classList;pc.toggle('dance',!!dn);pc.toggle('happy',hp&&!dn);
  for(const t of S.tw){
-  const d=T[t.k],u=t.u,sw=Math.sin(Math.min(1,(tm-(t.fl||-9))/.35)*Math.PI);if(d.wolf)wolfVis(t);if(d.lumber)lumberVis(t);if(t.hxm){t.hxm.rotation.y=tm*2;t.hxm.children[0].material.opacity=.6+.3*Math.sin(tm*4)}
+  const d=T[t.k],u=t.u,sw=Math.sin(Math.min(1,(tm-(t.fl||-9))/.35)*Math.PI);if(d.wolf)wolfVis(t);if(d.lumber)lumberVis(t);if(d.crow)crowVis(t);if(t.hxm){t.hxm.rotation.y=tm*2;t.hxm.children[0].material.opacity=.6+.3*Math.sin(tm*4)}
   t.m.scale.setScalar(Math.min(1,(tm-t.born)/.3+.1)*(d.wall||t.tu?1:(d.lvs?d.lvs[t.l-1]:1+.07*(t.l-1))));
   if(!t.tu&&!d.wall)t.m.scale.y*=1+.025*Math.sin(tm*2.4+t.c);
   if(!d.wall&&t.pl!==t.l){t.pl=t.l;if(t.pg)t.m.remove(t.pg);const pg=new THREE.Group();for(let i=0;i<t.l;i++){const o=new THREE.Mesh(SPH,MPIP);o.scale.setScalar(.04);o.position.set(.45,.05,(i-(t.l-1)/2)*.12);pg.add(o)}t.m.add(pg);t.pg=pg}
