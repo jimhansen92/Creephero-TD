@@ -2041,7 +2041,7 @@ function openBox(){
  const step=()=>{
   if(S!==SS){el.className='';return}
   if(n<N){const d=IT(pool[(n+pool.length-1)%pool.length]);el.innerHTML=`<div class="bi">${d.i}</div><div class="bn">???</div><div class="bs">Mystery box öppnas...</div>`;sfxTick(n/N);n++;setTimeout(step,60+n*n*1.4)}
-  else{const ga=1000,d=res==='gold'?{i:'💰',n:ga+' guld!',t:'Du vann guld i Mystery box!'}:IT(res);el.innerHTML=`<div class="bi">${d.i}</div><div class="bn">${d.n}!</div><div class="bs">${d.t}</div>`;el.className='on win';sfxBoxWin();
+  else{const ga=2000,d=res==='gold'?{i:'💰',n:ga+' guld!',t:'Du vann guld i Mystery box!'}:IT(res);el.innerHTML=`<div class="bi">${d.i}</div><div class="bn">${d.n}!</div><div class="bs">${d.t}</div>`;el.className='on win';sfxBoxWin();
    if(res==='gold'){S.gold+=ga;S.ST.gb+=ga;sfxInterest();setTimeout(sfxInterest,350);setTimeout(sfxInterest,700);toast('+'+ga+' guld!')}else if(res==='hero'){S.hlv=Math.min(3,(S.hlv||1)+1);S.happy=tm+2;sfxAuraGain();toast('Hjälten har nu nivå '+S.hlv+'!')}else if(res==='aura'){S.sh=Math.min(SHMAX,(S.sh||0)+10);sfxAuraGain();AF=1;toast('Skyddsaura! Sköld: '+S.sh+(S.sh>=SHMAX?' (max)':''))}else{S.inv.push(res);S.bt=res;toast('Placera din '+d.n+' (gratis)')}
    S.menu='';S.dance=0;sync();setTimeout(()=>{el.className='';if(S===SS)S.bx=0},2600)}
  };
