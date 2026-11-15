@@ -430,10 +430,10 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5,1
  for(const m of[rk,bs]){m.castShadow=true;m.receiveShadow=true;sc.add(m)}
 })();
 (function(){
- let sd=41;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D(),N=80,BR=4;
+ let sd=41;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D(),N=240,BR=4;
  const mat=lam(0x3b3229),tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.05,.13,2.4,6),mat,N),bg=new THREE.InstancedMesh(new THREE.CylinderGeometry(.015,.045,1,5).translate(0,.5,0),mat,N*BR),bg2=new THREE.InstancedMesh(new THREE.CylinderGeometry(.01,.025,.6,4).translate(0,.3,0),mat,N*BR);
  let n=0;
- while(n<N){const x=(rnd()*2-1)*(HW+25),z=(rnd()*2-1)*(HH+18);if(Math.abs(x)<HW+9.5&&Math.abs(z)<HH+7.5)continue;
+ while(n<N){const x=(rnd()*2-1)*(HW+36),z=(rnd()*2-1)*(HH+27);if(Math.abs(x)<HW+13&&Math.abs(z)<HH+10.5)continue;
   const s=.8+rnd()*.9,ry=rnd()*6,lean=(rnd()-.5)*.12;
   dm.position.set(x,1.2*s,z);dm.rotation.set(lean,ry,lean*.6);dm.scale.setScalar(s);dm.updateMatrix();tr.setMatrixAt(n,dm.matrix);
   for(let k=0;k<BR;k++){const h=(1.1+k*.35+rnd()*.2)*s,yaw=ry+k*1.7+rnd()*.8,tilt=.75+rnd()*.5;
