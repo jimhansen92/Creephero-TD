@@ -485,6 +485,22 @@ const MOATW=2.4;
 const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
 {const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);
  const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2+2,.16,ROWS+1.2+MOATW*2+2),lam(0x3a3224));bank.position.y=-.5;sc.add(bank)}
+const AQ=[];
+(function(){
+ let sd=57;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
+ const RIM=outline(COLS/2+.45,ROWS/2+.45,1.0,.25,.6),SH=outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7);
+ const ins=(p,x,z)=>{let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[xi,zi]=p[i],[xj,zj]=p[j];if((zi>z)!=(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)c=!c}return c};
+ const okp=(x,z,m)=>{if(Math.abs(x)>HW-1.5&&Math.abs(Math.abs(z)-6.5)<1.1)return false;for(const[a,b]of[[m,0],[-m,0],[0,m],[0,-m]]){if(!ins(SH,x+a,z+b)||ins(RIM,x+a,z+b))return false}return true};
+ const pts=(n,m,minD,arr)=>{const o=[];let t=0;while(o.length<n&&t++<6000){const x=(rnd()*2-1)*(HW+3.2),z=(rnd()*2-1)*(HH+3.2);if(!okp(x,z,m))continue;if(arr.concat(o).some(q=>Math.hypot(q[0]-x,q[1]-z)<minD))continue;o.push([x,z])}return o};
+ const pads=pts(70,.35,.75,[]),weeds=pts(46,.2,.9,pads);
+ const pg=new THREE.CircleGeometry(.3,14,.5,5.5).rotateX(-Math.PI/2),pm=new THREE.InstancedMesh(pg,new THREE.MeshLambertMaterial({color:0xffffff,side:THREE.DoubleSide}),pads.length),col=new THREE.Color();
+ pads.forEach((p,i)=>{const s=.6+rnd()*.8;dm.position.set(p[0],-.345,p[1]);dm.scale.set(s,1,s);dm.rotation.set(0,rnd()*6,0);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.5,.22+rnd()*.1);pm.setColorAt(i,col)});
+ const fl=pads.filter(()=>rnd()<.25),fm=new THREE.InstancedMesh(new THREE.SphereGeometry(.07,7,5),new THREE.MeshLambertMaterial({color:0xffb0cc,emissive:0x4a1a28}),Math.max(1,fl.length));
+ fl.forEach((p,i)=>{dm.position.set(p[0],-.31,p[1]);dm.scale.set(1,.7,1);dm.rotation.set(0,0,0);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});fm.count=fl.length;
+ const NW=weeds.length*5,wm=new THREE.InstancedMesh(new THREE.ConeGeometry(.035,1,4).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0xffffff}),NW);let wi=0;
+ weeds.forEach(p=>{for(let k=0;k<5;k++){const h=.45+rnd()*.35,a=rnd()*6,t=.12+rnd()*.28;dm.position.set(p[0]+(rnd()-.5)*.25,-.49,p[1]+(rnd()-.5)*.25);dm.scale.set(1,h,1);dm.rotation.set(Math.sin(a)*t,0,Math.cos(a)*t);dm.updateMatrix();wm.setMatrixAt(wi,dm.matrix);col.setHSL(.3+rnd()*.06,.5,.16+rnd()*.1);wm.setColorAt(wi++,col)}});
+ for(const m of[pm,fm,wm]){m.frustumCulled=false;sc.add(m);AQ.push(m)}
+})();
 let ICE=0;
 const iceM=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#bfe3f2';x.fillRect(0,0,128,128);let sd=13;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
  for(let i=0;i<40;i++){x.fillStyle='rgba('+(200+rnd()*50|0)+',240,255,'+(.15+rnd()*.25)+')';x.beginPath();x.ellipse(rnd()*128,rnd()*128,6+rnd()*16,3+rnd()*8,rnd()*3,0,7);x.fill()}
@@ -2398,7 +2414,7 @@ const snowGeo=new THREE.BufferGeometry();snowGeo.setAttribute('position',new THR
 const snowMat=new THREE.PointsMaterial({color:0xffffff,size:.2,transparent:true,opacity:0,depthWrite:false});
 const snowPts=new THREE.Points(snowGeo,snowMat);snowPts.frustumCulled=false;snowPts.visible=false;sc.add(snowPts);
 function snowStep(dt){
- SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);ICE+=((S.st=='strid'&&S.winW?1:0)-ICE)*Math.min(1,dt*.9);iceM.material.opacity=Math.min(1,ICE*1.15);iceM.visible=ICE>.02;for(const m of FOR.cap){m.material.opacity=Math.min(1,SNOW*1.2);m.visible=SNOW>.03}windUpdate(SNOW);
+ SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);ICE+=((S.st=='strid'&&S.winW?1:0)-ICE)*Math.min(1,dt*.9);iceM.material.opacity=Math.min(1,ICE*1.15);iceM.visible=ICE>.02;for(const m of AQ)m.visible=ICE<.5;for(const m of FOR.cap){m.material.opacity=Math.min(1,SNOW*1.2);m.visible=SNOW>.03}windUpdate(SNOW);
  snowMat.opacity=SNOW*.85;snowPts.visible=SNOW>.02;
  if(snowPts.visible){
   for(let i=0;i<SN;i++){let y=snowPos[i*3+1]-snowSpd[i]*dt,x=snowPos[i*3]+Math.sin(tm*.7+i)*.25*dt;if(y<0){y=14;x=(Math.random()*2-1)*(HW+5);snowPos[i*3+2]=(Math.random()*2-1)*(HH+5)}snowPos[i*3]=x;snowPos[i*3+1]=y}
