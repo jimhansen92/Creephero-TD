@@ -424,6 +424,12 @@ const MOATW=2.4;
 const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
 {const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);
  const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2+2,.16,ROWS+1.2+MOATW*2+2),lam(0x3a3224));bank.position.y=-.5;sc.add(bank)}
+let ICE=0;
+const iceM=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#bfe3f2';x.fillRect(0,0,128,128);let sd=13;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ for(let i=0;i<40;i++){x.fillStyle='rgba('+(200+rnd()*50|0)+',240,255,'+(.15+rnd()*.25)+')';x.beginPath();x.ellipse(rnd()*128,rnd()*128,6+rnd()*16,3+rnd()*8,rnd()*3,0,7);x.fill()}
+ x.strokeStyle='rgba(90,140,170,.5)';x.lineWidth=1.2;for(let i=0;i<14;i++){let px=rnd()*128,py=rnd()*128;x.beginPath();x.moveTo(px,py);for(let k=0;k<4;k++){px+=(rnd()-.5)*34;py+=(rnd()-.5)*34;x.lineTo(px,py)}x.stroke()}
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:t,transparent:true,opacity:0,emissive:0x1a2a38}));m.position.y=-.33;m.visible=false;m.receiveShadow=true;sc.add(m);return m})();
 const BRG=[];
 for(const s of[-1,1])for(const row of[1,12]){
  const g=new THREE.Group(),L=3.5,cxw=s*(HW+1.45),zw=row+.5-HH;g.position.set(cxw,0,zw);
@@ -1304,7 +1310,7 @@ function interestFx(i,bo,perf){
 }
 function winterBanner(){
  const el=$('wb');if(!el)return;
- el.textContent='❄️ Det börjar snöa... vinterfiender kommer ❄️';
+ el.textContent='❄️ Det börjar snöa... vattnet fryser och vinterfiender kommer överallt ❄️';
  el.className='';void el.offsetWidth;el.className='on';
  clearTimeout(winterBanner.t);winterBanner.t=setTimeout(()=>{el.className=''},2300);
 }
@@ -1407,6 +1413,7 @@ function stepE(c,dt){
   if(L<=mv){leak(c);return}
   c.x+=dx/L*mv;c.y+=dy/L*mv;c.d+=mv;return;
  }
+ if(c.prz!=null){const dy=c.prz-c.y,L=Math.abs(dy);if(L<=mv){c.y=c.prz;c.prz=null;mv-=L;c.d+=L}else{c.y+=Math.sign(dy)*mv;c.d+=mv;return}}
  if(c.pre!=null){const dx=c.pre-c.x,L=Math.abs(dx);if(L<=mv){c.x=c.pre;c.pre=null;mv-=L;c.d+=L}else{c.x+=Math.sign(dx)*mv;c.d+=mv;return}}
  while(mv>0){
   if(!c.t){c.t=pick(c);if(!c.t){if(dist[c.y|0][c.x|0]==0)leak(c);return}}
@@ -1420,7 +1427,7 @@ function wolfU(t,dt){
  t.wc-=dt;let tg=null;
  if(S.st=='strid'){
   if(t.wt&&(t.wt.dead||t.wt.e.air||t.wt.e.boss||S.en.indexOf(t.wt)<0))t.wt=null;
-  if(!t.wt){let bd=1e9;for(const c of S.en){if(c.dead||c.e.air||c.e.boss||c.pre!=null)continue;const q=Math.hypot(c.x-t.wx,c.y-t.wy);if(q<bd){bd=q;t.wt=c}}}
+  if(!t.wt){let bd=1e9;for(const c of S.en){if(c.dead||c.e.air||c.e.boss||c.pre!=null||c.prz!=null)continue;const q=Math.hypot(c.x-t.wx,c.y-t.wy);if(q<bd){bd=q;t.wt=c}}}
   tg=t.wt;
  }else t.wt=null;
  const sp=3.4*dt;
@@ -1548,7 +1555,7 @@ function sharkU(t,dt){
  const l=Math.min(3,t.l),R=3.4+.5*(l-1),CD=[5,3.5,2.2][l-1],pp=shPos(t.ss),px=pp[0],py=pp[1];t.sx=px;t.sy=py;
  if(t.sm=='patrol'){
   t.ss+=2.2*dt;
-  if(t.scd<=0&&S.st=='strid'){let bc=null,bd=R;for(const c of S.en){if(c.dead||c.e.air||c.e.boss)continue;const d=Math.hypot(c.x-px,c.y-py);if(d<bd){bd=d;bc=c}}if(bc){t.sm='hunt';t.sc=bc}}
+  if(t.scd<=0&&S.st=='strid'&&ICE<.3){let bc=null,bd=R;for(const c of S.en){if(c.dead||c.e.air||c.e.boss)continue;const d=Math.hypot(c.x-px,c.y-py);if(d<bd){bd=d;bc=c}}if(bc){t.sm='hunt';t.sc=bc}}
  }else if(t.sm=='hunt'){
   const c=t.sc;
   if(!c||c.dead||c.e.air||S.en.indexOf(c)<0||Math.hypot(c.x-px,c.y-py)>R*2){t.sm='patrol';t.sc=null;return}
@@ -1564,7 +1571,7 @@ function sharkU(t,dt){
 function sharkVis(t){
  const u=t.u;if(!u||!u.sk)return;
  if(t.ss==null||t.sx==null){u.sk.visible=false;return}
- u.sk.visible=true;
+ u.sk.visible=ICE<.3;
  let x=t.sx,y=t.sy,h=0,pitch=0,ang=shPos(t.ss)[2];
  if(t.sm=='jump'&&t.sj0){
   const k=Math.min(1,t.sjt/.8),c=t.sc,tx=c?c.x:x,ty=c?c.y:y,e=k<.5?k*2:2-k*2;
@@ -1607,7 +1614,16 @@ function update(dt){
    q.t-=dt;
    if(q.t<=0){
     q.t=q.gap;q.n--;const sp=SPW[q.si++%4];
-    const out=sp[0]<COLS/2?-8:COLS+8,c={e:q.e,x:out,y:sp[1]+.5,pre:q.e.air?null:sp[0]+.5,t:null,hp:q.hp,max:q.hp,gd:q.gd,d:0,sf:1,dead:0,born:tm};mkE(c);S.en.push(c);
+    const out=sp[0]<COLS/2?-8:COLS+8,c={e:q.e,x:out,y:sp[1]+.5,pre:q.e.air?null:sp[0]+.5,t:null,hp:q.hp,max:q.hp,gd:q.gd,d:0,sf:1,dead:0,born:tm};
+    if(q.e.winter&&!q.e.air){
+     for(let k=0;k<14;k++){const r=Math.random()*2*(COLS+ROWS);let cx,cy,sd;
+      if(r<COLS){cx=r|0;cy=0;sd=0}else if(r<2*COLS){cx=(r-COLS)|0;cy=ROWS-1;sd=1}else if(r<2*COLS+ROWS){cx=0;cy=(r-2*COLS)|0;sd=2}else{cx=COLS-1;cy=(r-2*COLS-ROWS)|0;sd=3}
+      if(dist[cy][cx]>=1e9||occ[cy][cx])continue;
+      c.pre=null;c.prz=null;
+      if(sd==0){c.x=cx+.5;c.y=-8;c.prz=.5}else if(sd==1){c.x=cx+.5;c.y=ROWS+8;c.prz=ROWS-.5}
+      else if(sd==2){c.x=-8;c.y=cy+.5;c.pre=.5}else{c.x=COLS+8;c.y=cy+.5;c.pre=COLS-.5}
+      break}}
+mkE(c);S.en.push(c);
    }
   }
   for(const c of S.en)c.sf=1;
@@ -2309,7 +2325,7 @@ const snowGeo=new THREE.BufferGeometry();snowGeo.setAttribute('position',new THR
 const snowMat=new THREE.PointsMaterial({color:0xffffff,size:.2,transparent:true,opacity:0,depthWrite:false});
 const snowPts=new THREE.Points(snowGeo,snowMat);snowPts.frustumCulled=false;snowPts.visible=false;sc.add(snowPts);
 function snowStep(dt){
- SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);windUpdate(SNOW);
+ SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);ICE+=((S.st=='strid'&&S.winW?1:0)-ICE)*Math.min(1,dt*.9);iceM.material.opacity=Math.min(1,ICE*1.15);iceM.visible=ICE>.02;windUpdate(SNOW);
  snowMat.opacity=SNOW*.85;snowPts.visible=SNOW>.02;
  if(snowPts.visible){
   for(let i=0;i<SN;i++){let y=snowPos[i*3+1]-snowSpd[i]*dt,x=snowPos[i*3]+Math.sin(tm*.7+i)*.25*dt;if(y<0){y=14;x=(Math.random()*2-1)*(HW+5);snowPos[i*3+2]=(Math.random()*2-1)*(HH+5)}snowPos[i*3]=x;snowPos[i*3+1]=y}
