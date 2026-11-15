@@ -1518,7 +1518,7 @@ function update(dt){
    q.t-=dt;
    if(q.t<=0){
     q.t=q.gap;q.n--;const sp=SPW[q.si++%4];
-    const out=sp[0]<COLS/2?-8:COLS+8,c={e:q.e,x:q.e.air?out:sp[0]+.5,y:sp[1]+.5,pre:q.e.air?null:sp[0]+.5,t:null,hp:q.hp,max:q.hp,gd:q.gd,d:0,sf:1,dead:0,born:tm};mkE(c);S.en.push(c);
+    const out=sp[0]<COLS/2?-8:COLS+8,c={e:q.e,x:out,y:sp[1]+.5,pre:q.e.air?null:sp[0]+.5,t:null,hp:q.hp,max:q.hp,gd:q.gd,d:0,sf:1,dead:0,born:tm};mkE(c);S.en.push(c);
    }
   }
   for(const c of S.en)c.sf=1;
