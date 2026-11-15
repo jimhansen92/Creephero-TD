@@ -373,9 +373,21 @@ const tc=document.createElement('canvas');tc.width=1904;tc.height=784;
    D[k]=Math.max(0,Math.min(255,D[k]*f*(1+w*.18)));D[k+1]=Math.min(255,D[k+1]*f);D[k+2]=Math.min(255,D[k+2]*f*(1-w*.12))}
   b.putImageData(id,0,0)}
  const ev=b.createRadialGradient(W/2,H/2,H*.5,W/2,H/2,W*.62);ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,'rgba(0,0,0,.3)');b.fillStyle=ev;b.fillRect(0,0,W,H);
+ {const id=b.getImageData(0,0,W,H),D=id.data,hs=(x,z)=>{let h=(x*374761393+z*668265263)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967295},
+  vn=(x,z)=>{const xi=Math.floor(x),fx=x-xi,u=fx*fx*(3-2*fx);return hs(xi,z)*(1-u)+hs(xi+1,z)*u},
+  ins=(s,z)=>(vn(s/70,z)*.55+vn(s/22,z+9)*.3+vn(s/8,z+19)*.15)*30+2,RAD=46;
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+   const dl=x,dr=W-1-x,dt=y,db=H-1-y,m=Math.min(dl,dr,dt,db);if(m>60)continue;
+   const k=(y*W+x)*4;
+   let cut=Math.min(dl-ins(y,1),dr-ins(y,2),dt-ins(x,3),db-ins(x,4));
+   const cx=Math.min(dl,dr),cy=Math.min(dt,db);
+   if(cx<RAD&&cy<RAD){const q=RAD-Math.hypot(RAD-cx,RAD-cy);cut=Math.min(cut,q-ins(x+y,5)*.4)}
+   if(cut<0)D[k+3]=0;
+   else if(cut<7){const f=cut/7;D[k]=D[k]*f+70*(1-f);D[k+1]=D[k+1]*f+56*(1-f);D[k+2]=D[k+2]*f+36*(1-f);D[k+3]=255*(.5+.5*f)}}
+  b.putImageData(id,0,0)}
 })();
 const gtex=new THREE.CanvasTexture(tc);gtex.anisotropy=Math.min(8,+R.capabilities.getMaxAnisotropy()||1);
-const gmesh=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gtex}));gmesh.receiveShadow=true;sc.add(gmesh);
+const gmesh=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gtex,transparent:true,alphaTest:.05}));gmesh.receiveShadow=true;sc.add(gmesh);
 function outline(hx,hz,r,amp,ph){const P=[],n=14,seg=[[1,1],[-1,1],[-1,-1],[1,-1]];let L=0;
  const nz=u=>(Math.sin(u*.7+ph)+.6*Math.sin(u*1.9+ph*2.1)+.35*Math.sin(u*3.7+ph*.6))/1.95*.5+.5;
  const raw=[];
@@ -492,7 +504,9 @@ const RIMP=outline(COLS/2+.45,ROWS/2+.45,1.0,.25,.6);
  g.computeVertexNormals();
  const slope=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}));slope.receiveShadow=true;sc.add(slope);
  const sh=new THREE.Shape();RIMP.forEach((q,k)=>k?sh.lineTo(q[0],q[1]):sh.moveTo(q[0],q[1]));
- const cap=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x4a3a24));cap.position.y=-.02;cap.receiveShadow=true;sc.add(cap)}
+ const gvc=document.createElement('canvas');gvc.width=gvc.height=128;{const x=gvc.getContext('2d');x.fillStyle='#5a4a35';x.fillRect(0,0,128,128);let sd=29;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;for(let i=0;i<420;i++){const v=70+rnd()*70|0;x.fillStyle='rgba('+v+','+(v-8)+','+(v-22)+','+(.35+rnd()*.4)+')';x.beginPath();x.arc(rnd()*128,rnd()*128,.8+rnd()*2,0,7);x.fill()}}
+ const gvt=new THREE.CanvasTexture(gvc);gvt.wrapS=gvt.wrapT=THREE.RepeatWrapping;gvt.repeat.set(.5,.5);
+ const cap=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gvt}));cap.position.y=-.02;cap.receiveShadow=true;sc.add(cap)}
 const MOATW=3.2;
 const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
 let WTR=null,WTR2=null,TIDE=-.36;
