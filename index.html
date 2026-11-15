@@ -226,7 +226,8 @@ const T=[
 {n:'Häxan',c:600,r:3.8,slowAir:.45,curse:.5,pts:30000,col:'#a060d0',kind:'witch',ty:'Förhäxning',i:'🧙‍♀️',k:'Y',t:'Specialvapen: saktar ner flygande fiender och förhäxar tre slumpade vanliga gubbar varje nivå så de gör 50 % mer skada. Uppgradera henne för att förhäxa fler.'},
 {n:'Skogshuggaren',c:600,r:1,lumber:1,pts:30000,col:'#5a8a3a',kind:'lumber',ty:'Skogsarbetare',i:'🪓',k:'K',t:'Specialvapen: springer runt utanför banan och hugger ner träd. Ger extra poäng efter varje runda: 5 % (nivå 1), 8 % (nivå 2) och 12 % (nivå 3). Träden växer upp långsamt igen.'},
 {n:'Dubbelgångaren',c:600,r:1,dbl:1,pts:30000,col:'#9aa0c8',kind:'dbl',ty:'Kopiering',i:'🪞',k:'N',t:'Specialvapen: gör en kopia av valfri gubbe på spelplanen. Kopian får samma typ, nivå och gren.'},
-{n:'Kråkträdet',c:600,d:80,r:1,ap:.3,crow:1,pts:30000,col:'#6a5a4a',kind:'crow',ty:'Fågel',i:'🌳',k:'T',t:'Specialvapen: ett träd utan blad med ett skatbo. Därifrån flyger en kråka i cirkel runt borgen och skadar alla fiender, både på marken och i luften, som den flyger igenom.'}];
+{n:'Kråkträdet',c:600,d:80,r:1,ap:.3,crow:1,pts:30000,col:'#6a5a4a',kind:'crow',ty:'Fågel',i:'🌳',k:'T',t:'Specialvapen: ett träd utan blad med ett skatbo. Därifrån flyger en kråka i cirkel runt borgen och skadar alla fiender, både på marken och i luften, som den flyger igenom.'},
+{n:'Guldgrävaren',c:600,r:1,digger:1,pts:30000,col:'#d8a820',kind:'digger',ty:'Gruvarbetare',i:'⛏️',k:'1',t:'Specialvapen: springer runt utanför banan och gräver guld. Du får extra guld för varje fiende som dör: +10 % (nivå 1), +16 % (nivå 2) och +25 % (nivå 3).'}];
 const MAXL=50;
 const XG=1000,XP=5000,BOXC=600,BOXP=30000,BOXW={Frostmagikern:40,Draken:35,'Jätten':25,Vargen:30,Häxan:30,Skogshuggaren:25,Dubbelgångaren:22,aura:30,gold:28},SHMAX=20,AURA={i:'🛡️',n:'Skyddsaura',t:'En gyllene aura lägger sig runt Guds kyrka (+10 sköld). Den tar skadan före dina vanliga HP.'};
 const BOXIMG='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><text x="32" y="48" font-size="42" text-anchor="middle">🎁</text></svg>');
@@ -378,6 +379,16 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5];
  for(let i=0;i<M;i++){const[x,z]=spot(),s=.5+rnd()*1.1;dm.position.set(x,.15*s,z);dm.scale.set(s,s*.7,s*(.8+rnd()*.5));dm.rotation.set(rnd(),rnd()*6,rnd());dm.updateMatrix();rk.setMatrixAt(i,dm.matrix)}
  FOR.m=[trunk,f1,f2];
  for(const m of[trunk,f1,f2,rk]){m.castShadow=true;m.receiveShadow=true;sc.add(m)}
+})();
+const MINES=[];
+(function(){
+ const pos=[[-14,-9.2],[-7,-9.6],[0,-9.2],[7,-9.6],[14,-9.2],[-11,9.2],[-4,9.6],[4,9.2],[11,9.6],[-19.8,-3],[-19.8,3],[19.8,-3],[19.8,3]];
+ for(const[x,z]of pos){
+  const g=new THREE.Group();g.position.set(x,0,z);
+  const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.45),lam(0x6a6458));r.scale.set(1.2,.7,1);r.position.y=.2;r.castShadow=true;g.add(r);
+  for(let i=0;i<5;i++){const n=new THREE.Mesh(new THREE.SphereGeometry(.07+(i%2)*.03,8,6),new THREE.MeshLambertMaterial({color:0xffc830,emissive:0x7a5a10}));const a=i*1.25;n.position.set(Math.cos(a)*.38,.22+.1*(i%3),Math.sin(a)*.32);g.add(n)}
+  sc.add(g);MINES.push({x,z,busy:0});
+ }
 })();
 const gc=document.createElement('canvas');gc.width=COLS*32;gc.height=ROWS*32;
 {const b=gc.getContext('2d');b.strokeStyle='rgba(255,255,255,.4)';b.lineWidth=1;for(let x=0;x<=COLS;x++){b.beginPath();b.moveTo(x*32,0);b.lineTo(x*32,ROWS*32);b.stroke()}for(let y=0;y<=ROWS;y++){b.beginPath();b.moveTo(0,y*32);b.lineTo(COLS*32,y*32);b.stroke()}}
@@ -700,6 +711,28 @@ function mkModel(k,lv,br){
   wp(cw,bx(.13,.012,.07),0x15151c,-.16,.0,0);
   u.cwg=[];for(const z of[-1,1]){const w=new THREE.Group();w.position.set(0,.02,z*.05);wp(w,bx(.1,.012,.22),0x1c1c26,0,0,z*.11);cw.add(w);u.cwg.push(w)}
   cw.scale.setScalar(1.6);
+}else if(d.kind=='digger'){
+  ad(new THREE.CylinderGeometry(.42,.46,.05,18),0x4a3e24,0,.025,0);
+  const sr=ad(new THREE.TorusGeometry(.4,.025,6,20),0xe8b830,0,.06,0);sr.rotation.x=Math.PI/2;
+  ad(sph(.3),0x6a6458,0,.1,-.1).scale.set(1.3,.7,1);
+  ad(bx(.2,.2,.03),0x0a0a0a,0,.15,.12);
+  for(const x of[-.13,.13])ad(bx(.04,.28,.04),0x7a5230,x,.17,.14);
+  ad(bx(.34,.04,.05),0x7a5230,0,.32,.14);
+  ad(sph(.025),0xffe080,.0,.28,.16,0xffc030);
+  ad(bx(.17,.08,.12),0x5a4a3a,.26,.1,.22);
+  for(const x of[.2,.32])ad(new THREE.CylinderGeometry(.03,.03,.02,8),0x2a2a2a,x,.05,.29).rotation.x=Math.PI/2;
+  for(let i=0;i<3;i++)ad(sph(.04),0xffc830,.22+i*.04,.17,.22,0x7a5a10);
+  const dj=u.dj=new THREE.Group();g.add(dj);
+  const wp=(par,geo,col,x,y,z,em)=>{const m=ad(geo,col,x,y,z,em);g.remove(m);par.add(m);return m};
+  u.dl=[];for(const z of[-.06,.06]){const lg=new THREE.Group();lg.position.set(0,.2,z);wp(lg,new THREE.CylinderGeometry(.04,.04,.2,6),0x4a4036,0,-.1,0);wp(lg,bx(.1,.04,.06),0x2a1e14,.02,-.21,0);dj.add(lg);u.dl.push(lg)}
+  wp(dj,new THREE.CylinderGeometry(.13,.17,.3,9),0x7a6a3a,0,.36,0);
+  wp(dj,sph(.1),0x8a6a3a,-.14,.4,0).scale.set(.9,1.1,1);
+  wp(dj,sph(.11),0xe0b090,0,.62,0);
+  wp(dj,sph(.12),0xe8c030,0,.69,0).scale.set(1,.6,1);wp(dj,sph(.035),0xfff0a0,.11,.7,0,0xffe070);
+  const da=u.da=new THREE.Group();da.position.set(.02,.5,.14);dj.add(da);
+  wp(da,new THREE.CylinderGeometry(.03,.03,.22,6),0x7a6a3a,.05,-.05,0).rotation.z=-.6;
+  wp(da,new THREE.CylinderGeometry(.018,.018,.4,6),0x7a4a22,.2,.02,0).rotation.z=-.3;
+  wp(da,bx(.2,.03,.03),0x9aa0a8,.3,.2,0).rotation.z=-.3;
 }else if(d.kind=='lumber'){
   ad(new THREE.CylinderGeometry(.42,.46,.05,18),0x4a3422,0,.025,0);
   const sr=ad(new THREE.TorusGeometry(.4,.025,6,20),0x6aa040,0,.06,0);sr.rotation.x=Math.PI/2;
@@ -863,6 +896,7 @@ function detail(k,l,t){
  if(d.wall)return nm+ln(C.p,'Special: Blockerar vägen. Bygg gångar och labyrinter.');
  const tg=d.air&&d.gr?'mark och luft':d.air?'bara luft':'bara mark',sp=[];
  if(d.slowAir){return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: –')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,`Special: Saktar flygande fiender ${Math.round((d.slowAir+.05*(l-1))*100)} %. Varje nivå förhäxar hon ${3+(l-1)} slumpade vanliga gubbar (inga supergubbar) som gör ${Math.round(d.curse*100)} % mer skada under nivån. Varje uppgradering ger en gubbe till.`)+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
+ if(d.digger){const P=[10,16,25];return nm+`<small style="color:#9a8f78">${d.ty}, utanför banan</small><br>`+ln(C.y,`Extra guld: +${P[Math.min(2,l-1)]} % för varje dödad fiende`)+'<br>'+ln(C.w,l<3?`Nästa nivå: +${P[l]} %`:'Max nivå')+'<br>'+ln(C.p,'Special: Springer runt utanför banan och gräver guld. Du får bara extra guld när en fiende dör, inte annars. Flera guldgrävare lägger ihop sina procent.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.crow){return nm+`<small style="color:#9a8f78">${d.ty}, cirkulerar runt borgen</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per träff`)+'<br>'+ln(C.y,'Träffar varje fiende högst ca 3 gånger per sekund')+'<br>'+ln(C.b,'Fly dmg: ja, samma skada')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: En kråka flyger runt borgen i en cirkel och skadar allt den flyger igenom, både på marken och i luften. Flera kråkträd ger flera kråkor.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.dbl){return nm+`<small style="color:#9a8f78">${d.ty}</small><br>`+ln(C.p,'Special: Gör en kopia av valfri gubbe på spelplanen (samma typ, nivå och gren). Välj Kopiera och tryck sedan på gubben. Gäller en gång.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.lumber){const P=[5,8,12];return nm+`<small style="color:#9a8f78">${d.ty}, utanför banan</small><br>`+ln(C.y,`Poängbonus: +${P[Math.min(2,l-1)]} % per runda`)+'<br>'+ln(C.w,l<3?`Nästa nivå: +${P[l]} %`:'Max nivå')+'<br>'+ln(C.p,'Special: Springer runt utanför banan och hugger ner träd. Bonusen är en procent av poängen du fick under rundan. Träden växer upp långsamt igen.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
@@ -1105,6 +1139,7 @@ function sfxAtk(k,x){
    case 'rock':T('sine',70,30,.4,.22);N('lowpass',900,100,.35,.12);break;
    case 'dragon':N('lowpass',900,250,.45,.14);T('sawtooth',100,55,.4,.08,0,[18,5]);break;
    case 'crow':T('sawtooth',900,420,.14,.1,0,[18,5]);N('bandpass',2200,1200,.08,.06,.02,2);break;
+   case 'dig':T('triangle',1900,1300,.06,.08);N('highpass',5000,3000,.05,.05);break;
    case 'lumber':N('bandpass',1400,500,.07,.12,0,2);T('triangle',220,110,.09,.1);break;
    case 'wolf':T('sawtooth',170,80,.18,.12,0,[32,12]);N('bandpass',2000,800,.07,.1,.02,2);T('sine',90,50,.1,.1,.05);break;
    case 'hero':T('sawtooth',500,1300,.09,.05);N('highpass',4000,6000,.08,.04);break;
@@ -1240,7 +1275,7 @@ function stKill(g){const r=stRow();if(r)r.k++;S.ST.kills++;S.ST.gk+=g;const l=st
 function hit(c,d,p,f){
  if(c.dead)return;
  const hp0=c.hp;if(c.e.winter)d*=f?2.5:.6;c.hp-=d*(1-(c.ar!=null?c.ar:(c.e.a||0))*(1-(p||0)));c.hf=tm;stDmg(Math.max(0,Math.min(hp0,hp0-c.hp)));
- if(c.hp<=0){c.dead=1;stKill(Math.round(c.gd));sfxDeath(c);S.gold+=Math.round(c.gd);S.score+=Math.round(c.gd)*2+(c.e.boss?30000:0);S.rp=(S.rp||0)+Math.round(c.gd)*2+(c.e.boss?30000:0);if(c.e.boss)toast('Boss besegrad! +30 000 poäng');burst(c.x,c.y,c.e.col,c.e.boss?24:c.e.air?8:10,c.e.air?1:.4);flash(c.x,c.y,c.e.boss?.7:.35,'#3a5a22',.45,1.4)}
+ if(c.hp<=0){c.dead=1;stKill(Math.round(c.gd));sfxDeath(c);S.gold+=Math.round(c.gd);{const gp=diggerPct();if(gp>0){const ex=Math.max(1,Math.round(c.gd*gp));S.gold+=ex;S.ST.gb+=ex;flash(c.x,c.y,.22,'#ffd84a',.4,.7)}}S.score+=Math.round(c.gd)*2+(c.e.boss?30000:0);S.rp=(S.rp||0)+Math.round(c.gd)*2+(c.e.boss?30000:0);if(c.e.boss)toast('Boss besegrad! +30 000 poäng');burst(c.x,c.y,c.e.col,c.e.boss?24:c.e.air?8:10,c.e.air?1:.4);flash(c.x,c.y,c.e.boss?.7:.35,'#3a5a22',.45,1.4)}
 }
 function build(c,r,k){
  const t={c,r,x:c+.5,y:r+.5,k,l:1,cd:0,a:0,sp:T[k].c,born:tm};
@@ -1332,7 +1367,7 @@ function wolfVis(t){
  u.wz.visible=sl;if(sl){u.wz.position.y=.62+.05*Math.sin(tm*2);u.wz.material.opacity=.7+.3*Math.sin(tm*2)}
 }
 function copyTower(t,s){
- const nm=T[s.k].n;t.k=s.k;t.l=s.l;t.br=s.br;t.cd=0;t.wx=null;t.lx=null;t.ls=null;t.ca=null;t.cx=null;t.hex=0;
+ const nm=T[s.k].n;t.k=s.k;t.l=s.l;t.br=s.br;t.cd=0;t.wx=null;t.lx=null;t.ls=null;t.ca=null;t.cx=null;t.dx=null;t.ds=null;t.hex=0;
  remodel(t);sfxPlop(2);burst(t.x,t.y,'#c8d0ff',14,1);toast('Dubbelgångaren blev en kopia av '+nm);
 }
 function treesReset(){for(const q of FOR.tr){q.busy=0;if(q.g<1)treeSet(q,1)}}
@@ -1388,6 +1423,29 @@ function crowVis(t){
  w.rotation.y=-(t.ca+Math.PI/2);
  u.cwg.forEach((g,i)=>{g.rotation.x=(i?-1:1)*Math.sin(tm*16)*.8});
 }
+function diggerU(t,dt){
+ if(t.dx==null){t.dx=t.x;t.dy=t.y;t.ds='pick';t.da=0;t.dw=0}
+ if(t.ds=='pick'||t.ds=='wait'){
+  t.dw-=dt;if(t.ds=='wait'&&t.dw>0)return;
+  const c=MINES.filter(m=>tm-(m.busy||-99)>=10).map(m=>[Math.hypot(m.x+HW-t.dx,m.z+HH-t.dy),m]).sort((a,b)=>a[0]-b[0]);
+  const e=c[Math.floor(Math.random()*Math.min(4,c.length))];
+  if(e){t.dt=e[1];e[1].busy=tm;t.ds='go'}else{t.ds='wait';t.dw=2}
+  return;
+ }
+ const m=t.dt;if(!m){t.ds='pick';return}
+ const gx=m.x+HW,gy=m.z+HH,dx=gx-t.dx,dy=gy-t.dy,L=Math.hypot(dx,dy);t.da=Math.atan2(dy,dx);
+ if(t.ds=='go'){m.busy=tm;if(L>.8){const k=Math.min(3.2*dt,L-.7);t.dx+=dx/L*k;t.dy+=dy/L*k}else{t.ds='dig';t.dc=2.4;t.dsw=0}}
+ else{m.busy=tm;t.dc-=dt;t.dsw-=dt;if(t.dsw<=0){t.dsw=.55;sfxAtk('dig',t.dx);burst(gx,gy,'#ffd84a',3,.5)}if(t.dc<=0){m.busy=0;t.dt=null;t.ds='pick'}}
+}
+function diggerVis(t){
+ const u=t.u;if(!u||!u.dj)return;
+ const run=t.ds=='go',dg=t.ds=='dig';
+ u.dj.position.set((t.dx==null?t.x:t.dx)-t.x,run?Math.abs(Math.sin(tm*12))*.04:0,(t.dy==null?t.y:t.dy)-t.y);
+ u.dj.rotation.y=-(t.da||0);
+ u.dl.forEach((lg,i)=>{lg.rotation.z=run?Math.sin(tm*14+(i?Math.PI:0))*.7:0});
+ u.da.rotation.z=dg?-.9+Math.sin(tm*10.5)*.9:run?Math.sin(tm*14)*.3:0;
+}
+function diggerPct(){const P=[0,.10,.16,.25];let p=0;for(const t of S.tw)if(T[t.k].digger)p+=P[Math.min(3,t.l)];return p}
 function hexVis(t){
  if(t.hxm&&t.m)t.m.remove(t.hxm);
  const g=new THREE.Group(),r=new THREE.Mesh(new THREE.TorusGeometry(.46,.03,6,28),new THREE.MeshBasicMaterial({color:0xb060ff,transparent:true,opacity:.8}));r.rotation.x=Math.PI/2;r.position.y=.05;g.add(r);
@@ -1398,7 +1456,7 @@ function hexClear(){for(const t of S.tw){if(t.hex){t.hex=0;if(t.hxm&&t.m)t.m.rem
 function hexWave(){
  hexClear();
  const ws=S.tw.filter(t=>T[t.k].curse);if(!ws.length)return;
- const pool=S.tw.filter(t=>{const d=T[t.k];return!d.pts&&!d.wall&&!d.buff&&!d.stun&&!d.wolf&&!d.lumber&&!d.dbl&&!d.crow&&!d.slowAir&&!d.curse});
+ const pool=S.tw.filter(t=>{const d=T[t.k];return!d.pts&&!d.wall&&!d.buff&&!d.stun&&!d.wolf&&!d.lumber&&!d.dbl&&!d.crow&&!d.digger&&!d.slowAir&&!d.curse});
  const nm=[];
  for(const w of ws){const n=3+((w.l||1)-1);w.fl=tm;for(let k=0;k<n&&pool.length;k++){const t=pool.splice(Math.floor(Math.random()*pool.length),1)[0];t.hex=1;hexVis(t);nm.push(T[t.k].n)}}
  if(nm.length){sfxHex();toast('Häxan förhäxade '+nm.length+' gubbar: '+nm.join(', ')+' (+50 % skada denna nivå)')}
@@ -1414,7 +1472,7 @@ function leak(c){S.ST.leaks++;let d=c.e.boss?(c.e.mini?3:5):1;c.dead=1;S.leak=1;
  if(d>0){S.lives-=d;baseHit(d)}}
 function update(dt){
  if(S.st=='slut'||S.st=='seger')return;
- CUR=null;heroU(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt)}lumberGrow(dt);
+ CUR=null;heroU(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt);else if(T[t.k].digger)diggerU(t,dt)}lumberGrow(dt);
  pts(dt);rocks(dt);applyBuffs();
  if(S.st=='strid'){
   S.ST.time+=dt;const q=S.q;
@@ -1428,7 +1486,7 @@ function update(dt){
   for(const c of S.en)c.sf=1;
   for(const c of S.en)if(c.burn>0&&!c.dead){c.burn-=dt;const h0=c.hf;CUR=c.bk==null?null:c.bk;hit(c,c.bdps*dt,1,1);CUR=null;c.hf=h0}
   for(const t of S.tw){
-   const d=T[t.k];if(d.wall||d.buff||d.wolf||d.lumber||d.dbl||d.crow)continue;CUR=t.k;
+   const d=T[t.k];if(d.wall||d.buff||d.wolf||d.lumber||d.dbl||d.crow||d.digger)continue;CUR=t.k;
    if(d.stun){
     t.cd-=dt;
     if(t.cd<=0){
@@ -1510,7 +1568,7 @@ function render(){
  hlegs.forEach((g,i)=>{g.rotation.z=mvg?Math.sin(tm*14+(i%2?Math.PI:0)+(i>1?Math.PI*.5:0))*.55:0});
  const pc=$('pt').classList;pc.toggle('dance',!!dn);pc.toggle('happy',hp&&!dn);
  for(const t of S.tw){
-  const d=T[t.k],u=t.u,sw=Math.sin(Math.min(1,(tm-(t.fl||-9))/.35)*Math.PI);if(d.wolf)wolfVis(t);if(d.lumber)lumberVis(t);if(d.crow)crowVis(t);if(t.hxm){t.hxm.rotation.y=tm*2;t.hxm.children[0].material.opacity=.6+.3*Math.sin(tm*4)}
+  const d=T[t.k],u=t.u,sw=Math.sin(Math.min(1,(tm-(t.fl||-9))/.35)*Math.PI);if(d.wolf)wolfVis(t);if(d.lumber)lumberVis(t);if(d.crow)crowVis(t);if(d.digger)diggerVis(t);if(t.hxm){t.hxm.rotation.y=tm*2;t.hxm.children[0].material.opacity=.6+.3*Math.sin(tm*4)}
   t.m.scale.setScalar(Math.min(1,(tm-t.born)/.3+.1)*(d.wall||t.tu?1:(d.lvs?d.lvs[t.l-1]:1+.07*(t.l-1))));
   if(!t.tu&&!d.wall)t.m.scale.y*=1+.025*Math.sin(tm*2.4+t.c);
   if(!d.wall&&t.pl!==t.l){t.pl=t.l;if(t.pg)t.m.remove(t.pg);const pg=new THREE.Group();for(let i=0;i<t.l;i++){const o=new THREE.Mesh(SPH,MPIP);o.scale.setScalar(.04);o.position.set(.45,.05,(i-(t.l-1)/2)*.12);pg.add(o)}t.m.add(pg);t.pg=pg}
@@ -1589,7 +1647,7 @@ function cardList(){
  const hs=S.sel.includes(S.h),ts=selT(),L=[];
  if(hs)L.push({k:'B',i:'🔨',n:'Bygg',a:'build'},{k:'V',i:'💃',n:'Dans',a:'dance'});
  if(ts.length){
-  const up=ts.filter(t=>!T[t.k].wall&&!T[t.k].dbl&&(!T[t.k].branch||t.br)&&t.l<(T[t.k].lumber?3:4)),ab=ts.filter(t=>T[t.k].branch&&!t.br),abc=ab.reduce((a,t)=>a+T[t.k].bcost,0);
+  const up=ts.filter(t=>!T[t.k].wall&&!T[t.k].dbl&&(!T[t.k].branch||t.br)&&t.l<(T[t.k].lumber||T[t.k].digger?3:4)),ab=ts.filter(t=>T[t.k].branch&&!t.br),abc=ab.reduce((a,t)=>a+T[t.k].bcost,0);
   if(up.length)L.push({k:'U',i:'⬆️',n:'Uppgradera',x:up.reduce((a,t)=>a+Math.round(T[t.k].c*.9*t.l),0),a:'up'});
   if(ab.length)L.push({k:'I',i:'🔥',n:'Eldpilar (bra mot vinter)',x:abc,a:'br',br:'fire'},{k:'O',i:'🏹',n:'Långbåge (längre räckvidd, bra mot flyg)',x:abc,a:'br',br:'long'});
   if(ts.some(t=>T[t.k].dbl))L.push({k:'P',i:'🪞',n:'Kopiera en gubbe',a:'cp'});
@@ -1710,7 +1768,7 @@ function enemyInfo(c){
   +`<span style="color:#ffb04a">Svag mot: ${w.join(', ')}</span>`;
 }
 function multi(){
- const ts=selT(),up=ts.filter(t=>!T[t.k].wall&&!T[t.k].dbl&&t.l<(T[t.k].lumber?3:4)).reduce((a,t)=>a+Math.round(T[t.k].c*.9*t.l),0),sv=ts.reduce((a,t)=>a+Math.round(t.sp*.7),0);
+ const ts=selT(),up=ts.filter(t=>!T[t.k].wall&&!T[t.k].dbl&&t.l<(T[t.k].lumber||T[t.k].digger?3:4)).reduce((a,t)=>a+Math.round(T[t.k].c*.9*t.l),0),sv=ts.reduce((a,t)=>a+Math.round(t.sp*.7),0);
  return`<b>${S.sel.length} valda</b><br>${S.sel.map((s,i)=>`<span class="ch" data-j="${i}">${s===S.h?'😈':T[s.k].i+(T[s.k].wall?'':s.l)}</span>`).join('')}<br>${ts.length?`Uppgradera alla: ${up} guld, sälj alla: +${sv}`:''}`;
 }
 function act(e){
@@ -1727,7 +1785,7 @@ function act(e){
  else if(e.a=='sp')S.sp=S.sp%3+1;
  else if(e.a=='cancel'){if(S.menu||S.bt!=null||S.o.length){S.menu='';S.bt=null;cancelOrders()}else S.sel=[S.h]}
  else if(e.a=='menu')S.paused=!S.paused;
- else if(e.a=='up'){let n=0;for(const s of selT()){const c=Math.round(T[s.k].c*.9*s.l);if(!T[s.k].wall&&!T[s.k].dbl&&(!T[s.k].branch||s.br)&&s.l<(T[s.k].lumber?3:4)&&S.gold>=c){S.gold-=c;s.sp+=c;s.l++;n++;if(T[s.k].vis)remodel(s)}}if(!n)toast('Kan inte uppgradera');else sfxPlop(n)}
+ else if(e.a=='up'){let n=0;for(const s of selT()){const c=Math.round(T[s.k].c*.9*s.l);if(!T[s.k].wall&&!T[s.k].dbl&&(!T[s.k].branch||s.br)&&s.l<(T[s.k].lumber||T[s.k].digger?3:4)&&S.gold>=c){S.gold-=c;s.sp+=c;s.l++;n++;if(T[s.k].vis)remodel(s)}}if(!n)toast('Kan inte uppgradera');else sfxPlop(n)}
  else if(e.a=='br'){let n=0;for(const s of selT()){const d=T[s.k];if(d.branch&&!s.br&&S.gold>=d.bcost){S.gold-=d.bcost;s.sp+=d.bcost;s.br=e.br;s.l=2;remodel(s);n++}}toast(n?(e.br=='fire'?'Eldpilar vald!':'Långbåge vald!'):'Inte tillräckligt med guld');if(n)sfxPlop(n)}
  else if(e.a=='cp'){const t=selT().find(x=>T[x.k].dbl);if(t){S.cpm=t;toast('Tryck på gubben du vill kopiera')}}
  else if(e.a=='sell'){let n=0,gs=0;for(const s of selT()){const v=Math.round(s.sp*.7);gs+=v;n++;S.gold+=v;gT.remove(s.m);occ[s.r][s.c]=null;S.tw=S.tw.filter(x=>x!==s)}S.sel=[S.h];dist=bfs();S.v++;if(n)toast('Sålde '+n+(n>1?' objekt':' objekt')+' för +'+gs+' guld')}
