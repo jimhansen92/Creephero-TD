@@ -400,10 +400,10 @@ function pathOf(pts,P){P.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i+
  const outer=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
 const MINEPOS=[[-14,-10.8],[-7,-11.2],[0,-10.8],[7,-11.2],[14,-10.8],[-11,10.8],[-4,11.2],[4,10.8],[11,11.2],[-20.8,-2.6],[-20.8,2.6],[20.8,-2.6],[20.8,2.6],[-10,-12.8],[10,12.6],[-23,0],[23,0]];
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
-function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5,1.175,1.675];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);FOR.m.forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
+function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5,1.4,1.82]:[.3,.95,1.5,1.175,1.675];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);(q.b?FOR.m2:FOR.m).forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
 (function(){
  let sd=5;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
- const N=135,M=40,c1=new THREE.InstancedMesh(new THREE.ConeGeometry(.265,.46,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),c2=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.36,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
+ const N=68,NL=68,M=40,c1=new THREE.InstancedMesh(new THREE.ConeGeometry(.265,.46,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),c2=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.36,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
  const spot=()=>{for(;;){const x=(rnd()*2-1)*(HW+11.5),z=(rnd()*2-1)*(HH+9);if((Math.abs(x)>HW+3.4||Math.abs(z)>HH+3.4)&&!(Math.abs(x)>HW&&Math.abs(Math.abs(z)-5.5)<1.4))return[x,z]}};
  const PL=[],clr=(x,z,r)=>{for(const q of PL)if(Math.hypot(x-q[0],z-q[1])<r+q[2])return false;for(const q of MINEPOS)if(Math.hypot(x-q[0],z-q[1])<r+.9)return false;return true};
  for(let i=0;i<N;i++){const s=.8+rnd()*1.1,rd=.52*s+.12;let x=0,z=0,ok=false;for(let k=0;k<500&&!ok;k++){[x,z]=spot();ok=clr(x,z,rd)}
@@ -420,7 +420,17 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5,1
    PL.push([x,z,rd]);dm.position.set(x,.3*s,z);dm.scale.set(s,s*.78,s*(.85+rnd()*.3));dm.rotation.set(0,rnd()*6,0);dm.updateMatrix();bs.setMatrixAt(i,dm.matrix);
    col.setHSL(.24+rnd()*.1,.4+rnd()*.2,.17+rnd()*.1);bs.setColorAt(i,col);nb++;}
   bs.castShadow=true;bs.receiveShadow=true;bs.frustumCulled=false;sc.add(bs)}
- FOR.m=[trunk,f1,f2,c1,c2];FOR.cap=[c1,c2];for(const m of[c1,c2]){m.visible=false;m.frustumCulled=false;sc.add(m)}
+ {const gr=(r,sy)=>new THREE.SphereGeometry(r,9,7).scale(1,sy,1),cm=new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),
+   t2=new THREE.InstancedMesh(new THREE.CylinderGeometry(.07,.13,.8,6),lam(0x6a4a2c),NL),a2=new THREE.InstancedMesh(gr(.52,.85),lam(0xffffff),NL),b2=new THREE.InstancedMesh(gr(.36,.85),lam(0xffffff),NL),
+   k1=new THREE.InstancedMesh(gr(.4,.32),cm,NL),k2=new THREE.InstancedMesh(gr(.27,.4),cm,NL),col=new THREE.Color();
+  FOR.m2=[t2,a2,b2,k1,k2];const ys=[.4,1,1.5,1.4,1.82];
+  for(let i=0;i<NL;i++){const s=.8+rnd()*.7,rd=.56*s+.12;let x=0,z=0,ok=false;for(let k=0;k<500&&!ok;k++){[x,z]=spot();ok=clr(x,z,rd)}
+   if(!ok){dm.scale.setScalar(.0001);dm.position.set(0,-9,0);dm.updateMatrix();for(const mm of FOR.m2)mm.setMatrixAt(i,dm.matrix);col.setRGB(0,0,0);a2.setColorAt(i,col);b2.setColorAt(i,col);continue}
+   PL.push([x,z,rd]);const ry=rnd()*6;dm.rotation.set(0,ry,0);dm.scale.setScalar(s);FOR.tr.push({x,z,s,ry,g:1,i,b:1});
+   FOR.m2.forEach((mm,k)=>{dm.position.set(x,ys[k]*s,z);dm.updateMatrix();mm.setMatrixAt(i,dm.matrix)});
+   const au=rnd()<.18;au?col.setHSL(.09+rnd()*.05,.7,.4):col.setHSL(.22+rnd()*.1,.5+rnd()*.15,.24+rnd()*.1);a2.setColorAt(i,col);b2.setColorAt(i,col.offsetHSL(0,0,.04))}
+  for(const mm of[t2,a2,b2]){mm.castShadow=true;mm.receiveShadow=true;sc.add(mm)}for(const mm of[k1,k2]){mm.visible=false;mm.frustumCulled=false;sc.add(mm)}}
+ FOR.m=[trunk,f1,f2,c1,c2];FOR.cap=[c1,c2,FOR.m2[3],FOR.m2[4]];for(const m of[c1,c2]){m.visible=false;m.frustumCulled=false;sc.add(m)}
  for(const m of[trunk,f1,f2,rk]){m.castShadow=true;m.receiveShadow=true;sc.add(m)}
 })();
 (function(){
