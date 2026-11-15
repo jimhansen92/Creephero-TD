@@ -288,6 +288,7 @@ const E=[
 {n:'Malanthrope',base:'Zoanthrope',k:1.8,hp:3800,s:.9,g:110,c:.22,a:.35,col:'#c030a0',gl:0xff44cc},
 {n:'Swarmlord-Prime',base:'Lictor',k:2,hp:4200,s:1.6,g:120,c:.2,a:.5,col:'#aa1f4f',ex:SPK.concat(HRN)},
 {n:'Världsormen',base:'Leviatan',snake:28,k:1.2,hp:20000,s:1,g:1500,c:1,nn:1,a:.5,boss:1,col:'#2a6a4a'}];
+const CAMA=.85;
 let S,occ,dist,gk='',gm='',tm=0,tq,sig={},MODE=null,LOWQ=0,SLOW=0,CAMD=20,CZ=1,CX=0,CY=0,FOLLOW=false,CAMLOCK=0,CZT=null,trg=null;
 const lvf=t=>T[t.k].branch?(t.br?t.l-2:0):t.l-1,dmg=t=>T[t.k].d*1.8**lvf(t)*(t.bd||1)*(t.br=='fire'?1.6:1),rng=t=>T[t.k].r+.25*lvf(t)+(t.br=='long'?1.4:0),heroD=()=>Math.round(10+2.5*S.L);
 
@@ -503,7 +504,7 @@ function rs(){
  let lo=8,hi=90;
  for(let i=0;i<22;i++){
   const d=(lo+hi)/2;
-  cam.position.set(0,d*Math.sin(1.05),d*Math.cos(1.05));cam.lookAt(0,0,0);cam.updateProjectionMatrix();cam.updateMatrixWorld();
+  cam.position.set(0,d*Math.sin(CAMA),d*Math.cos(CAMA));cam.lookAt(0,0,0);cam.updateProjectionMatrix();cam.updateMatrixWorld();
   let ok=true;
   for(const[x,z]of[[-1,-1],[1,-1],[-1,1],[1,1]]){
    const v=new THREE.Vector3(x*(HW+.4),0,z*(HH+.4)).project(cam),px=(v.x+1)/2*w,py=(1-v.y)/2*h-sh;
@@ -2068,7 +2069,7 @@ function baseDmg(dt){
  SHK=Math.max(0,SHK-dt*1.8);
 }
 function camSet(){
- const a=1.05,d=CAMD/CZ,mx=Math.max(0,HW-HW/CZ)+2,my=Math.max(0,HH-HH/CZ)+2;
+ const a=CAMA,d=CAMD/CZ,mx=Math.max(0,HW-HW/CZ)+2,my=Math.max(0,HH-HH/CZ)+2;
  CX=Math.max(-mx,Math.min(mx,CX));CY=Math.max(-my,Math.min(my,CY));
  cam.position.set(CX,d*Math.sin(a),CY+d*Math.cos(a));cam.lookAt(CX,0,CY);
  if(SHK>0){const q=SHK*SHK*.35;cam.position.x+=(Math.random()-.5)*q;cam.position.y+=(Math.random()-.5)*q;cam.position.z+=(Math.random()-.5)*q}
@@ -2083,7 +2084,7 @@ function camStep(){
 function camGesture(){
  const q=[...ptrs.values()],d=Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y)||1,mx=(q[0].x+q[1].x)/2,my=(q[0].y+q[1].y)/2;
  const k=2*(CAMD/CZ)*Math.tan(cam.fov*Math.PI/360)/cv.clientHeight;
- CX-=(mx-gst.mx)*k;CY-=(my-gst.my)*k/.87;
+ CX-=(mx-gst.mx)*k;CY-=(my-gst.my)*k/Math.sin(CAMA);
  CZT=null;CZ=Math.max(1,Math.min(7,gst.z*d/gst.d));FOLLOW=false;CAMLOCK=0;gst.mx=mx;gst.my=my;
 }
 let dr=null,pan=null;
@@ -2156,7 +2157,7 @@ cv.onpointerdown=e=>{
  dr={x:e.clientX,y:e.clientY,on:0};cv.setPointerCapture(e.pointerId);
 };
 cv.onpointermove=e=>{
- if(pan){const k=2*(CAMD/CZ)*Math.tan(cam.fov*Math.PI/360)/cv.clientHeight;CX-=(e.clientX-pan.x)*k;CY-=(e.clientY-pan.y)*k/.87;pan.x=e.clientX;pan.y=e.clientY;return}
+ if(pan){const k=2*(CAMD/CZ)*Math.tan(cam.fov*Math.PI/360)/cv.clientHeight;CX-=(e.clientX-pan.x)*k;CY-=(e.clientY-pan.y)*k/Math.sin(CAMA);pan.x=e.clientX;pan.y=e.clientY;return}
  const p=ground(e);S.hov=p?[Math.floor(p.x),Math.floor(p.y)]:null;
  if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(gst&&ptrs.size>1){camGesture();return}
