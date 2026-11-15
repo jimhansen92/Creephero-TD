@@ -492,7 +492,7 @@ const AQ=[];
  const ins=(p,x,z)=>{let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[xi,zi]=p[i],[xj,zj]=p[j];if((zi>z)!=(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)c=!c}return c};
  const okp=(x,z,m)=>{if(Math.abs(x)>HW-1.5&&Math.abs(Math.abs(z)-6.5)<1.1)return false;for(const[a,b]of[[m,0],[-m,0],[0,m],[0,-m]]){if(!ins(SH,x+a,z+b)||ins(RIM,x+a,z+b))return false}return true};
  const pts=(n,m,minD,arr)=>{const o=[];let t=0;while(o.length<n&&t++<6000){const x=(rnd()*2-1)*(HW+3.2),z=(rnd()*2-1)*(HH+3.2);if(!okp(x,z,m))continue;if(arr.concat(o).some(q=>Math.hypot(q[0]-x,q[1]-z)<minD))continue;o.push([x,z])}return o};
- const pads=pts(70,.35,.75,[]),weeds=pts(46,.2,.9,pads);
+ const pads=pts(10,.35,2.5,[]),weeds=pts(46,.2,.9,pads);
  const pg=new THREE.CircleGeometry(.3,14,.5,5.5).rotateX(-Math.PI/2),pm=new THREE.InstancedMesh(pg,new THREE.MeshLambertMaterial({color:0xffffff,side:THREE.DoubleSide}),pads.length),col=new THREE.Color();
  pads.forEach((p,i)=>{const s=.6+rnd()*.8;dm.position.set(p[0],-.345,p[1]);dm.scale.set(s,1,s);dm.rotation.set(0,rnd()*6,0);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.5,.22+rnd()*.1);pm.setColorAt(i,col)});
  const fl=pads.filter(()=>rnd()<.25),fm=new THREE.InstancedMesh(new THREE.SphereGeometry(.07,7,5),new THREE.MeshLambertMaterial({color:0xffb0cc,emissive:0x4a1a28}),Math.max(1,fl.length));
