@@ -452,10 +452,22 @@ const iceM=(()=>{const c=document.createElement('canvas');c.width=c.height=128;c
 const BRG=[];
 for(const s of[-1,1])for(const row of[1,12]){
  const g=new THREE.Group(),L=3.5,cxw=s*(HW+1.45),zw=row+.5-HH;g.position.set(cxw,0,zw);
- const dk=new THREE.Mesh(new THREE.BoxGeometry(L,.07,.95),lam(0x8a6038));dk.position.y=0;g.add(dk);
- for(let i=0;i<=11;i++){const p=new THREE.Mesh(new THREE.BoxGeometry(.03,.075,.97),lam(0x4a2e16));p.position.set(-L/2+i*L/11,.002,0);g.add(p)}
- for(const z of[-.47,.47]){const rl=new THREE.Mesh(new THREE.BoxGeometry(L,.04,.05),lam(0x5a3a1c));rl.position.set(0,.3,z);g.add(rl);
-  for(let i=0;i<=4;i++){const po=new THREE.Mesh(new THREE.BoxGeometry(.06,.34,.06),lam(0x5a3a1c));po.position.set(-L/2+.1+i*(L-.2)/4,.17,z);g.add(po)}}
+ const bx=(w,h,d,c,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),lam(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
+ const cy=(r,h,c,x,y,z,seg)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.1,h,seg||7),lam(c));m.position.set(x,y,z);m.castShadow=true;g.add(m);return m};
+ const NP=15,pw=L/NP;let q=(row*7+s*3+11)|0;const rr=()=>(q=(q*16807)%2147483647)/2147483647;
+ for(const z of[-.34,.34])bx(L+.1,.1,.09,0x3a2412,0,-.09,z);
+ bx(L+.1,.05,.09,0x3a2412,0,-.09,0);
+ for(let k=0;k<NP;k++){const sh=rr(),c=(0x8a+(sh*28|0)<<16)|(0x58+(sh*20|0)<<8)|(0x30+(sh*10|0)),w=pw-.015-rr()*.012;
+  const pl=bx(w,.055,.9+rr()*.06,c,-L/2+pw*(k+.5),(rr()-.5)*.012,(rr()-.5)*.03);pl.rotation.y=(rr()-.5)*.03;
+  for(const z of[-.4,.4])bx(.022,.012,.022,0x2a1a0e,-L/2+pw*(k+.5),.032+pl.position.y,z)}
+ for(const px of[-1.05,0,1.05])for(const z of[-.46,.46]){cy(.065,.85,0x4a3018,px,-.2,z);cy(.075,.04,0x2a1a0e,px,.22,z,8);const w=new THREE.Mesh(new THREE.TorusGeometry(.13,.012,5,14),new THREE.MeshBasicMaterial({color:0xcfe6f2,transparent:true,opacity:.4}));w.rotation.x=Math.PI/2;w.position.set(px,-.35,z);g.add(w)}
+ for(const e of[-1,1]){bx(.55,.1,1.15,0x6f6a60,e*(L/2-.1),-.07,0);bx(.4,.06,1.0,0x7e786c,e*(L/2-.1),-.01,0);for(const z of[-.6,.6])bx(.18,.18,.18,0x6f6a60,e*(L/2-.1),.03,z)}
+ for(const z of[-.47,.47]){
+  bx(L-.1,.045,.055,0x5a3a1c,0,.32,z);bx(L-.1,.03,.04,0x4a2e16,0,.18,z);
+  for(let k=0;k<=5;k++){const x=-L/2+.2+k*(L-.4)/5;cy(.032,.36,0x5a3a1c,x,.17,z,6);const cp=new THREE.Mesh(new THREE.SphereGeometry(.045,6,5),lam(0x6a4a28));cp.position.set(x,.37,z);g.add(cp)}
+  for(let k=0;k<5;k++){const x=-L/2+.2+(k+.5)*(L-.4)/5;const rp=bx((L-.4)/5-.03,.012,.012,0xb89a62,x,.25-.01*Math.sin((k+.5)*Math.PI/5),z)}
+  for(const e of[-1,1]){const lx=e*(L/2-.2);const lt=new THREE.Mesh(new THREE.BoxGeometry(.09,.11,.09),new THREE.MeshBasicMaterial({color:0xffc864}));lt.position.set(lx,.48,z);g.add(lt);bx(.12,.02,.12,0x2a1a0e,lx,.55,z);bx(.12,.02,.12,0x2a1a0e,lx,.42,z)}
+ }
  sc.add(g);BRG.push({y:row+.5,xi:s<0?.1:COLS-.1,xo:s<0?-3:COLS+3,s});
 }
 function routeTo(px,py,tx,ty){
