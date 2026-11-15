@@ -436,12 +436,12 @@ const bcn=new THREE.Mesh(new THREE.CylinderGeometry(.22,.4,6,16,1,true),new THRE
 const bring=new THREE.Mesh(new THREE.TorusGeometry(.7,.03,6,32),new THREE.MeshBasicMaterial({color:0xfff2a0,transparent:true,opacity:.8}));bring.rotation.x=Math.PI/2;bring.position.set(BASE[0]+.5-HW,.9,BASE[1]+.5-HH);sc.add(bring);
 const portals=SPW.map(p=>{const m=new THREE.Mesh(SPH,new THREE.MeshBasicMaterial({color:0xc45fd0,transparent:true,opacity:.7}));m.position.set(p[0]+.5-HW,.6,p[1]+.5-HH);sc.add(m);return m});
 const prings=[];SPW.forEach(p=>{for(let k=0;k<2;k++){const r=new THREE.Mesh(new THREE.TorusGeometry(.55+k*.2,.04,6,28),new THREE.MeshBasicMaterial({color:k?0xff80ff:0xc45fd0,transparent:true,opacity:.8}));r.position.set(p[0]+.5-HW,.6,p[1]+.5-HH);r.rotation.x=Math.PI/2*(k?.35:.65);sc.add(r);prings.push(r)}});
-const hm=new THREE.Group();
+const hm=new THREE.Group(),hhorse=new THREE.Group(),hrider=new THREE.Group(),hrl=[],hfl=[];hm.add(hhorse,hrider);
 const hlegs=[],hwings=[];let hcape,htail;
 const arms=[];
 {
  const M=(c,e)=>new THREE.MeshLambertMaterial(e?{color:c,emissive:e}:{color:c}),BX=(w,h,d)=>new THREE.BoxGeometry(w,h,d),CYb=(a,b,h,n)=>new THREE.CylinderGeometry(a,b,h,n||8);
- const put=(g,m,x,y,z,rx,ry,rz,par)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.rotation.set(rx||0,ry||0,rz||0);(par||hm).add(o);return o};
+ let PAR=hhorse;const put=(g,m,x,y,z,rx,ry,rz,par)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.rotation.set(rx||0,ry||0,rz||0);(par||PAR).add(o);return o};
  const horse=M(0xf2efe8),horseD=M(0xd9d4c8),mane=M(0x6a5a48),hoof=M(0x2a241e),steel=M(0xb4bcc8),steelD=M(0x7e8896),gold=M(0xd4a84a,0x3a2a08),red=M(0xa8221c),blue=M(0x2a4f9a),skin=M(0xe0b890),leather=M(0x5a3a22);
  // häst: kropp, bringa, hals, huvud
  put(SPH,horse,0,.4,0).scale.set(.44,.2,.19);
@@ -455,14 +455,16 @@ const arms=[];
  // man
  put(BX(.05,.2,.03),mane,.3,.67,0,0,0,-.75);put(BX(.06,.12,.02),mane,.4,.78,0,0,0,-.3);
  // svans
- htail=new THREE.Group();htail.position.set(-.38,.5,0);put(CYb(.025,.045,.34,6),mane,-.02,-.15,0,0,0,.3,htail);put(SPH,mane,-.08,-.33,0,0,0,0,htail).scale.set(.05,.08,.04);hm.add(htail);
+ htail=new THREE.Group();htail.position.set(-.38,.5,0);put(CYb(.025,.045,.34,6),mane,-.02,-.15,0,0,0,.3,htail);put(SPH,mane,-.08,-.33,0,0,0,0,htail).scale.set(.05,.08,.04);hhorse.add(htail);
  // ben (leder för spring)
- for(const[x,z]of[[.26,.1],[.26,-.1],[-.22,.1],[-.22,-.1]]){const g=new THREE.Group();g.position.set(x,.3,z);put(CYb(.035,.025,.3,6),horseD,0,-.15,0,0,0,0,g);put(CYb(.035,.04,.05,6),hoof,0,-.3,0,0,0,0,g);hm.add(g);hlegs.push(g)}
+ for(const[x,z]of[[.26,.1],[.26,-.1],[-.22,.1],[-.22,-.1]]){const g=new THREE.Group();g.position.set(x,.3,z);put(CYb(.035,.025,.3,6),horseD,0,-.15,0,0,0,0,g);put(CYb(.035,.04,.05,6),hoof,0,-.3,0,0,0,0,g);hhorse.add(g);hlegs.push(g)}
  // sadel + schabrak
  put(BX(.28,.02,.42),red,0,.58,0);put(BX(.26,.015,.43),gold,0,.572,0);put(BX(.12,.06,.2),leather,-.04,.62,0);
  for(const s2 of[-1,1]){put(BX(.03,.1,.02),leather,.02,.52,s2*.2);put(BX(.06,.02,.04),steelD,.02,.46,s2*.2)}
  // ryttare: ben, överkropp, huvud
- for(const s2 of[-1,1]){put(CYb(.035,.03,.22,6),steel,.02,.55,s2*.17,0,0,.3)}
+ PAR=hrider;
+ for(const s2 of[-1,1]){hrl.push(put(CYb(.035,.03,.22,6),steel,.02,.55,s2*.17,0,0,.3))}
+ for(const s2 of[-1,1]){const g=new THREE.Group();g.position.set(0,.43,s2*.07);put(CYb(.04,.035,.43,6),steel,0,-.215,0,0,0,0,g);put(BX(.12,.04,.07),steelD,.02,-.44,0,0,0,0,g);hm.add(g);g.visible=false;hfl.push(g)}
  put(CYb(.11,.09,.3,8),steel,0,.78,0);put(BX(.2,.03,.2),gold,0,.65,0);
  put(BX(.02,.22,.1),gold,.092,.8,0);
  put(SPH,steel,0,.97,0).scale.setScalar(.12);
@@ -472,12 +474,12 @@ const arms=[];
  put(new THREE.ConeGeometry(.04,.2,6),red,-.04,1.18,0,0,0,.5);
  put(SPH,steelD,0,.9,.0).scale.set(.13,.04,.13);
  // mantel
- hcape=new THREE.Group();hcape.position.set(-.1,.9,0);put(BX(.015,.38,.22),red,0,-.19,0,0,0,0,hcape);put(BX(.012,.04,.23),gold,0,-.38,0,0,0,0,hcape);hm.add(hcape);
+ hcape=new THREE.Group();hcape.position.set(-.1,.9,0);put(BX(.015,.38,.22),red,0,-.19,0,0,0,0,hcape);put(BX(.012,.04,.23),gold,0,-.38,0,0,0,0,hcape);hrider.add(hcape);
  // armar (animeras) – höger bär lans, vänster sköld
  for(const sx of[-1,1]){const g=new THREE.Group();g.position.set(0,.86,sx*.15);put(CYb(.035,.03,.26,6),steel,0,-.13,0,0,0,0,g);put(SPH,steelD,0,-.27,0,0,0,0,g).scale.setScalar(.04);
   if(sx==1){put(CYb(.012,.014,1.1,5),leather,.45,-.27,0,0,0,Math.PI/2,g);put(new THREE.ConeGeometry(.03,.14,6),steel,1.02,-.27,0,0,0,-Math.PI/2,g);const fl=put(BX(.14,.07,.01),red,.85,-.24,0,0,0,0,g)}
   else{put(CYb(.13,.13,.02,10),blue,.04,-.15,-.06,Math.PI/2,0,0,g);put(BX(.02,.2,.03),gold,.04,-.15,-.075,0,0,0,g);put(BX(.02,.03,.16),gold,.04,-.12,-.075,0,0,0,g);put(CYb(.135,.135,.015,10),steel,.04,-.15,-.07,Math.PI/2,0,0,g)}
-  hm.add(g);arms.push(g)}
+  hrider.add(g);arms.push(g)}
 }
 const hglow=new THREE.Mesh(GLG,GLM);hglow.position.y=.05;hglow.scale.set(2.2,1,2.2);hm.add(hglow);cast(hm);hm.scale.setScalar(.8);
 sc.add(hm);
@@ -994,7 +996,7 @@ function beam(ax,ay,bx,by,col,w,h0){
 function reset(){
  {const l=document.getElementById('lb');if(l)l.classList.remove('on')}
  CAMLOCK=0;CZT=null;clearAll();treesReset();occ=Array.from({length:ROWS},()=>Array(COLS).fill(null));
- S={inv:[],bx:0,gold:400,lives:20,L:1,score:0,st:'bygg',tw:[],en:[],fx:[],pt:[],rk:[],o:[],q:null,sel:[],menu:'',dance:0,happy:0,bt:null,sp:1,hov:null,v:0,paused:0,h:{x:BASE[0]+.5,y:BASE[1]+2.5,go:null,cd:0,a:0},sh:0,ST:{k:{},lv:{},gk:0,gb:0,gi:0,kills:0,leaks:0,built:0,time:0,dmg:0}};S.sel=[S.h];
+ S={inv:[],bx:0,gold:400,lives:20,L:1,score:0,st:'bygg',tw:[],en:[],fx:[],pt:[],rk:[],o:[],q:null,sel:[],menu:'',dance:0,happy:0,bt:null,sp:1,hov:null,v:0,paused:0,h:{x:BASE[0]+.5,y:BASE[1]+2.5,go:null,cd:0,a:0},sh:0,hlv:1,ST:{k:{},lv:{},gk:0,gb:0,gi:0,kills:0,leaks:0,built:0,time:0,dmg:0}};S.sel=[S.h];
  dist=bfs();gk='';
 }
 function start(){
@@ -1304,6 +1306,9 @@ function orderBuild(c,r){
  S.o.push(o);S.h.go=null;S.dance=0;
 }
 function cancelOrders(){S.o.forEach(o=>gO.remove(o.m));S.o=[];S.h.go=null}
+const HS=()=>{const L=S.hlv||1;return L>=3?{spd:4.5,rng:6.5,cd:1,dm:2.6,sp:1}:L==2?{spd:4.5,rng:2.8,cd:.7,dm:1.6}:{spd:2.8,rng:1.5,cd:1.5,dm:1}};
+function spearFx(x0,y0,x1,y1){const m=new THREE.Group(),sh=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.9,5),lam(0x7a4a22));sh.rotation.z=Math.PI/2;m.add(sh);const tp=new THREE.Mesh(new THREE.ConeGeometry(.045,.16,6),lam(0xc8d0d8));tp.rotation.z=-Math.PI/2;tp.position.x=.52;m.add(tp);m.rotation.y=-Math.atan2(y1-y0,x1-x0);m.position.set(x0-HW,.9,y0-HH);gF.add(m);(S.hs||(S.hs=[])).push({m,x0,y0,x1,y1,t:0,L:.22})}
+function spearStep(dt){if(!S.hs)return;for(const q of S.hs){q.t+=dt;const k=Math.min(1,q.t/q.L);q.m.position.set(q.x0+(q.x1-q.x0)*k-HW,.9-.25*k,q.y0+(q.y1-q.y0)*k-HH);if(q.t>=q.L+.25){gF.remove(q.m);q.d=1}}S.hs=S.hs.filter(q=>!q.d)}
 function heroU(dt){
  const h=S.h,o=S.o[0];let tx=null,ty=null;
  if(o||h.go)S.dance=0;
@@ -1313,13 +1318,13 @@ function heroU(dt){
  }else if(h.go){tx=h.go.x;ty=h.go.y}
  if(tx!=null){
   const dx=tx-h.x,dy=ty-h.y,L=Math.hypot(dx,dy);
-  if(L>.05){const m=Math.min(L,4.5*dt);h.x+=dx/L*m;h.y+=dy/L*m;h.a=Math.atan2(dy,dx)}else h.go=null;
+  if(L>.05){const m=Math.min(L,HS().spd*dt);h.x+=dx/L*m;h.y+=dy/L*m;h.a=Math.atan2(dy,dx)}else h.go=null;
  }
  h.cd-=dt;
  if(h.cd<=0&&S.st=='strid'){
-  let b=null,bd=2.8;
+  const hs=HS();let b=null,bd=hs.rng;
   for(const c of S.en){const d=Math.hypot(c.x-h.x,c.y-h.y);if(!c.dead&&d<bd){bd=d;b=c}}
-  if(b){h.cd=.7;sfxAtk('hero',h.x);CUR='h';hit(b,heroD(),0);CUR=null;S.fx.push({m:beam(h.x,h.y,b.x,b.y,0xffe9a0,.04),t:.1,o:1,L:.1})}
+  if(b){h.cd=hs.cd;h.sw=tm;sfxAtk('hero',h.x);CUR='h';hit(b,Math.round(heroD()*hs.dm),0);CUR=null;if(hs.sp)spearFx(h.x,h.y,b.x,b.y);else S.fx.push({m:beam(h.x,h.y,b.x,b.y,0xffe9a0,.04),t:.1,o:1,L:.1})}
  }
 }
 function stepE(c,dt){
@@ -1472,7 +1477,7 @@ function leak(c){S.ST.leaks++;let d=c.e.boss?(c.e.mini?3:5):1;c.dead=1;S.leak=1;
  if(d>0){S.lives-=d;baseHit(d)}}
 function update(dt){
  if(S.st=='slut'||S.st=='seger')return;
- CUR=null;heroU(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt);else if(T[t.k].digger)diggerU(t,dt)}lumberGrow(dt);
+ CUR=null;heroU(dt);spearStep(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt);else if(T[t.k].digger)diggerU(t,dt)}lumberGrow(dt);
  pts(dt);rocks(dt);applyBuffs();
  if(S.st=='strid'){
   S.ST.time+=dt;const q=S.q;
@@ -1563,7 +1568,8 @@ function render(){
  hm.position.y=dn?Math.abs(Math.sin(tm*8))*.15:hp?Math.abs(Math.sin(tm*10))*.2:mvg?Math.abs(Math.sin(tm*12))*.07:Math.sin(tm*2)*.012+.012;
  if(dn){arms[0].rotation.z=-(2.4+Math.sin(tm*10)*.5);arms[1].rotation.z=2.4+Math.sin(tm*10+1.5)*.5}
  else if(hp){arms[0].rotation.z=-2.7;arms[1].rotation.z=2.7}
- else{arms[0].rotation.z=-.25;arms[1].rotation.z=.25}
+ else{arms[0].rotation.z=-.25;arms[1].rotation.z=.25-.9*Math.sin(Math.min(1,(tm-(h.sw||-9))/.3)*Math.PI)}
+ {const HL=S.hlv||1;hhorse.visible=HL>=2;hrider.position.y=HL>=2?0:-.2;hrl.forEach(o=>{o.visible=HL>=2});hfl.forEach((g,i)=>{g.visible=HL<2;g.rotation.z=mvg?Math.sin(tm*12+(i?Math.PI:0))*.6:0})}
  hcape.rotation.z=.12+(mvg?.3+.12*Math.sin(tm*12):.04*Math.sin(tm*2));htail.rotation.y=Math.sin(tm*(mvg?8:2))*(mvg?.45:.25);htail.rotation.z=mvg?.25:0;
  hlegs.forEach((g,i)=>{g.rotation.z=mvg?Math.sin(tm*14+(i%2?Math.PI:0)+(i>1?Math.PI*.5:0))*.55:0});
  const pc=$('pt').classList;pc.toggle('dance',!!dn);pc.toggle('happy',hp&&!dn);
@@ -1733,8 +1739,8 @@ function openBox(){
  if(S.bx)return;
  if(S.gold<BOXC){toast('Inte tillräckligt med guld');return}
  if(S.score<BOXP){toast('Kräver '+BOXP.toLocaleString('sv-SE')+' poäng');return}
- const IT=i=>i==='aura'?AURA:i==='gold'?{i:'🪙',n:'Guld',t:''}:T[i];
- const pool=T.map((d,i)=>d.pts?i:-1).filter(i=>i>=0);pool.push('aura','gold');const w=pool.map(()=>1),tot=w.length;
+ const IT=i=>i==='hero'?((S.hlv||1)<2?{i:'🐴',n:'Häst till hjälten',t:'Hjälten får en häst: snabbare, längre räckvidd och mer skada!'}:{i:'🔱',n:'Spjutkastning',t:'Hjälten kan nu kasta spjut med lång räckvidd och stor skada!'}):i==='aura'?AURA:i==='gold'?{i:'🪙',n:'Guld',t:''}:T[i];
+ const pool=T.map((d,i)=>d.pts?i:-1).filter(i=>i>=0);pool.push('aura','gold');if((S.hlv||1)<3)pool.push('hero');const w=pool.map(()=>1),tot=w.length;
  let r=Math.random()*tot,res=pool[pool.length-1];for(let j=0;j<pool.length;j++){r-=w[j];if(r<=0){res=pool[j];break}}
  S.gold-=BOXC;S.score-=BOXP;S.bx=1;S.menu='';sync();sfxBoxStart();
  const SS=S,el=$('bx');let n=0,N=16;
@@ -1743,7 +1749,7 @@ function openBox(){
   if(S!==SS){el.className='';return}
   if(n<N){const d=IT(pool[(n+pool.length-1)%pool.length]);el.innerHTML=`<div class="bi">${d.i}</div><div class="bn">???</div><div class="bs">Mystery box öppnas...</div>`;sfxTick(n/N);n++;setTimeout(step,60+n*n*1.4)}
   else{const ga=1000,d=res==='gold'?{i:'💰',n:ga+' guld!',t:'Du vann guld i Mystery box!'}:IT(res);el.innerHTML=`<div class="bi">${d.i}</div><div class="bn">${d.n}!</div><div class="bs">${d.t}</div>`;el.className='on win';sfxBoxWin();
-   if(res==='gold'){S.gold+=ga;S.ST.gb+=ga;sfxInterest();setTimeout(sfxInterest,350);setTimeout(sfxInterest,700);toast('+'+ga+' guld!')}else if(res==='aura'){S.sh=Math.min(SHMAX,(S.sh||0)+10);sfxAuraGain();AF=1;toast('Skyddsaura! Sköld: '+S.sh+(S.sh>=SHMAX?' (max)':''))}else{S.inv.push(res);S.bt=res;toast('Placera din '+d.n+' (gratis)')}
+   if(res==='gold'){S.gold+=ga;S.ST.gb+=ga;sfxInterest();setTimeout(sfxInterest,350);setTimeout(sfxInterest,700);toast('+'+ga+' guld!')}else if(res==='hero'){S.hlv=Math.min(3,(S.hlv||1)+1);S.happy=tm+2;sfxAuraGain();toast('Hjälten har nu nivå '+S.hlv+'!')}else if(res==='aura'){S.sh=Math.min(SHMAX,(S.sh||0)+10);sfxAuraGain();AF=1;toast('Skyddsaura! Sköld: '+S.sh+(S.sh>=SHMAX?' (max)':''))}else{S.inv.push(res);S.bt=res;toast('Placera din '+d.n+' (gratis)')}
    S.menu='';S.dance=0;sync();setTimeout(()=>{el.className='';if(S===SS)S.bx=0},2600)}
  };
  step();
@@ -1815,7 +1821,7 @@ function sync(){
  else if(S.sel.length>1)h=multi();
  else if(!S.sel.length)h='<i>Inget valt. Tryck på hjälten eller dra en ruta runt byggnader.</i>';
  else if(sl&&sl!==S.h)h=detail(sl.k,sl.l,sl)+(T[sl.k].rock?'<br><span style="color:#c07aff">Stenkast: '+(sl.rc>0?'klar om '+Math.ceil(sl.rc)+' s':'REDO')+'</span>':'')+(sl.bf>1?'<br><span style="color:#ffd84a">Buff: +'+Math.round((sl.bf-1)*100)+' % attackspeed, +'+Math.round((sl.bd-1)*100)+' % skada</span>':'')+'<br><i>Sälj för +'+Math.round(sl.sp*.7)+' guld (Delete)</i>';
- else h=`<b>Riddaren på hästen</b> (hjälte)<br>Skada ${heroD()}, fart 4.5<br><i>Högerklicka på marken för att gå. Tryck på hammaren (B) för att bygga. Dra en ruta för att markera flera.</i>`;
+ else h=`<b>${['Riddaren till fots','Riddaren på hästen','Riddaren med spjut'][(S.hlv||1)-1]}</b> (hjälte, nivå ${S.hlv||1} av 3)<br>Skada ${Math.round(heroD()*HS().dm)}, fart ${HS().spd}, räckvidd ${HS().rng}${HS().sp?' (kastar spjut)':''}<br>${(S.hlv||1)<3?'<small>Nästa nivå kommer ur Mystery box.</small><br>':''}<i>Högerklicka på marken för att gå. Tryck på hammaren (B) för att bygga. Dra en ruta för att markera flera.</i>`;
  p=S.base?`<svg viewBox="0 0 60 60" style="width:100%;height:auto"><polygon points="8,54 12,46 48,46 52,54" fill="#4a463f"/><polygon points="12,46 15,40 45,40 48,46" fill="#66625a"/><rect x="21" y="18" width="18" height="22" fill="#8a867a"/><rect x="20" y="16" width="20" height="3" fill="#4a463f"/><rect x="20" y="13" width="3" height="4" fill="#66625a"/><rect x="26" y="13" width="3" height="4" fill="#66625a"/><rect x="31" y="13" width="3" height="4" fill="#66625a"/><rect x="37" y="13" width="3" height="4" fill="#66625a"/><polygon points="30,3 21,13 39,13" fill="#c9a24a"/><rect x="29" y="0" width="2" height="5" fill="#e0c070"/><rect x="27.5" y="1.5" width="5" height="1.6" fill="#e0c070"/><rect x="27" y="24" width="6" height="9" rx="3" fill="#fff2a0"/><rect x="10" y="32" width="5" height="8" fill="#8a1f1a"/><rect x="45" y="32" width="5" height="8" fill="#8a1f1a"/><circle cx="12" cy="30" r="3" fill="#ff8a2a"/><circle cx="48" cy="30" r="3" fill="#ff8a2a"/></svg><small>${S.lives} / 20</small>`:S.sel.includes(S.h)?FACE:S.sel.length>1?`<div class="pi">👥</div><small>${S.sel.length} valda</small>`:sl?`<img src="${T[sl.k].img}" style="width:100%" alt=""><small>nivå ${sl.l}</small>`:'<div class="pi">😈</div><small>700 / 700</small><small>270 / 270</small>';
  setH('inf',h);setH('pt',p);flyR();fitMenu();
  setH('cd',cardList().map((x,i)=>x?`<button class="cb${x.bt!=null&&S.bt===x.bt||x.a=='build'&&(S.menu||S.bt!=null)||x.a=='dance'&&S.dance?' on':''}${x.x!=null&&S.gold<x.x&&(x.bt!=null||x.a=='up'||x.a=='br')?' poor':''}" data-i="${i}" title="${x.n}"><span class="ic">${x.i}</span><span class="hk">${x.k}</span>${x.x!=null?`<em>${x.x}</em>`:''}</button>`:'<div></div>').join(''));
