@@ -1383,7 +1383,7 @@ function sfxAtk(k,x){
    case 'dragon':N('lowpass',900,250,.45,.14);T('sawtooth',100,55,.4,.08,0,[18,5]);break;
    case 'crow':T('sawtooth',900,420,.14,.1,0,[18,5]);N('bandpass',2200,1200,.08,.06,.02,2);break;
    case 'shark':N('lowpass',1200,300,.25,.12);N('bandpass',2500,900,.15,.06,.02,2);T('sine',140,60,.18,.1);break;
-   case 'dig':T('triangle',1900,1300,.06,.03);N('highpass',5000,3000,.05,.02);break;
+   case 'dig':T('triangle',1100,800,.05,.011);N('highpass',3500,2000,.04,.006);break;
    case 'lumber':N('bandpass',1400,500,.07,.05,0,2);T('triangle',220,110,.09,.04);break;
    case 'wolf':T('sawtooth',170,80,.18,.12,0,[32,12]);N('bandpass',2000,800,.07,.1,.02,2);T('sine',90,50,.1,.1,.05);break;
    case 'hero':T('sawtooth',500,1300,.09,.05);N('highpass',4000,6000,.08,.04);break;
@@ -1684,7 +1684,7 @@ function diggerU(t,dt){
  const m=t.dt;if(!m){t.ds='pick';return}
  const gx=m.x+HW,gy=m.z+HH,dx=gx-t.dx,dy=gy-t.dy,L=Math.hypot(dx,dy);t.da=Math.atan2(dy,dx);
  if(t.ds=='go'){m.busy=tm;if(L>.8){const w=routeTo(t.dx,t.dy,gx,gy),wx=w[0]-t.dx,wy=w[1]-t.dy,wl=Math.hypot(wx,wy)||1,fin=w[0]===gx&&w[1]===gy;t.da=Math.atan2(wy,wx);const k=Math.min(3.2*dt,fin?L-.7:wl);t.dx+=wx/wl*k;t.dy+=wy/wl*k}else{t.ds='dig';t.dc=7;t.dsw=0}}
- else{m.busy=tm;t.dc-=dt;t.dsw-=dt;if(t.dsw<=0){t.dsw=.55;sfxAtk('dig',t.dx);burst(gx,gy,'#ffd84a',3,.5)}if(t.dc<=0){m.busy=0;t.dt=null;t.ds='pick'}}
+ else{m.busy=tm;t.dc-=dt;t.dsw-=dt;if(t.dsw<=0){t.dsw=.8;sfxAtk('dig',t.dx);burst(gx,gy,'#ffd84a',3,.5)}if(t.dc<=0){m.busy=0;t.dt=null;t.ds='pick'}}
 }
 function diggerVis(t){
  const u=t.u;if(!u||!u.dj)return;
