@@ -375,13 +375,13 @@ const tc=document.createElement('canvas');tc.width=1904;tc.height=784;
  const ev=b.createRadialGradient(W/2,H/2,H*.5,W/2,H/2,W*.62);ev.addColorStop(0,'rgba(0,0,0,0)');ev.addColorStop(1,'rgba(0,0,0,.3)');b.fillStyle=ev;b.fillRect(0,0,W,H);
  {const id=b.getImageData(0,0,W,H),D=id.data,hs=(x,z)=>{let h=(x*374761393+z*668265263)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967295},
   vn=(x,z)=>{const xi=Math.floor(x),fx=x-xi,u=fx*fx*(3-2*fx);return hs(xi,z)*(1-u)+hs(xi+1,z)*u},
-  ins=(s,z)=>(vn(s/70,z)*.55+vn(s/22,z+9)*.3+vn(s/8,z+19)*.15)*30+2,RAD=46;
+  ins=(s,z)=>(vn(s/70,z)*.55+vn(s/22,z+9)*.3+vn(s/8,z+19)*.15)*13+1,RAD=26;
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
    const dl=x,dr=W-1-x,dt=y,db=H-1-y,m=Math.min(dl,dr,dt,db);if(m>60)continue;
    const k=(y*W+x)*4;
    let cut=Math.min(dl-ins(y,1),dr-ins(y,2),dt-ins(x,3),db-ins(x,4));
    const cx=Math.min(dl,dr),cy=Math.min(dt,db);
-   if(cx<RAD&&cy<RAD){const q=RAD-Math.hypot(RAD-cx,RAD-cy);cut=Math.min(cut,q-ins(x+y,5)*.4)}
+   if(cx<RAD&&cy<RAD){const q=RAD-Math.hypot(RAD-cx,RAD-cy);cut=Math.min(cut,q-ins(x+y,5)*.3)}
    if(cut<0)D[k+3]=0;
    else if(cut<7){const f=cut/7;D[k]=D[k]*f+70*(1-f);D[k+1]=D[k+1]*f+56*(1-f);D[k+2]=D[k+2]*f+36*(1-f);D[k+3]=255*(.5+.5*f)}}
   b.putImageData(id,0,0)}
