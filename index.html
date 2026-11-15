@@ -504,7 +504,7 @@ const RIMP=outline(COLS/2+.45,ROWS/2+.45,1.0,.25,.6);
  g.computeVertexNormals();
  const slope=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}));slope.receiveShadow=true;sc.add(slope);
  const sh=new THREE.Shape();RIMP.forEach((q,k)=>k?sh.lineTo(q[0],q[1]):sh.moveTo(q[0],q[1]));
- const gvc=document.createElement('canvas');gvc.width=gvc.height=128;{const x=gvc.getContext('2d');x.fillStyle='#5a4a35';x.fillRect(0,0,128,128);let sd=29;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;for(let i=0;i<420;i++){const v=70+rnd()*70|0;x.fillStyle='rgba('+v+','+(v-8)+','+(v-22)+','+(.35+rnd()*.4)+')';x.beginPath();x.arc(rnd()*128,rnd()*128,.8+rnd()*2,0,7);x.fill()}}
+ const gvc=document.createElement('canvas');gvc.width=gvc.height=128;{const x=gvc.getContext('2d');x.fillStyle='#5a4a35';x.fillRect(0,0,128,128);let sd=29;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;for(let i=0;i<70;i++){const v=82+rnd()*34|0;x.fillStyle='rgba('+v+','+(v-8)+','+(v-22)+','+(.15+rnd()*.15)+')';x.beginPath();x.arc(rnd()*128,rnd()*128,.8+rnd()*2,0,7);x.fill()}}
  const gvt=new THREE.CanvasTexture(gvc);gvt.wrapS=gvt.wrapT=THREE.RepeatWrapping;gvt.repeat.set(.5,.5);
  const cap=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gvt}));cap.position.y=-.02;cap.receiveShadow=true;sc.add(cap)}
 const MOATW=3.2;
