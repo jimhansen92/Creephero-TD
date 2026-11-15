@@ -1742,7 +1742,9 @@ function sharkVis(t){
   const k=Math.min(1,t.sjt/.8),c=t.sc,tx=c?c.x:x,ty=c?c.y:y,e=k<.5?k*2:2-k*2;
   x=t.sj0[0]+(tx-t.sj0[0])*e;y=t.sj0[1]+(ty-t.sj0[1])*e;h=1.1*Math.sin(Math.PI*k);pitch=k<.5?.9:-.9;ang=Math.atan2(ty-t.sj0[1],tx-t.sj0[0]);
  }
- u.sk.position.set(x-t.x,h,y-t.y);u.sk.rotation.y=-ang;u.skb.rotation.z=pitch;
+ {const M=t.m,sx=Math.max(.05,M.scale.x),sy=Math.max(.05,M.scale.y),sz=Math.max(.05,M.scale.z),ry=M.rotation.y,dx=x-t.x,dz=y-t.y,c=Math.cos(ry),n=Math.sin(ry);
+  u.sk.position.set((dx*c-dz*n)/sx,h/sy,(dx*n+dz*c)/sz);u.sk.scale.set(1/sx,1/sy,1/sz);u.sk.rotation.y=-ang-ry}
+ u.skb.rotation.z=pitch;
  u.skw.position.y=TIDE+.015;u.skw.scale.setScalar(1+.25*Math.sin(tm*5));u.skw.visible=!t.sm||t.sm!='jump';
 }
 function hexVis(t){
