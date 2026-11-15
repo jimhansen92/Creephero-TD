@@ -1928,6 +1928,7 @@ function render(){
  portals.forEach(p=>{p.scale.setScalar(.35+.06*Math.sin(tm*4)+NIGHT*(.15+.08*Math.sin(tm*9)));p.material.color.setRGB(.77+.23*NIGHT,.37-.2*NIGHT,.82-.62*NIGHT)});
  S.sel.forEach((s,i)=>{const m=rings[i]||(rings[i]=mkRing());m.visible=true;m.position.set(s.x-HW,.06,s.y-HH);const q=s===h?.5:.6;m.scale.set(q,1,q)});
  for(let i=S.sel.length;i<rings.length;i++)rings[i].visible=false;
+ {const br=rings.baseR||(rings.baseR=mkRing());br.visible=!!S.base;if(S.base){br.position.set(BASE[0]+.5-HW,.06,BASE[1]+.5-HH);const q=.85+.05*Math.sin(tm*4);br.scale.set(q,1,q)}}
  if(S.tgt&&!S.tgt.dead){if(!trg){trg=mkRing();trg.material.color.setHex(0xff5a4a)}trg.visible=true;trg.position.set(S.tgt.x-HW,.06,S.tgt.y-HH);const q=S.tgt.e.boss?.6:.4;trg.scale.set(q,1,q)}else if(trg)trg.visible=false;
  let rg=null,col=0xd4a84a,gp=false;
  if(S.sel.length==1&&S.sel[0]!==h&&!T[S.sel[0].k].wall)rg=[S.sel[0].x,S.sel[0].y,rng(S.sel[0])];
