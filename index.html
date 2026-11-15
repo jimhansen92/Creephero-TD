@@ -1139,8 +1139,8 @@ function sfxAtk(k,x){
    case 'rock':T('sine',70,30,.4,.22);N('lowpass',900,100,.35,.12);break;
    case 'dragon':N('lowpass',900,250,.45,.14);T('sawtooth',100,55,.4,.08,0,[18,5]);break;
    case 'crow':T('sawtooth',900,420,.14,.1,0,[18,5]);N('bandpass',2200,1200,.08,.06,.02,2);break;
-   case 'dig':T('triangle',1900,1300,.06,.08);N('highpass',5000,3000,.05,.05);break;
-   case 'lumber':N('bandpass',1400,500,.07,.12,0,2);T('triangle',220,110,.09,.1);break;
+   case 'dig':T('triangle',1900,1300,.06,.03);N('highpass',5000,3000,.05,.02);break;
+   case 'lumber':N('bandpass',1400,500,.07,.05,0,2);T('triangle',220,110,.09,.04);break;
    case 'wolf':T('sawtooth',170,80,.18,.12,0,[32,12]);N('bandpass',2000,800,.07,.1,.02,2);T('sine',90,50,.1,.1,.05);break;
    case 'hero':T('sawtooth',500,1300,.09,.05);N('highpass',4000,6000,.08,.04);break;
    default:T('sine',1500,1900,.15,.05);N('highpass',6000,6000,.06,.03);
@@ -1382,11 +1382,11 @@ function lumberU(t,dt){
  }
  const q=t.lt;if(!q){t.ls='pick';return}
  const gx=q.x+HW,gy=q.z+HH,dx=gx-t.lx,dy=gy-t.ly,L=Math.hypot(dx,dy);t.la=Math.atan2(dy,dx);
- if(t.ls=='go'){q.busy=tm;if(L>.8){const m=Math.min(3*dt,L-.7);t.lx+=dx/L*m;t.ly+=dy/L*m}else{t.ls='chop';t.lc=2.4;t.lsw=0}}
+ if(t.ls=='go'){q.busy=tm;if(L>.8){const m=Math.min(3*dt,L-.7);t.lx+=dx/L*m;t.ly+=dy/L*m}else{t.ls='chop';t.lc=t.lm=7;t.lsw=0}}
  else if(t.ls=='chop'){
   q.busy=tm;t.lc-=dt;t.lsw-=dt;
   if(t.lsw<=0){t.lsw=.6;sfxAtk('lumber',t.lx);burst(gx,gy,'#c8a060',3,.5)}
-  if(t.lc<=0){treeSet(q,0);q.busy=0;t.lt=null;t.ls='pick'}else treeSet(q,Math.max(.02,t.lc/2.4))
+  if(t.lc<=0){treeSet(q,0);q.busy=0;t.lt=null;t.ls='pick'}else treeSet(q,Math.max(.02,t.lc/t.lm))
  }
 }
 function lumberGrow(dt){for(const q of FOR.tr){if(q.g<1&&tm-(q.busy||-99)>=10)treeSet(q,Math.min(1,q.g+dt/100))}}
@@ -1434,7 +1434,7 @@ function diggerU(t,dt){
  }
  const m=t.dt;if(!m){t.ds='pick';return}
  const gx=m.x+HW,gy=m.z+HH,dx=gx-t.dx,dy=gy-t.dy,L=Math.hypot(dx,dy);t.da=Math.atan2(dy,dx);
- if(t.ds=='go'){m.busy=tm;if(L>.8){const k=Math.min(3.2*dt,L-.7);t.dx+=dx/L*k;t.dy+=dy/L*k}else{t.ds='dig';t.dc=2.4;t.dsw=0}}
+ if(t.ds=='go'){m.busy=tm;if(L>.8){const k=Math.min(3.2*dt,L-.7);t.dx+=dx/L*k;t.dy+=dy/L*k}else{t.ds='dig';t.dc=7;t.dsw=0}}
  else{m.busy=tm;t.dc-=dt;t.dsw-=dt;if(t.dsw<=0){t.dsw=.55;sfxAtk('dig',t.dx);burst(gx,gy,'#ffd84a',3,.5)}if(t.dc<=0){m.busy=0;t.dt=null;t.ds='pick'}}
 }
 function diggerVis(t){
