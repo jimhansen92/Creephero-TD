@@ -425,10 +425,11 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5
    k1=new THREE.InstancedMesh(gr(.4,.32),cm,NL),k2=new THREE.InstancedMesh(gr(.27,.4),cm,NL),col=new THREE.Color();
   FOR.m2=[t2,a2,b2,k1,k2];const ys=[.4,1,1.5,1.4,1.82];
   for(let i=0;i<NL;i++){const s=.8+rnd()*.7,rd=.56*s+.12;let x=0,z=0,ok=false;for(let k=0;k<500&&!ok;k++){[x,z]=spot();ok=clr(x,z,rd)}
+   if(rnd()<.18)ok=false;
    if(!ok){dm.scale.setScalar(.0001);dm.position.set(0,-9,0);dm.updateMatrix();for(const mm of FOR.m2)mm.setMatrixAt(i,dm.matrix);col.setRGB(0,0,0);a2.setColorAt(i,col);b2.setColorAt(i,col);continue}
    PL.push([x,z,rd]);const ry=rnd()*6;dm.rotation.set(0,ry,0);dm.scale.setScalar(s);FOR.tr.push({x,z,s,ry,g:1,i,b:1});
    FOR.m2.forEach((mm,k)=>{dm.position.set(x,ys[k]*s,z);dm.updateMatrix();mm.setMatrixAt(i,dm.matrix)});
-   const au=rnd()<.18;au?col.setHSL(.09+rnd()*.05,.7,.4):col.setHSL(.22+rnd()*.1,.5+rnd()*.15,.24+rnd()*.1);a2.setColorAt(i,col);b2.setColorAt(i,col.offsetHSL(0,0,.04))}
+   col.setHSL(.22+rnd()*.1,.5+rnd()*.15,.24+rnd()*.1);a2.setColorAt(i,col);b2.setColorAt(i,col.offsetHSL(0,0,.04))}
   for(const mm of[t2,a2,b2]){mm.castShadow=true;mm.receiveShadow=true;sc.add(mm)}for(const mm of[k1,k2]){mm.visible=false;mm.frustumCulled=false;sc.add(mm)}}
  FOR.m=[trunk,f1,f2,c1,c2];FOR.cap=[c1,c2,FOR.m2[3],FOR.m2[4]];for(const m of[c1,c2]){m.visible=false;m.frustumCulled=false;sc.add(m)}
  for(const m of[trunk,f1,f2,rk]){m.castShadow=true;m.receiveShadow=true;sc.add(m)}
