@@ -393,17 +393,18 @@ function pathOf(pts,P){P.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i+
  sh.holes.push(pathOf(outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7),new THREE.Path()));
  const outer=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
-function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);FOR.m.forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
+function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5,1.175,1.675];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);FOR.m.forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
 (function(){
  let sd=5;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
- const N=90,M=50,trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
+ const N=90,M=50,c1=new THREE.InstancedMesh(new THREE.ConeGeometry(.265,.46,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),90),c2=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.36,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),90),trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
  const spot=()=>{for(;;){const x=(rnd()*2-1)*(HW+9),z=(rnd()*2-1)*(HH+7);if((Math.abs(x)>HW+3.4||Math.abs(z)>HH+3.4)&&!(Math.abs(x)>HW&&Math.abs(Math.abs(z)-5.5)<1.4))return[x,z]}};
  for(let i=0;i<N;i++){const[x,z]=spot(),s=.8+rnd()*1.1;
   dm.position.set(x,.3*s,z);dm.scale.setScalar(s);const ry=rnd()*6;dm.rotation.set(0,ry,0);dm.updateMatrix();FOR.tr.push({x,z,s,ry,g:1,i});trunk.setMatrixAt(i,dm.matrix);
   dm.position.y=.95*s;dm.updateMatrix();f1.setMatrixAt(i,dm.matrix);
-  dm.position.y=1.5*s;dm.updateMatrix();f2.setMatrixAt(i,dm.matrix)}
+  dm.position.y=1.5*s;dm.updateMatrix();f2.setMatrixAt(i,dm.matrix);
+  dm.position.y=1.175*s;dm.updateMatrix();c1.setMatrixAt(i,dm.matrix);dm.position.y=1.675*s;dm.updateMatrix();c2.setMatrixAt(i,dm.matrix)}
  for(let i=0;i<M;i++){const[x,z]=spot(),s=.5+rnd()*1.1;dm.position.set(x,.15*s,z);dm.scale.set(s,s*.7,s*(.8+rnd()*.5));dm.rotation.set(rnd(),rnd()*6,rnd());dm.updateMatrix();rk.setMatrixAt(i,dm.matrix)}
- FOR.m=[trunk,f1,f2];
+ FOR.m=[trunk,f1,f2,c1,c2];FOR.cap=[c1,c2];for(const m of[c1,c2]){m.visible=false;m.frustumCulled=false;sc.add(m)}
  for(const m of[trunk,f1,f2,rk]){m.castShadow=true;m.receiveShadow=true;sc.add(m)}
 })();
 const MINES=[];
@@ -2325,7 +2326,7 @@ const snowGeo=new THREE.BufferGeometry();snowGeo.setAttribute('position',new THR
 const snowMat=new THREE.PointsMaterial({color:0xffffff,size:.2,transparent:true,opacity:0,depthWrite:false});
 const snowPts=new THREE.Points(snowGeo,snowMat);snowPts.frustumCulled=false;snowPts.visible=false;sc.add(snowPts);
 function snowStep(dt){
- SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);ICE+=((S.st=='strid'&&S.winW?1:0)-ICE)*Math.min(1,dt*.9);iceM.material.opacity=Math.min(1,ICE*1.15);iceM.visible=ICE>.02;windUpdate(SNOW);
+ SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);ICE+=((S.st=='strid'&&S.winW?1:0)-ICE)*Math.min(1,dt*.9);iceM.material.opacity=Math.min(1,ICE*1.15);iceM.visible=ICE>.02;for(const m of FOR.cap){m.material.opacity=Math.min(1,SNOW*1.2);m.visible=SNOW>.03}windUpdate(SNOW);
  snowMat.opacity=SNOW*.85;snowPts.visible=SNOW>.02;
  if(snowPts.visible){
   for(let i=0;i<SN;i++){let y=snowPos[i*3+1]-snowSpd[i]*dt,x=snowPos[i*3]+Math.sin(tm*.7+i)*.25*dt;if(y<0){y=14;x=(Math.random()*2-1)*(HW+5);snowPos[i*3+2]=(Math.random()*2-1)*(HH+5)}snowPos[i*3]=x;snowPos[i*3+1]=y}
