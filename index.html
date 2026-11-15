@@ -1692,14 +1692,14 @@ function sharkU(t,dt){
  t.scd-=dt;
  const l=Math.min(3,t.l),R=3.4+.5*(l-1),CD=[5,3.5,2.2][l-1],pp=shPos(t.ss),px=pp[0],py=pp[1];t.sx=px;t.sy=py;
  if(t.sm=='patrol'){
-  t.ss+=2.2*dt;
+  t.ss+=4.4*dt;
   if(t.scd<=0&&S.st=='strid'&&ICE<.3){let bc=null,bd=R;for(const c of S.en){if(c.dead||c.e.air||c.e.boss)continue;const d=Math.hypot(c.x-px,c.y-py);if(d<bd){bd=d;bc=c}}if(bc){t.sm='hunt';t.sc=bc}}
  }else if(t.sm=='hunt'){
   const c=t.sc;
   if(!c||c.dead||c.e.air||S.en.indexOf(c)<0||Math.hypot(c.x-px,c.y-py)>R*2){t.sm='patrol';t.sc=null;return}
   const hs=SHPER/2;let ds=shNear(c.x,c.y)-t.ss;ds=((ds+hs)%SHPER+SHPER)%SHPER-hs;
   if(Math.hypot(c.x-px,c.y-py)<1.6||Math.abs(ds)<.4){t.sm='jump';t.sjt=0;t.sj0=[px,py];t.sat=0;sfxAtk('shark',px)}
-  else t.ss+=Math.sign(ds)*Math.min(Math.abs(ds),7*dt);
+  else t.ss+=Math.sign(ds)*Math.min(Math.abs(ds),14*dt);
  }else{
   t.sjt+=dt;const k=t.sjt/.8,c=t.sc;
   if(k>=.5&&!t.sat){t.sat=1;if(c&&!c.dead&&S.en.indexOf(c)>=0){CUR=t.k;hit(c,1e9,1);CUR=null;burst(c.x,c.y,'#7ab8e8',10,.8);sfxAtk('shark',c.x)}}
