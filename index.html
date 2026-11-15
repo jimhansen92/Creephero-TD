@@ -375,7 +375,7 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5];
 (function(){
  let sd=5;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
  const N=90,M=50,trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
- const spot=()=>{for(;;){const x=(rnd()*2-1)*(HW+9),z=(rnd()*2-1)*(HH+7);if(Math.abs(x)>HW+3.4||Math.abs(z)>HH+3.4)return[x,z]}};
+ const spot=()=>{for(;;){const x=(rnd()*2-1)*(HW+9),z=(rnd()*2-1)*(HH+7);if((Math.abs(x)>HW+3.4||Math.abs(z)>HH+3.4)&&!(Math.abs(x)>HW&&Math.abs(Math.abs(z)-5.5)<1.4))return[x,z]}};
  for(let i=0;i<N;i++){const[x,z]=spot(),s=.8+rnd()*1.1;
   dm.position.set(x,.3*s,z);dm.scale.setScalar(s);const ry=rnd()*6;dm.rotation.set(0,ry,0);dm.updateMatrix();FOR.tr.push({x,z,s,ry,g:1,i});trunk.setMatrixAt(i,dm.matrix);
   dm.position.y=.95*s;dm.updateMatrix();f1.setMatrixAt(i,dm.matrix);
@@ -399,8 +399,8 @@ const gc=document.createElement('canvas');gc.width=COLS*32;gc.height=ROWS*32;
 const gridM=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,opacity:0,depthWrite:false}));gridM.position.y=.015;gridM.visible=false;sc.add(gridM);
 const rim=new THREE.Mesh(new THREE.BoxGeometry(COLS+.6,.3,ROWS+.6),lam(0x241d17));rim.position.y=-.17;sc.add(rim);
 const MOATW=2.4;
-const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#2c6e9e';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(190,230,255,'+(.12+rnd()*.2)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
-{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2,ROWS+.6+MOATW*2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x0a2238}));water.position.y=-.1;water.receiveShadow=true;sc.add(water);
+const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
+{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2,ROWS+.6+MOATW*2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.1;water.receiveShadow=true;sc.add(water);
  const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2,.16,ROWS+1.2+MOATW*2),lam(0x3a3224));bank.position.y=-.2;sc.add(bank)}
 const BRG=[];
 for(const s of[-1,1])for(const row of[1,12]){
@@ -1367,6 +1367,7 @@ function stepE(c,dt){
   if(L<=mv){leak(c);return}
   c.x+=dx/L*mv;c.y+=dy/L*mv;c.d+=mv;return;
  }
+ if(c.pre!=null){const dx=c.pre-c.x,L=Math.abs(dx);if(L<=mv){c.x=c.pre;c.pre=null;mv-=L;c.d+=L}else{c.x+=Math.sign(dx)*mv;c.d+=mv;return}}
  while(mv>0){
   if(!c.t){c.t=pick(c);if(!c.t){if(dist[c.y|0][c.x|0]==0)leak(c);return}}
   const dx=c.t[0]+.5-c.x,dy=c.t[1]+.5-c.y,L=Math.hypot(dx,dy);
@@ -1379,7 +1380,7 @@ function wolfU(t,dt){
  t.wc-=dt;let tg=null;
  if(S.st=='strid'){
   if(t.wt&&(t.wt.dead||t.wt.e.air||t.wt.e.boss||S.en.indexOf(t.wt)<0))t.wt=null;
-  if(!t.wt){let bd=1e9;for(const c of S.en){if(c.dead||c.e.air||c.e.boss)continue;const q=Math.hypot(c.x-t.wx,c.y-t.wy);if(q<bd){bd=q;t.wt=c}}}
+  if(!t.wt){let bd=1e9;for(const c of S.en){if(c.dead||c.e.air||c.e.boss||c.pre!=null)continue;const q=Math.hypot(c.x-t.wx,c.y-t.wy);if(q<bd){bd=q;t.wt=c}}}
   tg=t.wt;
  }else t.wt=null;
  const sp=3.4*dt;
@@ -1517,7 +1518,7 @@ function update(dt){
    q.t-=dt;
    if(q.t<=0){
     q.t=q.gap;q.n--;const sp=SPW[q.si++%4];
-    const c={e:q.e,x:sp[0]+.5,y:sp[1]+.5,t:null,hp:q.hp,max:q.hp,gd:q.gd,d:0,sf:1,dead:0,born:tm};mkE(c);S.en.push(c);
+    const out=sp[0]<COLS/2?-8:COLS+8,c={e:q.e,x:q.e.air?out:sp[0]+.5,y:sp[1]+.5,pre:q.e.air?null:sp[0]+.5,t:null,hp:q.hp,max:q.hp,gd:q.gd,d:0,sf:1,dead:0,born:tm};mkE(c);S.en.push(c);
    }
   }
   for(const c of S.en)c.sf=1;
