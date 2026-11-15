@@ -205,6 +205,32 @@ body:not(.mob) #app{position:relative}
 body:not(.mob) #bot{position:absolute;left:50%;transform:translateX(-50%);width:62%;min-width:min(660px,calc(100vw - 20px));bottom:8px;z-index:5;margin:0;border:2px solid #7a6540;border-radius:10px;justify-content:center;background:linear-gradient(#34281ad9,#120d08d9)}
 body:not(.mob) #bn{bottom:auto;top:40px;z-index:6}
 body.mob #bot{left:clamp(10px,7vw,90px);right:clamp(10px,7vw,90px);bottom:max(4px,env(safe-area-inset-bottom,0px));border:2px solid #7a6540;border-radius:10px;justify-content:center}
+
+/* ---- HUD-tema: brons, natt och glöd ---- */
+:root{--ln:#a07c34;--gold:#f6e7b4}
+#top{background:linear-gradient(#2e2336,#15101b 75%);border-bottom:2px solid transparent;border-image:linear-gradient(90deg,transparent,#b8913e 18%,#ffe08a 50%,#b8913e 82%,transparent) 1;box-shadow:0 3px 14px #000c,0 2px 14px #c9a24a2a}
+.rs span{background:linear-gradient(#0b0810,#1f1728);border:1px solid #9a7430;border-radius:12px;padding:1px 12px;box-shadow:inset 0 1px 5px #000,0 0 7px #c9a24a22;text-shadow:0 0 6px #ffcf5a66}
+body:not(.mob) #bot,body.mob #bot{border:2px solid #b08a38;border-radius:24px 24px 10px 10px;background:radial-gradient(ellipse at 50% -50%,#5a2c4acc,transparent 62%),linear-gradient(#2f2336ea,#120c19f2);box-shadow:0 0 24px #000d,0 0 20px #a8304440,inset 0 0 0 2px #ffe08a1c,inset 0 3px 14px #ffd87a2a}
+body:not(.mob) #bot::before,body.mob #bot::before{content:'';position:absolute;top:-11px;left:50%;width:76px;height:16px;transform:translateX(-50%);background:linear-gradient(#ffe9a0,#b98a30 60%,#7a5818);clip-path:polygon(0 100%,14% 15%,50% 0,86% 15%,100% 100%);filter:drop-shadow(0 0 4px #ffcf5a);pointer-events:none}
+body:not(.mob) #bot::after,body.mob #bot::after{content:'';position:absolute;top:-4px;left:50%;width:10px;height:10px;transform:translateX(-50%) rotate(45deg);background:radial-gradient(#ff7a6a,#b0201a 70%);border:1px solid #ffe08a;box-shadow:0 0 8px #ff4a3a;pointer-events:none}
+#mm{border:2px solid #b08a38;border-radius:14px;box-shadow:inset 0 0 14px #000c,0 0 8px #c9a24a33}
+#pt{border:2px solid #b08a38;border-radius:20px;background:radial-gradient(circle at 50% 30%,#4a3258,#150d1c 75%);box-shadow:inset 0 0 14px #000c,0 0 10px #a8304433}
+#mid{border:1px solid #7a5aa0;border-radius:18px;background:linear-gradient(#1a1222,#0c0810);box-shadow:inset 0 0 18px #000d,0 0 10px #5a3a8a33}
+#pv{border-radius:14px}
+button{border-radius:10px;border-color:#a07c34;background:linear-gradient(#6a5030,#2c1f12 90%)}
+.cb{border-radius:14px;background:linear-gradient(160deg,#6a5236,#2b2015 55%,#3c1c22);border:1px solid #b08a38;box-shadow:inset 0 1px 0 #ffffff30,inset 0 -7px 12px #0009,0 2px 5px #000a}
+.cb:hover:not(.poor){box-shadow:inset 0 1px 0 #ffffff40,inset 0 -7px 12px #0009,0 0 12px #ffcf5a88}
+.cb.on{border-color:#ffe070;box-shadow:inset 0 0 10px #ffe07066,0 0 10px #ffe070}
+#bn{border-radius:999px;padding:6px 20px;background:linear-gradient(#d04a36,#6a1a14);border:2px solid #ffb090;box-shadow:0 0 14px #ff4a3a88,inset 0 1px 0 #ffffff55;text-shadow:0 1px 3px #000;animation:bnp 1.8s ease-in-out infinite}
+@keyframes bnp{0%,100%{box-shadow:0 0 10px #ff4a3a66,inset 0 1px 0 #ffffff55}50%{box-shadow:0 0 22px #ff6a4acc,inset 0 1px 0 #ffffff55}}
+#fy{border:2px solid #b08a38;border-radius:20px;background:radial-gradient(ellipse at 50% 0,#3a2646cc,transparent 70%),linear-gradient(#241a2cf2,#100a16f6);box-shadow:0 0 24px #000d,0 0 18px #a8304433}
+#fy .ti{color:#ffe08a;text-shadow:0 0 8px #ffcf5a66}
+.fb{border-radius:16px;background:linear-gradient(#3b2d46,#1a1220);border:1px solid #9a7430}
+.fb img{border-radius:14px;background:radial-gradient(#5a4430,#1a130c)}
+.fb.on{border-color:#ffe070;box-shadow:0 0 10px #ffe07088}
+.fb.sup{border-radius:16px}
+#ov h2{text-shadow:0 0 18px #c9a24a88}
+#zb button{border-radius:50%}
 </style></head><body>
 <div id="rot">Vrid telefonen till liggande läge</div>
 <div id="app">
