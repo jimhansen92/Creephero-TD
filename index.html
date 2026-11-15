@@ -488,7 +488,7 @@ const hglow=new THREE.Mesh(GLG,GLM);hglow.position.y=.05;hglow.scale.set(2.2,1,2
 const hgl=new THREE.Mesh(GLG,new THREE.MeshBasicMaterial({map:GLT,color:0xffd040,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));hgl.position.y=.07;hgl.scale.set(2.8,1,2.8);hgl.visible=false;hm.add(hgl);
 const hgs=new THREE.Sprite(new THREE.SpriteMaterial({map:GLT,color:0xffc830,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));hgs.position.y=.65;hgs.scale.set(2,2,1);hgs.visible=false;hm.add(hgs);
 const hbc=document.createElement('canvas');hbc.width=128;hbc.height=48;
-const hbt=new THREE.CanvasTexture(hbc),hbs=new THREE.Sprite(new THREE.SpriteMaterial({map:hbt,transparent:true,depthTest:false}));hbs.scale.set(1.2,.45,1);hbs.position.y=1.5;hbs.renderOrder=9;hm.add(hbs);let hbl=0;
+const hbt=new THREE.CanvasTexture(hbc),hbs=new THREE.Sprite(new THREE.SpriteMaterial({map:hbt,transparent:true,depthTest:false}));hbs.scale.set(1.2,.45,1);hbs.position.y=1.5;hbs.renderOrder=9;let hbl=0;
 function hbDraw(L){const x=hbc.getContext('2d');x.clearRect(0,0,128,48);x.fillStyle='rgba(13,10,7,.82)';x.fillRect(4,6,120,36);x.strokeStyle=L>=3?'#ffd84a':'#c9a24a';x.lineWidth=3;x.strokeRect(4,6,120,36);x.font='bold 24px Georgia,serif';x.fillStyle=L>=3?'#ffe070':'#f0e6c8';x.textAlign='center';x.fillText('Nivå '+L,64,33);hbt.needsUpdate=true;hbl=L}
 hm.scale.setScalar(.8);
 sc.add(hm);
