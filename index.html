@@ -539,7 +539,7 @@ const AQ=[];
  let sd=57;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
  const RIM=outline(COLS/2+1.2,ROWS/2+1.2,1.75,.25,.6),SH=outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7);
  const ins=(p,x,z)=>{let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[xi,zi]=p[i],[xj,zj]=p[j];if((zi>z)!=(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)c=!c}return c};
- const okp=(x,z,m)=>{if(Math.abs(x)>HW-1.5&&Math.abs(Math.abs(z)-6.5)<1.1)return false;for(const[a,b]of[[m,0],[-m,0],[0,m],[0,-m]]){if(!ins(SH,x+a,-(z+b))||ins(RIM,x+a,-(z+b)))return false}return true};
+ const okp=(x,z,m)=>{if(Math.abs(x)>HW-1.5&&Math.abs(Math.abs(z)-5.5)<1.3)return false;for(const[a,b]of[[m,0],[-m,0],[0,m],[0,-m]]){if(!ins(SH,x+a,-(z+b))||ins(RIM,x+a,-(z+b)))return false}return true};
  const pts=(n,m,minD,arr)=>{const o=[];let t=0;while(o.length<n&&t++<6000){const x=(rnd()*2-1)*(HW+4.2),z=(rnd()*2-1)*(HH+4.2);if(!okp(x,z,m))continue;if(arr.concat(o).some(q=>Math.hypot(q[0]-x,q[1]-z)<minD))continue;o.push([x,z])}return o};
  const pads=pts(10,.35,2.5,[]),weeds=pts(46,.2,.9,pads);
  const pg=new THREE.CircleGeometry(.3,14,.5,5.5).rotateX(-Math.PI/2),pm=new THREE.InstancedMesh(pg,new THREE.MeshLambertMaterial({color:0xffffff,side:THREE.DoubleSide}),pads.length),col=new THREE.Color();
@@ -577,13 +577,29 @@ for(const s of[-1,1])for(const row of[1,12]){
  }
  sc.add(g);BRG.push({y:row+.5,xi:s<0?.1:COLS-.1,xo:s<0?-3.9:COLS+3.9,s});
 }
+const RGX0=-4.4,RGX1=COLS+4.4,RGY0=-4.4,RGY1=ROWS+4.4,RGW=RGX1-RGX0,RGH=RGY1-RGY0,RGP=2*(RGW+RGH),RGC=[0,RGW,RGW+RGH,2*RGW+RGH];
+function ringS(x,y){const cx=Math.max(RGX0,Math.min(RGX1,x)),cy=Math.max(RGY0,Math.min(RGY1,y)),d=[Math.abs(cy-RGY0),Math.abs(cx-RGX1),Math.abs(cy-RGY1),Math.abs(cx-RGX0)],k=d.indexOf(Math.min(...d));
+ return k==0?cx-RGX0:k==1?RGW+cy-RGY0:k==2?RGW+RGH+RGX1-cx:2*RGW+RGH+RGY1-cy}
+function ringPt(s){s=((s%RGP)+RGP)%RGP;return s<RGW?[RGX0+s,RGY0]:s<RGW+RGH?[RGX1,RGY0+s-RGW]:s<2*RGW+RGH?[RGX1-(s-RGW-RGH),RGY1]:[RGX0,RGY1-(s-2*RGW-RGH)]}
+function hitsMoat(px,py,tx,ty){for(let k=0;k<=40;k++){const t=k/40,x=px+(tx-px)*t,y=py+(ty-py)*t;if(x>-3.95&&x<COLS+3.95&&y>-3.95&&y<ROWS+3.95)return true}return false}
 function routeTo(px,py,tx,ty){
  const inG=(x,y)=>x>0&&x<COLS&&y>0&&y<ROWS;
  const onB=b=>Math.abs(py-b.y)<.7&&(b.s<0?(px<.25&&px>-4.3):(px>COLS-.25&&px<COLS+4.3));
- for(const b of BRG){if(onB(b)){const tin=inG(tx,ty),w=tin?[b.xi,b.y]:[b.xo,b.y];if(Math.hypot(px-w[0],py-w[1])<.5)return[tx,ty];return w}}
- if(inG(px,py)===inG(tx,ty))return[tx,ty];
- let best=null,bd=1e9;for(const b of BRG){const d=Math.hypot(px-(inG(px,py)?b.xi:b.xo),py-b.y);if(d<bd){bd=d;best=b}}
- return inG(px,py)?[best.xi,best.y]:[best.xo,best.y];
+ for(const b of BRG){if(onB(b)){const tin=inG(tx,ty),w=tin?[b.xi,b.y]:[b.xo,b.y];if(tin){if(Math.hypot(px-w[0],py-w[1])<.5)return[tx,ty];return w}if(b.s<0?px<=w[0]+.5:px>=w[0]-.5)break;return w}}
+ if(inG(px,py)!==inG(tx,ty)){
+  let best=null,bd=1e9;for(const b of BRG){const d=Math.hypot(px-(inG(px,py)?b.xi:b.xo),py-b.y);if(d<bd){bd=d;best=b}}
+  return inG(px,py)?[best.xi,best.y]:[best.xo,best.y];
+ }
+ if(inG(px,py))return[tx,ty];
+ if(!hitsMoat(px,py,tx,ty))return[tx,ty];
+ const sp=ringS(px,py),sq=ringS(tx,ty),df=((sq-sp)%RGP+RGP)%RGP,dir=df<=RGP/2?1:-1;
+ let cur=sp;const dq=dir>0?df:RGP-df;
+ for(let k=0;k<5;k++){
+  let nx=null,nd=1e9;for(const c of RGC){const d=dir>0?((c-cur)%RGP+RGP)%RGP:((cur-c)%RGP+RGP)%RGP;if(d>.01&&d<nd){nd=d;nx=c}}
+  const trav=dir>0?((cur-sp)%RGP+RGP)%RGP:((sp-cur)%RGP+RGP)%RGP;
+  if(trav+nd>=dq-.01)return[tx,ty];
+  const w=ringPt(nx);if(Math.hypot(px-w[0],py-w[1])>.7)return w;cur=nx}
+ return[tx,ty];
 }
 const base=new THREE.Group(),baseFl=[];let baseCore=null;
 {
