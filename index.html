@@ -288,7 +288,7 @@ const E=[
 {n:'Malanthrope',base:'Zoanthrope',k:1.8,hp:3800,s:.9,g:110,c:.22,a:.35,col:'#c030a0',gl:0xff44cc},
 {n:'Swarmlord-Prime',base:'Lictor',k:2,hp:4200,s:1.6,g:120,c:.2,a:.5,col:'#aa1f4f',ex:SPK.concat(HRN)},
 {n:'Världsormen',base:'Leviatan',snake:28,k:1.2,hp:20000,s:1,g:1500,c:1,nn:1,a:.5,boss:1,col:'#2a6a4a'}];
-const CAMA=.72;
+const CAMA=.72;let CAMY=0,CAMYT=0,FITP=null,FITY=0;
 let S,occ,dist,gk='',gm='',tm=0,tq,sig={},MODE=null,LOWQ=0,SLOW=0,CAMD=20,CZ=1,CX=0,CY=0,FOLLOW=false,CAMLOCK=0,CZT=null,trg=null;
 const lvf=t=>T[t.k].branch?(t.br?t.l-2:0):t.l-1,dmg=t=>T[t.k].d*1.8**lvf(t)*(t.bd||1)*(t.br=='fire'?1.6:1),rng=t=>T[t.k].r+.25*lvf(t)+(t.br=='long'?1.4:0),heroD=()=>Math.round(10+2.5*S.L);
 
@@ -498,13 +498,14 @@ const rings=[],mkRing=()=>{const m=new THREE.Mesh(SRG,bas(0x3cff3c,.95));sc.add(
 for(const m of [rd,rr,gh]){m.visible=false;sc.add(m)}
 function rs(){
  const w=wr.clientWidth,h=wr.clientHeight;if(!w||!h)return;
- R.setPixelRatio(LOWQ?1:Math.min(devicePixelRatio||1,MODE=='mob'?1.5:2));R.setSize(w,h,false);
+ const pr=LOWQ?1:Math.min(devicePixelRatio||1,MODE=='mob'?1.5:2);
+ if(!(FITP&&FITP.w==w&&FITP.h==h&&FITP.pr==pr)){R.setPixelRatio(pr);R.setSize(w,h,false)}
  cam.aspect=w/h;const mb=MODE=='mob',ti=mb?26:0,bi=Math.max(50,($('bot').offsetHeight||56)+(mb?14:24)),sh=(bi-ti)/2;
- cam.clearViewOffset();
+ cam.clearViewOffset();FITP={w,h,pr,ti,bi,sh};FITY=CAMY;
  let lo=8,hi=90;
  for(let i=0;i<22;i++){
   const d=(lo+hi)/2;
-  cam.position.set(0,d*Math.sin(CAMA),d*Math.cos(CAMA));cam.lookAt(0,0,0);cam.updateProjectionMatrix();cam.updateMatrixWorld();
+  cam.position.set(Math.sin(CAMY)*d*Math.cos(CAMA),d*Math.sin(CAMA),Math.cos(CAMY)*d*Math.cos(CAMA));cam.lookAt(0,0,0);cam.updateProjectionMatrix();cam.updateMatrixWorld();
   let ok=true;
   for(const[x,z]of[[-1,-1],[1,-1],[-1,1],[1,1]]){
    const v=new THREE.Vector3(x*(HW+.4),0,z*(HH+.4)).project(cam),px=(v.x+1)/2*w,py=(1-v.y)/2*h-sh;
@@ -1886,7 +1887,7 @@ addEventListener('keydown',ev=>{
  if(ev.key=='Tab'){ev.preventDefault();togSc();return}if(ev.key=='Escape'&&SCO){togSc();return}
  if(!MODE)return;const k=ev.key.toUpperCase();
  const ar={ARROWLEFT:[-1,0],ARROWRIGHT:[1,0],ARROWUP:[0,-1],ARROWDOWN:[0,1]}[k];
- if(ar){ev.preventDefault();CX+=ar[0]*1.5;CY+=ar[1]*1.5;FOLLOW=false;CAMLOCK=0;return}
+ if(ar){ev.preventDefault();if(ar[0]){CAMYT+=ar[0]*.12;return}const sg=-ar[1];CX+=sg*-Math.sin(CAMYT)*1.5;CY+=sg*-Math.cos(CAMYT)*1.5;FOLLOW=false;CAMLOCK=0;return}
  if(k=='F10'){ev.preventDefault();act({a:'menu'});return}
  if((k=='DELETE'||k=='BACKSPACE'&&!S.menu&&S.bt==null&&!S.o.length)&&!S.paused&&selT().length){ev.preventDefault();act({a:'sell'});return}
  if(k=='ESCAPE'||k=='BACKSPACE'){ev.preventDefault();act({a:S.menu?'back':'cancel'});return}
@@ -2071,10 +2072,12 @@ function baseDmg(dt){
 function camSet(){
  const a=CAMA,d=CAMD/CZ,mx=Math.max(0,HW-HW/CZ)+2,my=Math.max(0,HH-HH/CZ)+2;
  CX=Math.max(-mx,Math.min(mx,CX));CY=Math.max(-my,Math.min(my,CY));
- cam.position.set(CX,d*Math.sin(a),CY+d*Math.cos(a));cam.lookAt(CX,0,CY);
+ cam.position.set(CX+Math.sin(CAMY)*d*Math.cos(a),d*Math.sin(a),CY+Math.cos(CAMY)*d*Math.cos(a));cam.lookAt(CX,0,CY);
  if(SHK>0){const q=SHK*SHK*.35;cam.position.x+=(Math.random()-.5)*q;cam.position.y+=(Math.random()-.5)*q;cam.position.z+=(Math.random()-.5)*q}
 }
 function camStep(){
+ CAMY+=(CAMYT-CAMY)*.2;if(Math.abs(CAMYT-CAMY)<.002)CAMY=CAMYT;
+ if(FITP&&Math.abs(CAMY-FITY)>.015)rs();
  if(CZT!=null){CZ+=(CZT-CZ)*.18;if(Math.abs(CZ-CZT)<.01){CZ=CZT;CZT=null}}
  if(CAMLOCK){CX+=(BASE[0]+.5-HW-CX)*.15;CY+=(BASE[1]+.5-HH-CY)*.15}
  else if(FOLLOW&&CZ>1.01){CX+=(S.h.x-HW-CX)*.12;CY+=(S.h.y-HH-CY)*.12}
@@ -2084,7 +2087,7 @@ function camStep(){
 function camGesture(){
  const q=[...ptrs.values()],d=Math.hypot(q[0].x-q[1].x,q[0].y-q[1].y)||1,mx=(q[0].x+q[1].x)/2,my=(q[0].y+q[1].y)/2;
  const k=2*(CAMD/CZ)*Math.tan(cam.fov*Math.PI/360)/cv.clientHeight;
- CX-=(mx-gst.mx)*k;CY-=(my-gst.my)*k/Math.sin(CAMA);
+ {const ddx=(mx-gst.mx)*k,ddy=(my-gst.my)*k/Math.sin(CAMA),cy=Math.cos(CAMY),sy=Math.sin(CAMY);CX-=ddx*cy+ddy*sy;CY-=-ddx*sy+ddy*cy}
  CZT=null;CZ=Math.max(1,Math.min(7,gst.z*d/gst.d));FOLLOW=false;CAMLOCK=0;gst.mx=mx;gst.my=my;
 }
 let dr=null,pan=null;
@@ -2157,7 +2160,7 @@ cv.onpointerdown=e=>{
  dr={x:e.clientX,y:e.clientY,on:0};cv.setPointerCapture(e.pointerId);
 };
 cv.onpointermove=e=>{
- if(pan){const k=2*(CAMD/CZ)*Math.tan(cam.fov*Math.PI/360)/cv.clientHeight;CX-=(e.clientX-pan.x)*k;CY-=(e.clientY-pan.y)*k/Math.sin(CAMA);pan.x=e.clientX;pan.y=e.clientY;return}
+ if(pan){const k=2*(CAMD/CZ)*Math.tan(cam.fov*Math.PI/360)/cv.clientHeight;{const ddx=(e.clientX-pan.x)*k,ddy=(e.clientY-pan.y)*k/Math.sin(CAMA),cy=Math.cos(CAMY),sy=Math.sin(CAMY);CX-=ddx*cy+ddy*sy;CY-=-ddx*sy+ddy*cy}pan.x=e.clientX;pan.y=e.clientY;return}
  const p=ground(e);S.hov=p?[Math.floor(p.x),Math.floor(p.y)]:null;
  if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
  if(gst&&ptrs.size>1){camGesture();return}
