@@ -201,6 +201,7 @@ body.mob .fb i,body.mob .fb em{font-size:10px}
 #bx .bs{font-size:12px;color:#e8dfc8;margin-top:4px}
 #bx.win{animation:bxw .5s ease-out}
 @keyframes bxw{0%{transform:translate(-50%,-50%) scale(.6)}60%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1)}}
+body.mob #bot{left:clamp(10px,7vw,90px);right:clamp(10px,7vw,90px);bottom:max(4px,env(safe-area-inset-bottom,0px));border:2px solid #7a6540;border-radius:10px;justify-content:center}
 </style></head><body>
 <div id="rot">Vrid telefonen till liggande läge</div>
 <div id="app">
@@ -495,7 +496,7 @@ for(const m of [rd,rr,gh]){m.visible=false;sc.add(m)}
 function rs(){
  const w=wr.clientWidth,h=wr.clientHeight;if(!w||!h)return;
  R.setPixelRatio(LOWQ?1:Math.min(devicePixelRatio||1,MODE=='mob'?1.5:2));R.setSize(w,h,false);
- cam.aspect=w/h;const mb=MODE=='mob',ti=mb?26:0,bi=mb?62:0,sh=(bi-ti)/2;
+ cam.aspect=w/h;const mb=MODE=='mob',ti=mb?26:0,bi=mb?Math.max(50,($('bot').offsetHeight||56)+14):0,sh=(bi-ti)/2;
  cam.clearViewOffset();
  let lo=8,hi=90;
  for(let i=0;i<22;i++){
