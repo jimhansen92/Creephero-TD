@@ -395,8 +395,9 @@ function outline(hx,hz,r,amp,ph){const P=[],n=14,seg=[[1,1],[-1,1],[-1,-1],[1,-1
  for(let i=0;i<fin.length;i++){if(i)u+=Math.hypot(fin[i][0]-fin[i-1][0],fin[i][1]-fin[i-1][1]);const o=amp*nz(u*.55),f=fin[i];pts.push([f[0]+f[2]*o,f[1]+f[3]*o])}
  return pts}
 function pathOf(pts,P){P.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)P.lineTo(pts[i][0],pts[i][1]);P.lineTo(pts[0][0],pts[0][1]);return P}
+const SHORE0=outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7);
 {const sh=new THREE.Shape();sh.moveTo(-70,-70);sh.lineTo(70,-70);sh.lineTo(70,70);sh.lineTo(-70,70);sh.lineTo(-70,-70);
- sh.holes.push(pathOf(outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7),new THREE.Path()));
+ sh.holes.push(pathOf(SHORE0,new THREE.Path()));
  const outer=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
 const MINEPOS=[[-14,-10.8],[0,-10.8],[14,-10.8],[-11,10.8],[4,10.8],[11,11.2],[-20.8,2.6],[20.8,-2.6]];
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
@@ -494,10 +495,16 @@ const RIMP=outline(COLS/2+.45,ROWS/2+.45,1.0,.25,.6);
  const cap=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x4a3a24));cap.position.y=-.02;cap.receiveShadow=true;sc.add(cap)}
 const MOATW=2.4;
 const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
+let WTR=null,WTR2=null,TIDE=-.36;
 const WTX2=WTX.clone();WTX2.needsUpdate=true;WTX2.repeat.set(7,3.5);
-{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);
- {const w2=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX2,transparent:true,opacity:.55,depthWrite:false,emissive:0x061622}));w2.position.y=-.352;sc.add(w2)}
- const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2+2,.16,ROWS+1.2+MOATW*2+2),lam(0x3a3224));bank.position.y=-.5;sc.add(bank)}
+{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);WTR=water;
+ {const w2=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX2,transparent:true,opacity:.55,depthWrite:false,emissive:0x061622}));w2.position.y=-.352;sc.add(w2);WTR2=w2}
+ const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2+2,.16,ROWS+1.2+MOATW*2+2),lam(0x3a3224));bank.position.y=-.66;sc.add(bank)}
+{const n=SHORE0.length,pos=[],idx=[];
+ for(const y of[-.22,-.66])for(const q of SHORE0)pos.push(q[0],y,-q[1]);
+ for(let i=0;i<n;i++){const a=i,b=(i+1)%n;idx.push(a,b,n+a,b,n+b,n+a)}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();
+ const w=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:0x2e2518,side:THREE.DoubleSide}));sc.add(w)}
 const AQ=[];
 (function(){
  let sd=57;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
@@ -1680,7 +1687,7 @@ function sharkVis(t){
   x=t.sj0[0]+(tx-t.sj0[0])*e;y=t.sj0[1]+(ty-t.sj0[1])*e;h=1.1*Math.sin(Math.PI*k);pitch=k<.5?.9:-.9;ang=Math.atan2(ty-t.sj0[1],tx-t.sj0[0]);
  }
  u.sk.position.set(x-t.x,h,y-t.y);u.sk.rotation.y=-ang;u.skb.rotation.z=pitch;
- u.skw.scale.setScalar(1+.25*Math.sin(tm*5));u.skw.visible=!t.sm||t.sm!='jump';
+ u.skw.position.y=TIDE+.015;u.skw.scale.setScalar(1+.25*Math.sin(tm*5));u.skw.visible=!t.sm||t.sm!='jump';
 }
 function hexVis(t){
  if(t.hxm&&t.m)t.m.remove(t.hxm);
@@ -2426,8 +2433,12 @@ for(let i=0;i<SN;i++){snowPos[i*3]=(Math.random()*2-1)*(HW+5);snowPos[i*3+1]=Mat
 const snowGeo=new THREE.BufferGeometry();snowGeo.setAttribute('position',new THREE.BufferAttribute(snowPos,3));
 const snowMat=new THREE.PointsMaterial({color:0xffffff,size:.2,transparent:true,opacity:0,depthWrite:false});
 const snowPts=new THREE.Points(snowGeo,snowMat);snowPts.frustumCulled=false;snowPts.visible=false;sc.add(snowPts);
+function tideStep(dt){
+ TIDE=-.36+.11*Math.sin(tm*.2)*(1-Math.min(1,ICE*1.2));
+ if(WTR){WTR.position.y=TIDE;WTR2.position.y=TIDE+.008;const d=TIDE+.36;AQ[0].position.y=d;AQ[1].position.y=d}
+}
 function snowStep(dt){
- SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);ICE+=((S.st=='strid'&&S.winW?1:0)-ICE)*Math.min(1,dt*.9);iceM.material.opacity=Math.min(1,ICE*1.15);iceM.visible=ICE>.02;for(const m of AQ)m.visible=ICE<.5;for(const m of FOR.cap){m.material.opacity=Math.min(1,SNOW*1.2);m.visible=SNOW>.03}windUpdate(SNOW);
+ SNOW+=((S.st=='strid'&&S.winW?1:0)-SNOW)*Math.min(1,dt*.8);ICE+=((S.st=='strid'&&S.winW?1:0)-ICE)*Math.min(1,dt*.9);iceM.material.opacity=Math.min(1,ICE*1.15);iceM.visible=ICE>.02;for(const m of AQ)m.visible=ICE<.5;tideStep(dt);for(const m of FOR.cap){m.material.opacity=Math.min(1,SNOW*1.2);m.visible=SNOW>.03}windUpdate(SNOW);
  snowMat.opacity=SNOW*.85;snowPts.visible=SNOW>.02;
  if(snowPts.visible){
   for(let i=0;i<SN;i++){let y=snowPos[i*3+1]-snowSpd[i]*dt,x=snowPos[i*3]+Math.sin(tm*.7+i)*.25*dt;if(y<0){y=14;x=(Math.random()*2-1)*(HW+5);snowPos[i*3+2]=(Math.random()*2-1)*(HH+5)}snowPos[i*3]=x;snowPos[i*3+1]=y}
