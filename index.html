@@ -429,6 +429,19 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5,1
  Bu.forEach((r,i)=>{dm.position.set(r[0],r[2]*.3,r[1]);dm.scale.set(r[2],r[2]*.75,r[2]);dm.rotation.set(0,rnd()*6,0);dm.updateMatrix();bs.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.45+rnd()*.15,.2+rnd()*.1);bs.setColorAt(i,col)});
  for(const m of[rk,bs]){m.castShadow=true;m.receiveShadow=true;sc.add(m)}
 })();
+(function(){
+ let sd=41;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D(),N=80,BR=4;
+ const mat=lam(0x3b3229),tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.05,.13,2.4,6),mat,N),bg=new THREE.InstancedMesh(new THREE.CylinderGeometry(.015,.045,1,5).translate(0,.5,0),mat,N*BR),bg2=new THREE.InstancedMesh(new THREE.CylinderGeometry(.01,.025,.6,4).translate(0,.3,0),mat,N*BR);
+ let n=0;
+ while(n<N){const x=(rnd()*2-1)*(HW+25),z=(rnd()*2-1)*(HH+18);if(Math.abs(x)<HW+9.5&&Math.abs(z)<HH+7.5)continue;
+  const s=.8+rnd()*.9,ry=rnd()*6,lean=(rnd()-.5)*.12;
+  dm.position.set(x,1.2*s,z);dm.rotation.set(lean,ry,lean*.6);dm.scale.setScalar(s);dm.updateMatrix();tr.setMatrixAt(n,dm.matrix);
+  for(let k=0;k<BR;k++){const h=(1.1+k*.35+rnd()*.2)*s,yaw=ry+k*1.7+rnd()*.8,tilt=.75+rnd()*.5;
+   dm.position.set(x,h,z);dm.rotation.set(0,yaw,-tilt);dm.rotation.order='YXZ';dm.rotation.set(tilt,yaw,0);dm.scale.setScalar(s*(.7+rnd()*.5)*(1-k*.12));dm.updateMatrix();bg.setMatrixAt(n*BR+k,dm.matrix);
+   const ex=new THREE.Object3D();ex.position.set(x+Math.sin(yaw)*Math.sin(tilt)*s*.6,h+Math.cos(tilt)*s*.6,z+Math.cos(yaw)*Math.sin(tilt)*s*.6);ex.rotation.order='YXZ';ex.rotation.set(tilt+.6,yaw+(rnd()-.5)*1.2,0);ex.scale.setScalar(s);ex.updateMatrix();bg2.setMatrixAt(n*BR+k,ex.matrix)}
+  dm.rotation.order='XYZ';n++}
+ for(const m of[tr,bg,bg2]){m.castShadow=true;m.frustumCulled=false;sc.add(m)}
+})();
 const MINES=[];
 (function(){
  const pos=[[-14,-10.8],[-7,-11.2],[0,-10.8],[7,-11.2],[14,-10.8],[-11,10.8],[-4,11.2],[4,10.8],[11,11.2],[-20.8,-2.6],[-20.8,2.6],[20.8,-2.6],[20.8,2.6]];
