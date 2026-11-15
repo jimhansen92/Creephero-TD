@@ -395,17 +395,17 @@ function outline(hx,hz,r,amp,ph){const P=[],n=14,seg=[[1,1],[-1,1],[-1,-1],[1,-1
  for(let i=0;i<fin.length;i++){if(i)u+=Math.hypot(fin[i][0]-fin[i-1][0],fin[i][1]-fin[i-1][1]);const o=amp*nz(u*.55),f=fin[i];pts.push([f[0]+f[2]*o,f[1]+f[3]*o])}
  return pts}
 function pathOf(pts,P){P.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)P.lineTo(pts[i][0],pts[i][1]);P.lineTo(pts[0][0],pts[0][1]);return P}
-const SHORE0=outline(COLS/2+4.2,ROWS/2+4.2,3.6,.5,1.7);
+const SHORE0=outline(COLS/2+3.4,ROWS/2+3.4,3.0,.5,1.7);
 {const sh=new THREE.Shape();sh.moveTo(-70,-70);sh.lineTo(70,-70);sh.lineTo(70,70);sh.lineTo(-70,70);sh.lineTo(-70,-70);
  sh.holes.push(pathOf(SHORE0,new THREE.Path()));
  const outer=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
-const MINEPOS=[[-14,-13],[0,-13],[14,-13],[-11,13],[4,13],[11,13.4],[-23.4,2.6],[23.4,-2.6]];
+const MINEPOS=[[-14,-12.2],[0,-12.2],[14,-12.2],[-11,12.2],[4,12.2],[11,12.6],[-22.6,2.6],[22.6,-2.6]];
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
 function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5,1.4,1.82]:[.3,.95,1.5,1.175,1.675];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);(q.b?FOR.m2:FOR.m).forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
 (function(){
  let sd=5;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
  const N=68,NL=68,M=0,c1=new THREE.InstancedMesh(new THREE.ConeGeometry(.265,.46,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),c2=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.36,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
- const spot=()=>{for(;;){const x=(rnd()*2-1)*(HW+12.5),z=(rnd()*2-1)*(HH+10);if((Math.abs(x)>HW+5.7||Math.abs(z)>HH+5.7)&&!(Math.abs(x)>HW&&Math.abs(Math.abs(z)-5.5)<1.4))return[x,z]}};
+ const spot=()=>{for(;;){const x=(rnd()*2-1)*(HW+12.5),z=(rnd()*2-1)*(HH+10);if((Math.abs(x)>HW+5||Math.abs(z)>HH+5)&&!(Math.abs(x)>HW&&Math.abs(Math.abs(z)-5.5)<1.4))return[x,z]}};
  const PL=[],clr=(x,z,r)=>{for(const q of PL)if(Math.hypot(x-q[0],z-q[1])<r+q[2])return false;for(const q of MINEPOS)if(Math.hypot(x-q[0],z-q[1])<r+.9)return false;return true};
  for(let i=0;i<N;i++){const s=.8+rnd()*1.1,rd=.52*s+.12;let x=0,z=0,ok=false;for(let k=0;k<500&&!ok;k++){[x,z]=spot();ok=clr(x,z,rd)}
   if(!ok){dm.scale.setScalar(.0001);dm.position.set(0,-9,0);dm.updateMatrix();for(const mm of[trunk,f1,f2,c1,c2])mm.setMatrixAt(i,dm.matrix);continue}
@@ -493,7 +493,7 @@ const RIMP=outline(COLS/2+.45,ROWS/2+.45,1.0,.25,.6);
  const slope=new THREE.Mesh(g,new THREE.MeshLambertMaterial({vertexColors:true,side:THREE.DoubleSide}));slope.receiveShadow=true;sc.add(slope);
  const sh=new THREE.Shape();RIMP.forEach((q,k)=>k?sh.lineTo(q[0],q[1]):sh.moveTo(q[0],q[1]));
  const cap=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x4a3a24));cap.position.y=-.02;cap.receiveShadow=true;sc.add(cap)}
-const MOATW=4.0;
+const MOATW=3.2;
 const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
 let WTR=null,WTR2=null,TIDE=-.36;
 const WTX2=WTX.clone();WTX2.needsUpdate=true;WTX2.repeat.set(7,3.5);
@@ -511,7 +511,7 @@ const AQ=[];
  const RIM=outline(COLS/2+1.2,ROWS/2+1.2,1.75,.25,.6),SH=outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7);
  const ins=(p,x,z)=>{let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[xi,zi]=p[i],[xj,zj]=p[j];if((zi>z)!=(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)c=!c}return c};
  const okp=(x,z,m)=>{if(Math.abs(x)>HW-1.5&&Math.abs(Math.abs(z)-6.5)<1.1)return false;for(const[a,b]of[[m,0],[-m,0],[0,m],[0,-m]]){if(!ins(SH,x+a,-(z+b))||ins(RIM,x+a,-(z+b)))return false}return true};
- const pts=(n,m,minD,arr)=>{const o=[];let t=0;while(o.length<n&&t++<6000){const x=(rnd()*2-1)*(HW+5),z=(rnd()*2-1)*(HH+5);if(!okp(x,z,m))continue;if(arr.concat(o).some(q=>Math.hypot(q[0]-x,q[1]-z)<minD))continue;o.push([x,z])}return o};
+ const pts=(n,m,minD,arr)=>{const o=[];let t=0;while(o.length<n&&t++<6000){const x=(rnd()*2-1)*(HW+4.2),z=(rnd()*2-1)*(HH+4.2);if(!okp(x,z,m))continue;if(arr.concat(o).some(q=>Math.hypot(q[0]-x,q[1]-z)<minD))continue;o.push([x,z])}return o};
  const pads=pts(10,.35,2.5,[]),weeds=pts(46,.2,.9,pads);
  const pg=new THREE.CircleGeometry(.3,14,.5,5.5).rotateX(-Math.PI/2),pm=new THREE.InstancedMesh(pg,new THREE.MeshLambertMaterial({color:0xffffff,side:THREE.DoubleSide}),pads.length),col=new THREE.Color();
  pads.forEach((p,i)=>{const s=.6+rnd()*.8;dm.position.set(p[0],-.345,p[1]);dm.scale.set(s,1,s);dm.rotation.set(0,rnd()*6,0);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.5,.22+rnd()*.1);pm.setColorAt(i,col)});
@@ -529,16 +529,16 @@ const iceM=(()=>{const c=document.createElement('canvas');c.width=c.height=128;c
  const m=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:t,transparent:true,opacity:0,emissive:0x1a2a38}));m.position.y=-.33;m.visible=false;m.receiveShadow=true;sc.add(m);return m})();
 const BRG=[];
 for(const s of[-1,1])for(const row of[1,12]){
- const g=new THREE.Group(),L=4.7,cxw=s*(HW+2.3),zw=row+.5-HH;g.position.set(cxw,0,zw);
+ const g=new THREE.Group(),L=4.0,cxw=s*(HW+1.9),zw=row+.5-HH;g.position.set(cxw,0,zw);
  const bx=(w,h,d,c,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),lam(c));m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;g.add(m);return m};
  const cy=(r,h,c,x,y,z,seg)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.1,h,seg||7),lam(c));m.position.set(x,y,z);m.castShadow=true;g.add(m);return m};
- const NP=20,pw=L/NP;let q=(row*7+s*3+11)|0;const rr=()=>(q=(q*16807)%2147483647)/2147483647;
+ const NP=17,pw=L/NP;let q=(row*7+s*3+11)|0;const rr=()=>(q=(q*16807)%2147483647)/2147483647;
  for(const z of[-.34,.34])bx(L+.1,.1,.09,0x3a2412,0,-.09,z);
  bx(L+.1,.05,.09,0x3a2412,0,-.09,0);
  for(let k=0;k<NP;k++){const sh=rr(),c=(0x8a+(sh*28|0)<<16)|(0x58+(sh*20|0)<<8)|(0x30+(sh*10|0)),w=pw-.015-rr()*.012;
   const pl=bx(w,.055,.9+rr()*.06,c,-L/2+pw*(k+.5),(rr()-.5)*.012,(rr()-.5)*.03);pl.rotation.y=(rr()-.5)*.03;
   for(const z of[-.4,.4])bx(.022,.012,.022,0x2a1a0e,-L/2+pw*(k+.5),.032+pl.position.y,z)}
- for(const px of[-1.7,0,1.7])for(const z of[-.46,.46]){cy(.065,.85,0x4a3018,px,-.2,z);cy(.075,.04,0x2a1a0e,px,.22,z,8);const w=new THREE.Mesh(new THREE.TorusGeometry(.13,.012,5,14),new THREE.MeshBasicMaterial({color:0xcfe6f2,transparent:true,opacity:.4}));w.rotation.x=Math.PI/2;w.position.set(px,-.35,z);g.add(w)}
+ for(const px of[-1.4,0,1.4])for(const z of[-.46,.46]){cy(.065,.85,0x4a3018,px,-.2,z);cy(.075,.04,0x2a1a0e,px,.22,z,8);const w=new THREE.Mesh(new THREE.TorusGeometry(.13,.012,5,14),new THREE.MeshBasicMaterial({color:0xcfe6f2,transparent:true,opacity:.4}));w.rotation.x=Math.PI/2;w.position.set(px,-.35,z);g.add(w)}
  for(const e of[-1,1]){bx(.55,.1,1.15,0x6f6a60,e*(L/2-.1),-.07,0);bx(.4,.06,1.0,0x7e786c,e*(L/2-.1),-.01,0);for(const z of[-.6,.6])bx(.18,.18,.18,0x6f6a60,e*(L/2-.1),.03,z)}
  for(const z of[-.47,.47]){
   bx(L-.1,.045,.055,0x5a3a1c,0,.32,z);bx(L-.1,.03,.04,0x4a2e16,0,.18,z);
@@ -546,11 +546,11 @@ for(const s of[-1,1])for(const row of[1,12]){
   for(let k=0;k<5;k++){const x=-L/2+.2+(k+.5)*(L-.4)/5;const rp=bx((L-.4)/5-.03,.012,.012,0xb89a62,x,.25-.01*Math.sin((k+.5)*Math.PI/5),z)}
   for(const e of[-1,1]){const lx=e*(L/2-.2);const lt=new THREE.Mesh(new THREE.BoxGeometry(.09,.11,.09),new THREE.MeshBasicMaterial({color:0xffc864}));lt.position.set(lx,.48,z);g.add(lt);bx(.12,.02,.12,0x2a1a0e,lx,.55,z);bx(.12,.02,.12,0x2a1a0e,lx,.42,z)}
  }
- sc.add(g);BRG.push({y:row+.5,xi:s<0?.1:COLS-.1,xo:s<0?-4.6:COLS+4.6,s});
+ sc.add(g);BRG.push({y:row+.5,xi:s<0?.1:COLS-.1,xo:s<0?-3.9:COLS+3.9,s});
 }
 function routeTo(px,py,tx,ty){
  const inG=(x,y)=>x>0&&x<COLS&&y>0&&y<ROWS;
- const onB=b=>Math.abs(py-b.y)<.7&&(b.s<0?(px<.25&&px>-5):(px>COLS-.25&&px<COLS+5));
+ const onB=b=>Math.abs(py-b.y)<.7&&(b.s<0?(px<.25&&px>-4.3):(px>COLS-.25&&px<COLS+4.3));
  for(const b of BRG){if(onB(b)){const tin=inG(tx,ty),w=tin?[b.xi,b.y]:[b.xo,b.y];if(Math.hypot(px-w[0],py-w[1])<.5)return[tx,ty];return w}}
  if(inG(px,py)===inG(tx,ty))return[tx,ty];
  let best=null,bd=1e9;for(const b of BRG){const d=Math.hypot(px-(inG(px,py)?b.xi:b.xo),py-b.y);if(d<bd){bd=d;best=b}}
@@ -667,7 +667,7 @@ function rs(){
   cam.position.set(Math.sin(CAMY)*d*Math.cos(CAMA),d*Math.sin(CAMA),Math.cos(CAMY)*d*Math.cos(CAMA));cam.lookAt(0,0,0);cam.updateProjectionMatrix();cam.updateMatrixWorld();
   let ok=true;
   for(const[x,z]of[[-1,-1],[1,-1],[-1,1],[1,1]]){
-   const v=new THREE.Vector3(x*(HW+4.8),0,z*(HH+4.8)).project(cam),px=(v.x+1)/2*w,py=(1-v.y)/2*h-sh;
+   const v=new THREE.Vector3(x*(HW+4.0),0,z*(HH+4.0)).project(cam),px=(v.x+1)/2*w,py=(1-v.y)/2*h-sh;
    if(v.z>=1||px<4||px>w-4||py<ti+4||py>h-bi-4)ok=false;
   }
   if(ok)hi=d;else lo=d;
@@ -1640,7 +1640,7 @@ function diggerVis(t){
  u.da.rotation.z=dg?-.9+Math.sin(tm*10.5)*.9:run?Math.sin(tm*14)*.3:0;
 }
 function diggerPct(){const P=[0,.10,.16,.25];let p=0;for(const t of S.tw)if(T[t.k].digger)p+=P[Math.min(3,t.l)];return p}
-const SHAX=HW+2.8,SHAY=HH+2.8,SHPER=4*(SHAX+SHAY);
+const SHAX=HW+2.3,SHAY=HH+2.3,SHPER=4*(SHAX+SHAY);
 function shPos(s){
  s=((s%SHPER)+SHPER)%SHPER;const a=2*SHAX,b=2*SHAY;let x,z,ang;
  if(s<a){x=-SHAX+s;z=-SHAY;ang=0}
