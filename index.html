@@ -1716,15 +1716,16 @@ function shNear(gx,gy){
 function sharkU(t,dt){
  if(t.ss==null){t.ss=S.tw.filter(x=>T[x.k].shark).indexOf(t)*SHPER/3+Math.random()*10;t.sm='patrol';t.scd=0;t.sat=0}
  t.scd-=dt;
- const l=Math.min(3,t.l),R=3.4+.5*(l-1),CD=0,pp=shPos(t.ss),px=pp[0],py=pp[1];t.sx=px;t.sy=py;
+ const l=Math.min(3,t.l),RC=[1.5,1.8,2.1][l-1],DR=[6,8,10][l-1],hs0=SHPER/2,CD=0,pp=shPos(t.ss),px=pp[0],py=pp[1];t.sx=px;t.sy=py;
  if(t.sm=='patrol'){
   t.ss+=[3.2,3.8,4.4][l-1]*dt;
-  if(t.scd<=0&&S.st=='strid'&&ICE<.3){let bc=null,bd=R;for(const c of S.en){if(c.dead||c.e.air||c.e.boss)continue;const d=Math.hypot(c.x-px,c.y-py);if(d<bd){bd=d;bc=c}}if(bc){t.sm='hunt';t.sc=bc}}
+  if(t.scd<=0&&S.st=='strid'&&ICE<.3){let bc=null,bd=DR;for(const c of S.en){if(c.dead||c.e.air||c.e.boss)continue;const sn=shNear(c.x,c.y),wp=shPos(sn);if(Math.hypot(c.x-wp[0],c.y-wp[1])>RC)continue;const d=Math.abs(((sn-t.ss+hs0)%SHPER+SHPER)%SHPER-hs0);if(d<bd){bd=d;bc=c}}if(bc){t.sm='hunt';t.sc=bc}}
  }else if(t.sm=='hunt'){
   const c=t.sc;
-  if(!c||c.dead||c.e.air||S.en.indexOf(c)<0||Math.hypot(c.x-px,c.y-py)>R*2){t.sm='patrol';t.sc=null;return}
+  if(!c||c.dead||c.e.air||S.en.indexOf(c)<0){t.sm='patrol';t.sc=null;return}
+  {const sn=shNear(c.x,c.y),wp=shPos(sn);if(Math.hypot(c.x-wp[0],c.y-wp[1])>RC+1.2){t.sm='patrol';t.sc=null;return}}
   const hs=SHPER/2;let ds=shNear(c.x,c.y)-t.ss;ds=((ds+hs)%SHPER+SHPER)%SHPER-hs;
-  if(Math.hypot(c.x-px,c.y-py)<1.6||Math.abs(ds)<.4){t.sm='jump';t.sjt=0;t.sj0=[px,py];t.sat=0;sfxAtk('shark',px)}
+  if(Math.hypot(c.x-px,c.y-py)<1.1||Math.abs(ds)<.4){t.sm='jump';t.sjt=0;t.sj0=[px,py];t.sat=0;sfxAtk('shark',px)}
   else t.ss+=Math.sign(ds)*Math.min(Math.abs(ds),[10,12,14][l-1]*dt);
  }else{
   t.sjt+=dt;const k=t.sjt/.8,c=t.sc;
