@@ -387,7 +387,7 @@ const tc=document.createElement('canvas');tc.width=1904;tc.height=784;
   b.putImageData(id,0,0)}
 })();
 const gtex=new THREE.CanvasTexture(tc);gtex.anisotropy=Math.min(8,+R.capabilities.getMaxAnisotropy()||1);
-const gmesh=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gtex,transparent:true,alphaTest:.05}));gmesh.receiveShadow=true;sc.add(gmesh);
+const gmesh=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gtex,transparent:true,alphaTest:.05}));gmesh.receiveShadow=true;gmesh.scale.set((COLS+.8)/COLS,1,(ROWS+.8)/ROWS);sc.add(gmesh);
 function outline(hx,hz,r,amp,ph){const P=[],n=14,seg=[[1,1],[-1,1],[-1,-1],[1,-1]];let L=0;
  const nz=u=>(Math.sin(u*.7+ph)+.6*Math.sin(u*1.9+ph*2.1)+.35*Math.sin(u*3.7+ph*.6))/1.95*.5+.5;
  const raw=[];
