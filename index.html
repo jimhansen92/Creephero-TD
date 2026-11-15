@@ -370,7 +370,28 @@ const tc=document.createElement('canvas');tc.width=1904;tc.height=784;
 })();
 const gtex=new THREE.CanvasTexture(tc);gtex.anisotropy=Math.min(8,+R.capabilities.getMaxAnisotropy()||1);
 const gmesh=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gtex}));gmesh.receiveShadow=true;sc.add(gmesh);
-{const outer=new THREE.Mesh((()=>{const W=COLS+.6+2.4*2-.2,H=ROWS+.6+2.4*2-.2,sh=new THREE.Shape();sh.moveTo(-70,-70);sh.lineTo(70,-70);sh.lineTo(70,70);sh.lineTo(-70,70);sh.lineTo(-70,-70);const hl=new THREE.Path();hl.moveTo(-W/2,-H/2);hl.lineTo(-W/2,H/2);hl.lineTo(W/2,H/2);hl.lineTo(W/2,-H/2);hl.lineTo(-W/2,-H/2);sh.holes.push(hl);return new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2)})(),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
+function outline(hx,hz,r,amp,ph){const P=[],n=14,seg=[[1,1],[-1,1],[-1,-1],[1,-1]];let L=0;
+ const nz=u=>(Math.sin(u*.7+ph)+.6*Math.sin(u*1.9+ph*2.1)+.35*Math.sin(u*3.7+ph*.6))/1.95*.5+.5;
+ const raw=[];
+ for(let q=0;q<4;q++){const[sx,sz]=seg[q],cx=sx*(hx-r),cz=sz*(hz-r),a0=[0,Math.PI/2,Math.PI,Math.PI*1.5][q];
+  for(let k=0;k<=n;k++){const a=a0+k/n*Math.PI/2;raw.push([cx+Math.cos(a)*r,cz+Math.sin(a)*r,Math.cos(a),Math.sin(a)])}}
+ const out=[];let acc=0;
+ for(let i=0;i<raw.length;i++){const c=raw[i],pv=raw[(i+raw.length-1)%raw.length];acc+=Math.hypot(c[0]-pv[0],c[1]-pv[1]);
+  const st=raw[i-1];
+  out.push([c,acc])}
+ // add straight-edge subdivisions
+ const fin=[];
+ for(let i=0;i<out.length;i++){const a=out[i][0],b=out[(i+1)%out.length][0],d=Math.hypot(b[0]-a[0],b[1]-a[1]),m=Math.max(1,Math.round(d/.8));
+  const sx=(b[0]-a[0])/d||0,sz=(b[1]-a[1])/d||0;
+  for(let k=0;k<m;k++){const t=k/m,x=a[0]+(b[0]-a[0])*t,z=a[1]+(b[1]-a[1])*t;
+   let nx=a[2]+(b[2]-a[2])*t,nz2=a[3]+(b[3]-a[3])*t;const nl=Math.hypot(nx,nz2)||1;fin.push([x,z,nx/nl,nz2/nl])}}
+ let u=0;const pts=[];
+ for(let i=0;i<fin.length;i++){if(i)u+=Math.hypot(fin[i][0]-fin[i-1][0],fin[i][1]-fin[i-1][1]);const o=amp*nz(u*.55),f=fin[i];pts.push([f[0]+f[2]*o,f[1]+f[3]*o])}
+ return pts}
+function pathOf(pts,P){P.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)P.lineTo(pts[i][0],pts[i][1]);P.lineTo(pts[0][0],pts[0][1]);return P}
+{const sh=new THREE.Shape();sh.moveTo(-70,-70);sh.lineTo(70,-70);sh.lineTo(70,70);sh.lineTo(-70,70);sh.lineTo(-70,-70);
+ sh.holes.push(pathOf(outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7),new THREE.Path()));
+ const outer=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
 function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);FOR.m.forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
 (function(){
@@ -398,11 +419,11 @@ const MINES=[];
 const gc=document.createElement('canvas');gc.width=COLS*32;gc.height=ROWS*32;
 {const b=gc.getContext('2d');b.strokeStyle='rgba(255,255,255,.4)';b.lineWidth=1;for(let x=0;x<=COLS;x++){b.beginPath();b.moveTo(x*32,0);b.lineTo(x*32,ROWS*32);b.stroke()}for(let y=0;y<=ROWS;y++){b.beginPath();b.moveTo(0,y*32);b.lineTo(COLS*32,y*32);b.stroke()}}
 const gridM=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,opacity:0,depthWrite:false}));gridM.position.y=.015;gridM.visible=false;sc.add(gridM);
-const rim=new THREE.Mesh(new THREE.BoxGeometry(COLS+.6,.7,ROWS+.6),lam(0x241d17));rim.position.y=-.37;sc.add(rim);
+const rim=new THREE.Mesh(new THREE.ExtrudeGeometry(pathOf(outline(COLS/2+.45,ROWS/2+.45,1.0,.25,.6),new THREE.Shape()),{depth:.7,bevelEnabled:false}).rotateX(-Math.PI/2),lam(0x241d17));rim.position.y=-.72;sc.add(rim);
 const MOATW=2.4;
 const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
-{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2,ROWS+.6+MOATW*2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);
- const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2,.16,ROWS+1.2+MOATW*2),lam(0x3a3224));bank.position.y=-.5;sc.add(bank)}
+{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);
+ const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2+2,.16,ROWS+1.2+MOATW*2+2),lam(0x3a3224));bank.position.y=-.5;sc.add(bank)}
 const BRG=[];
 for(const s of[-1,1])for(const row of[1,12]){
  const g=new THREE.Group(),L=3.5,cxw=s*(HW+1.45),zw=row+.5-HH;g.position.set(cxw,0,zw);
