@@ -370,7 +370,7 @@ const tc=document.createElement('canvas');tc.width=1904;tc.height=784;
 })();
 const gtex=new THREE.CanvasTexture(tc);gtex.anisotropy=Math.min(8,+R.capabilities.getMaxAnisotropy()||1);
 const gmesh=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gtex}));gmesh.receiveShadow=true;sc.add(gmesh);
-{const outer=new THREE.Mesh(new THREE.PlaneGeometry(140,140).rotateX(-Math.PI/2),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
+{const outer=new THREE.Mesh((()=>{const W=COLS+.6+2.4*2-.2,H=ROWS+.6+2.4*2-.2,sh=new THREE.Shape();sh.moveTo(-70,-70);sh.lineTo(70,-70);sh.lineTo(70,70);sh.lineTo(-70,70);sh.lineTo(-70,-70);const hl=new THREE.Path();hl.moveTo(-W/2,-H/2);hl.lineTo(-W/2,H/2);hl.lineTo(W/2,H/2);hl.lineTo(W/2,-H/2);hl.lineTo(-W/2,-H/2);sh.holes.push(hl);return new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2)})(),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
 function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=[.3,.95,1.5];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);FOR.m.forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
 (function(){
@@ -398,11 +398,11 @@ const MINES=[];
 const gc=document.createElement('canvas');gc.width=COLS*32;gc.height=ROWS*32;
 {const b=gc.getContext('2d');b.strokeStyle='rgba(255,255,255,.4)';b.lineWidth=1;for(let x=0;x<=COLS;x++){b.beginPath();b.moveTo(x*32,0);b.lineTo(x*32,ROWS*32);b.stroke()}for(let y=0;y<=ROWS;y++){b.beginPath();b.moveTo(0,y*32);b.lineTo(COLS*32,y*32);b.stroke()}}
 const gridM=new THREE.Mesh(new THREE.PlaneGeometry(COLS,ROWS).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gc),transparent:true,opacity:0,depthWrite:false}));gridM.position.y=.015;gridM.visible=false;sc.add(gridM);
-const rim=new THREE.Mesh(new THREE.BoxGeometry(COLS+.6,.3,ROWS+.6),lam(0x241d17));rim.position.y=-.17;sc.add(rim);
+const rim=new THREE.Mesh(new THREE.BoxGeometry(COLS+.6,.7,ROWS+.6),lam(0x241d17));rim.position.y=-.37;sc.add(rim);
 const MOATW=2.4;
 const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
-{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2,ROWS+.6+MOATW*2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.1;water.receiveShadow=true;sc.add(water);
- const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2,.16,ROWS+1.2+MOATW*2),lam(0x3a3224));bank.position.y=-.2;sc.add(bank)}
+{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2,ROWS+.6+MOATW*2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);
+ const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2,.16,ROWS+1.2+MOATW*2),lam(0x3a3224));bank.position.y=-.5;sc.add(bank)}
 const BRG=[];
 for(const s of[-1,1])for(const row of[1,12]){
  const g=new THREE.Group(),L=3.5,cxw=s*(HW+1.45),zw=row+.5-HH;g.position.set(cxw,0,zw);
@@ -776,14 +776,14 @@ function mkModel(k,lv,br){
   ad(new THREE.ConeGeometry(.07,.3,4),0x5a6a78,.05,.22,0).scale.z=.3;
   const sk=u.sk=new THREE.Group();g.add(sk);sk.visible=false;
   const wp=(par,geo,col,x,y,z)=>{const m=ad(geo,col,x,y,z);g.remove(m);par.add(m);return m};
-  const skb=u.skb=new THREE.Group();skb.position.y=-.28;sk.add(skb);
+  const skb=u.skb=new THREE.Group();skb.position.y=-.52;sk.add(skb);
   wp(skb,sph(.3),0x5a6a78,0,0,0).scale.set(1.7,.45,.5);
   wp(skb,sph(.22),0xdde4ea,.05,-.06,0).scale.set(1.6,.4,.45);
   wp(skb,new THREE.ConeGeometry(.12,.3,4),0x5a6a78,-.55,.04,0).rotation.z=Math.PI/2;
   wp(skb,sph(.02),0x101010,.38,.05,.1);wp(skb,sph(.02),0x101010,.38,.05,-.1);
   for(let i=-2;i<=2;i++)wp(skb,new THREE.ConeGeometry(.018,.06,4),0xffffff,.47,-.04,i*.04).rotation.z=Math.PI;
   wp(sk,new THREE.ConeGeometry(.1,.34,4),0x4a5a68,0,.04,0).scale.z=.28;
-  const w=u.skw=wp(sk,new THREE.RingGeometry(.18,.24,20).rotateX(-Math.PI/2),0xffffff,0,-.085,0);w.material.transparent=true;w.material.opacity=.45;
+  const w=u.skw=wp(sk,new THREE.RingGeometry(.18,.24,20).rotateX(-Math.PI/2),0xffffff,0,-.345,0);w.material.transparent=true;w.material.opacity=.45;
 }else if(d.kind=='lumber'){
   ad(new THREE.CylinderGeometry(.42,.46,.05,18),0x4a3422,0,.025,0);
   const sr=ad(new THREE.TorusGeometry(.4,.025,6,20),0x6aa040,0,.06,0);sr.rotation.x=Math.PI/2;
