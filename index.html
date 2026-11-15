@@ -541,7 +541,7 @@ const iceM=(()=>{const c=document.createElement('canvas');c.width=c.height=128;c
  for(let i=0;i<40;i++){x.fillStyle='rgba('+(200+rnd()*50|0)+',240,255,'+(.15+rnd()*.25)+')';x.beginPath();x.ellipse(rnd()*128,rnd()*128,6+rnd()*16,3+rnd()*8,rnd()*3,0,7);x.fill()}
  x.strokeStyle='rgba(90,140,170,.5)';x.lineWidth=1.2;for(let i=0;i<14;i++){let px=rnd()*128,py=rnd()*128;x.beginPath();x.moveTo(px,py);for(let k=0;k<4;k++){px+=(rnd()-.5)*34;py+=(rnd()-.5)*34;x.lineTo(px,py)}x.stroke()}
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);
- const m=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:t,transparent:true,opacity:0,emissive:0x1a2a38}));m.position.y=-.33;m.visible=false;m.receiveShadow=true;sc.add(m);return m})();
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:t,transparent:true,opacity:0,emissive:0x1a2a38}));m.position.y=-.232;m.visible=false;m.receiveShadow=true;sc.add(m);return m})();
 const BRG=[];
 for(const s of[-1,1])for(const row of[1,12]){
  const g=new THREE.Group(),L=4.0,cxw=s*(HW+1.9),zw=row+.5-HH;g.position.set(cxw,0,zw);
@@ -2449,7 +2449,7 @@ const snowGeo=new THREE.BufferGeometry();snowGeo.setAttribute('position',new THR
 const snowMat=new THREE.PointsMaterial({color:0xffffff,size:.2,transparent:true,opacity:0,depthWrite:false});
 const snowPts=new THREE.Points(snowGeo,snowMat);snowPts.frustumCulled=false;snowPts.visible=false;sc.add(snowPts);
 function tideStep(dt){
- TIDE=-.36+.11*Math.sin(tm*.2)*(1-Math.min(1,ICE*1.2));
+ TIDE=-.25;
  if(WTR){WTR.position.y=TIDE;WTR2.position.y=TIDE+.008;const d=TIDE+.36;AQ[0].position.y=d;AQ[1].position.y=d}
 }
 function snowStep(dt){
