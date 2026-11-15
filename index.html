@@ -505,7 +505,7 @@ const base=new THREE.Group(),baseFl=[];let baseCore=null;
 {const L=new THREE.PointLight(0xfff2a0,.4,4);L.position.set(0,1.6,0);base.add(L)}
 base.position.set(BASE[0]+.5-HW,0,BASE[1]+.5-HH);sc.add(base);
 const bcn=new THREE.Mesh(new THREE.CylinderGeometry(.22,.4,6,16,1,true),new THREE.MeshBasicMaterial({color:0xfff2a0,transparent:true,opacity:.13,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));bcn.position.set(BASE[0]+.5-HW,3.2,BASE[1]+.5-HH);sc.add(bcn);
-const bring=new THREE.Mesh(new THREE.TorusGeometry(.7,.03,6,32),new THREE.MeshBasicMaterial({color:0xfff2a0,transparent:true,opacity:.8}));bring.rotation.x=Math.PI/2;bring.position.set(BASE[0]+.5-HW,.9,BASE[1]+.5-HH);sc.add(bring);
+const bring=new THREE.Mesh(new THREE.TorusGeometry(.7,.03,6,32),new THREE.MeshBasicMaterial({color:0xfff2a0,transparent:true,opacity:.8}));bring.rotation.x=Math.PI/2;bring.position.set(BASE[0]+.5-HW,.9,BASE[1]+.5-HH);sc.add(bring);bcn.visible=false;bring.visible=false;
 const portals=SPW.map(p=>{const m=new THREE.Mesh(SPH,new THREE.MeshBasicMaterial({color:0xc45fd0,transparent:true,opacity:.7}));m.position.set(p[0]+.5-HW,.6,p[1]+.5-HH);sc.add(m);return m});
 const prings=[];SPW.forEach(p=>{for(let k=0;k<2;k++){const r=new THREE.Mesh(new THREE.TorusGeometry(.55+k*.2,.04,6,28),new THREE.MeshBasicMaterial({color:k?0xff80ff:0xc45fd0,transparent:true,opacity:.8}));r.position.set(p[0]+.5-HW,.6,p[1]+.5-HH);r.rotation.x=Math.PI/2*(k?.35:.65);sc.add(r);prings.push(r)}});
 portals.forEach(m=>{m.visible=false});prings.forEach(r=>{r.visible=false});
