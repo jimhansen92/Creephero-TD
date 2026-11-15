@@ -2114,17 +2114,15 @@ function pickEnemy(e){
 }
 let HMK=null;
 function hmkSet(x,y){
- if(!HMK){const g=new THREE.Group(),m=new THREE.MeshBasicMaterial({color:0xff2a2a,transparent:true,opacity:1,depthWrite:false});HMK={g,m,a:0,lt:tm,ar:[]};
-  for(let i=0;i<4;i++){const c=new THREE.Mesh(new THREE.ConeGeometry(.09,.22,6),m);c.rotation.x=Math.PI;const a=i*Math.PI/2+Math.PI/4;c.position.set(Math.cos(a)*.26,.3,Math.sin(a)*.26);g.add(c);HMK.ar.push(c)}
-  g.visible=false}
+ if(!HMK){const m=new THREE.MeshBasicMaterial({color:0xff3a2a,transparent:true,opacity:1,depthWrite:false,side:THREE.DoubleSide}),r=new THREE.Mesh(new THREE.RingGeometry(.88,1,40).rotateX(-Math.PI/2),m);r.position.y=.05;r.visible=false;HMK={g:r,m,t0:null}}
  if(!HMK.g.parent)gF.add(HMK.g);
- HMK.g.position.set(x-HW,0,y-HH);HMK.t0=tm;HMK.g.visible=true;
+ HMK.g.position.set(x-HW,.05,y-HH);HMK.t0=tm;HMK.g.visible=true;
 }
 function hmkStep(){
  if(!HMK||HMK.t0==null)return;
- const k=(tm-HMK.t0)/.45;
+ const k=(tm-HMK.t0)/.7;
  if(k>=1){HMK.g.visible=false;HMK.t0=null;return}
- HMK.m.opacity=1;const y=.55-.8*k*k;HMK.ar.forEach(c=>{c.position.y=y});
+ const e=1-(1-k)*(1-k);HMK.g.scale.setScalar(.12+.75*e);HMK.m.opacity=.9*(1-k)*(1-k*.3);
 }
 function rightClick(e){
  const p=ground(e);if(!p)return;
