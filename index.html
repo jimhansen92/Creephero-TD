@@ -403,7 +403,7 @@ const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
 function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5,1.4,1.82]:[.3,.95,1.5,1.175,1.675];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);(q.b?FOR.m2:FOR.m).forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
 (function(){
  let sd=5;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
- const N=68,NL=68,M=40,c1=new THREE.InstancedMesh(new THREE.ConeGeometry(.265,.46,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),c2=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.36,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
+ const N=68,NL=68,M=0,c1=new THREE.InstancedMesh(new THREE.ConeGeometry(.265,.46,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),c2=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.36,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
  const spot=()=>{for(;;){const x=(rnd()*2-1)*(HW+11.5),z=(rnd()*2-1)*(HH+9);if((Math.abs(x)>HW+3.4||Math.abs(z)>HH+3.4)&&!(Math.abs(x)>HW&&Math.abs(Math.abs(z)-5.5)<1.4))return[x,z]}};
  const PL=[],clr=(x,z,r)=>{for(const q of PL)if(Math.hypot(x-q[0],z-q[1])<r+q[2])return false;for(const q of MINEPOS)if(Math.hypot(x-q[0],z-q[1])<r+.9)return false;return true};
  for(let i=0;i<N;i++){const s=.8+rnd()*1.1,rd=.52*s+.12;let x=0,z=0,ok=false;for(let k=0;k<500&&!ok;k++){[x,z]=spot();ok=clr(x,z,rd)}
@@ -445,7 +445,7 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5
  for(let x=-A;x<=A;x+=.9+rnd()*1.4){if(rnd()<.55){add(x,-B,0);} if(rnd()<.55){add(x,B,0)}}
  for(let z=-B;z<=B;z+=.9+rnd()*1.4){if(rnd()<.55)add(-A,z,0);if(rnd()<.55)add(A,z,0)}
  for(const[sx,sz]of[[1,1],[1,-1],[-1,1],[-1,-1]])add(sx*(A-.12),sz*(B-.12),1);
- Bu.length=0;
+ Bu.length=0;R.length=0;
  const rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x7a766c),R.length),bs=new THREE.InstancedMesh(new THREE.SphereGeometry(.4,8,6),lam(0xffffff),Bu.length),col=new THREE.Color();
  R.forEach((r,i)=>{dm.position.set(r[0],r[2]*.28,r[1]);dm.scale.set(r[2]*1.2,r[2]*.7,r[2]);dm.rotation.set(rnd(),r[3],rnd());dm.updateMatrix();rk.setMatrixAt(i,dm.matrix)});
  Bu.forEach((r,i)=>{dm.position.set(r[0],r[2]*.3,r[1]);dm.scale.set(r[2],r[2]*.75,r[2]);dm.rotation.set(0,rnd()*6,0);dm.updateMatrix();bs.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.45+rnd()*.15,.2+rnd()*.1);bs.setColorAt(i,col)});
