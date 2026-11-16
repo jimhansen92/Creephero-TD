@@ -598,7 +598,7 @@ function foamStep(){
    fp[i*6+3]=q[0]+n[0]*sgn*(d0+.13*j);fp[i*6+4]=y;fp[i*6+5]=-(q[1]+n[1]*sgn*(d0+.13*j))}
   f.m.geometry.attributes.position.needsUpdate=true;f.m.material.opacity=ICE>.5?0:.3+.12*Math.sin(tm*1.7)}
 }
-const AQ=[];let PADS=[],WPTS=[],WOK=()=>true;
+const AQ=[];let PADB=null,PADS=[],WPTS=[],WOK=()=>true;
 (function(){
  let sd=57;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
  const RIM=outline(COLS/2+1.2,ROWS/2+1.2,1.75,.25,.6),SH=outline(COLS/2+2.6,ROWS/2+2.6,2.6,.45,1.7);
@@ -607,9 +607,9 @@ const AQ=[];let PADS=[],WPTS=[],WOK=()=>true;
  const pts=(n,m,minD,arr)=>{const o=[];let t=0;while(o.length<n&&t++<6000){const x=(rnd()*2-1)*(HW+4.2),z=(rnd()*2-1)*(HH+4.2);if(!okp(x,z,m))continue;if(arr.concat(o).some(q=>Math.hypot(q[0]-x,q[1]-z)<minD))continue;o.push([x,z])}return o};
  const pads=pts(10,.35,2.5,[]),weeds=pts(46,.2,.9,pads);PADS=pads;WPTS=pts(90,.5,.7,[]);WOK=(x,z)=>okp(x,z,.3);
  const pg=new THREE.CircleGeometry(.3,14,.5,5.5).rotateX(-Math.PI/2),pm=new THREE.InstancedMesh(pg,new THREE.MeshLambertMaterial({color:0xffffff,side:THREE.DoubleSide}),pads.length),col=new THREE.Color();
- pads.forEach((p,i)=>{const s=.6+rnd()*.8;dm.position.set(p[0],-.345,p[1]);dm.scale.set(s,1,s);dm.rotation.set(0,rnd()*6,0);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.5,.22+rnd()*.1);pm.setColorAt(i,col)});
- const fl=pads.filter(()=>rnd()<.25),fm=new THREE.InstancedMesh(new THREE.SphereGeometry(.07,7,5),new THREE.MeshLambertMaterial({color:0xffb0cc,emissive:0x4a1a28}),Math.max(1,fl.length));
- fl.forEach((p,i)=>{dm.position.set(p[0],-.31,p[1]);dm.scale.set(1,.7,1);dm.rotation.set(0,0,0);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});fm.count=fl.length;
+ const pd=[];pads.forEach((p,i)=>{const s=.6+rnd()*.8,ry=rnd()*6;pd.push({x:p[0],z:p[1],s,ry,ph:rnd()*6,f:.8+rnd()*.6});dm.position.set(p[0],-.345,p[1]);dm.scale.set(s,1,s);dm.rotation.set(0,ry,0);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.5,.22+rnd()*.1);pm.setColorAt(i,col)});
+ const fli=pads.map((_,i)=>i).filter(()=>rnd()<.25),fl=fli.map(i=>pads[i]),fm=new THREE.InstancedMesh(new THREE.SphereGeometry(.07,7,5),new THREE.MeshLambertMaterial({color:0xffb0cc,emissive:0x4a1a28}),Math.max(1,fl.length));
+ fl.forEach((p,i)=>{dm.position.set(p[0],-.31,p[1]);dm.scale.set(1,.7,1);dm.rotation.set(0,0,0);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});fm.count=fl.length;PADB={pm,fm,pd,fli,dm};
  const NW=weeds.length*5,wm=new THREE.InstancedMesh(new THREE.ConeGeometry(.035,1,4).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0xffffff}),NW);let wi=0;
  weeds.forEach(p=>{for(let k=0;k<5;k++){const h=.45+rnd()*.35,a=rnd()*6,t=.12+rnd()*.28;dm.position.set(p[0]+(rnd()-.5)*.25,-.49,p[1]+(rnd()-.5)*.25);dm.scale.set(1,h,1);dm.rotation.set(Math.sin(a)*t,0,Math.cos(a)*t);dm.updateMatrix();wm.setMatrixAt(wi,dm.matrix);col.setHSL(.3+rnd()*.06,.5,.16+rnd()*.1);wm.setColorAt(wi++,col)}});
  for(const m of[pm,fm,wm]){m.frustumCulled=false;sc.add(m);AQ.push(m)}
@@ -2610,7 +2610,50 @@ function faunaStep(dt){
   const a=Math.sin(d.ph*70)*.5;for(const w of d.ws)w.w.rotation.x=a*w.s;
  }
 }
-function tideStep(dt){faunaStep(dt);WT.value=tm;
+function padStep(){if(!PADB)return;const{pm,fm,pd,fli,dm}=PADB;
+ pd.forEach((q,i)=>{const t=tm*q.f+q.ph;q.y=-.33+Math.sin(t*1.7)*.014+Math.sin(t*2.9+1)*.005;q.rx=Math.sin(t*1.3)*.04;q.rz=Math.cos(t*1.1+.5)*.04;
+  dm.position.set(q.x,q.y,q.z);dm.scale.set(q.s,1,q.s);dm.rotation.set(q.rx,q.ry+Math.sin(t*.4)*.12,q.rz);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix)});
+ pm.instanceMatrix.needsUpdate=true;
+ fli.forEach((pi,i)=>{const q=pd[pi];dm.position.set(q.x,q.y+.035,q.z);dm.scale.set(1,.7,1);dm.rotation.set(q.rx,0,q.rz);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});
+ fm.instanceMatrix.needsUpdate=true}
+const FISH={f:[],sp:[],t:3,init:0};
+function fishInit(){FISH.init=1;
+ const cols=[0x9aa8b0,0xc87a3a,0x7a8a6a];
+ for(let i=0;i<3;i++){const g=new THREE.Group(),m=new THREE.MeshLambertMaterial({color:cols[i]}),bm=new THREE.MeshLambertMaterial({color:0xe8e4d8});
+  const b=new THREE.Mesh(new THREE.SphereGeometry(.1,10,7),m);b.scale.set(1.7,.75,.5);g.add(b);
+  const be=new THREE.Mesh(new THREE.SphereGeometry(.085,8,5),bm);be.scale.set(1.6,.5,.42);be.position.y=-.025;g.add(be);
+  const tl=new THREE.Mesh(new THREE.ConeGeometry(.075,.13,4),m);tl.rotation.z=-Math.PI/2;tl.scale.set(1,1,.25);tl.position.x=-.21;g.add(tl);
+  const df=new THREE.Mesh(new THREE.ConeGeometry(.04,.08,3),m);df.scale.set(1.4,1,.2);df.position.set(-.02,.08,0);g.add(df);
+  for(const z of[-.045,.045]){const e=new THREE.Mesh(new THREE.SphereGeometry(.014,5,4),new THREE.MeshBasicMaterial({color:0x111111}));e.position.set(.12,.02,z);g.add(e)}
+  g.visible=false;sc.add(g);FISH.f.push({g,tl,on:0,k:0})}
+ for(let i=0;i<6;i++){const r=new THREE.Mesh(new THREE.RingGeometry(.06,.11,22).rotateX(-Math.PI/2),new THREE.MeshBasicMaterial({color:0xeaf6ff,transparent:true,opacity:0,depthWrite:false}));r.visible=false;sc.add(r);
+  const dr=[];for(let k=0;k<6;k++){const d=new THREE.Mesh(new THREE.SphereGeometry(.022,5,4),new THREE.MeshBasicMaterial({color:0xdff2ff,transparent:true,opacity:.8}));d.visible=false;sc.add(d);dr.push({d,vx:0,vy:0,vz:0})}
+  FISH.sp.push({r,dr,t:9})}}
+function splash(x,z){const s=FISH.sp.reduce((a,b)=>b.t>a.t?b:a);s.t=0;s.r.position.set(x,TIDE+.012,z);s.r.visible=true;
+ for(const q of s.dr){const a=Math.random()*6.28,v=.5+Math.random()*.7;q.vx=Math.cos(a)*v;q.vz=Math.sin(a)*v;q.vy=1.2+Math.random()*1.1;q.d.position.set(x,TIDE+.03,z);q.d.visible=true}}
+function fishStep(dt){
+ if(!FISH.init)fishInit();if(dt<=0)return;dt=Math.min(dt,.05);
+ const hide=ICE>.5;
+ for(const s of FISH.sp){if(s.t>=9)continue;s.t+=dt;const k=s.t/.9;
+  if(k<1){s.r.scale.setScalar(1+k*4.5);s.r.material.opacity=.75*(1-k)}else s.r.visible=false;
+  for(const q of s.dr){if(!q.d.visible)continue;q.vy-=6*dt;q.d.position.x+=q.vx*dt;q.d.position.y+=q.vy*dt;q.d.position.z+=q.vz*dt;if(q.d.position.y<TIDE)q.d.visible=false}
+  if(s.t>2)s.t=9}
+ for(const f of FISH.f){if(!f.on)continue;
+  f.k+=dt/f.dur;const k=Math.min(1,f.k),x=f.x0+(f.x1-f.x0)*k,z=f.z0+(f.z1-f.z0)*k,y=TIDE-.08+Math.sin(Math.PI*k)*f.h;
+  f.g.position.set(x,y,z);f.g.rotation.set(0,f.ry,0);f.g.rotateZ(Math.atan(Math.cos(Math.PI*k)*Math.PI*f.h/f.len)*.9);
+  f.tl.rotation.y=Math.sin(f.k*40)*.5;
+  if(!f.sp2&&k>.93){f.sp2=1;splash(f.x1,f.z1)}
+  if(k>=1){f.on=0;f.g.visible=false}}
+ if(hide||!WPTS.length)return;
+ FISH.t-=dt;if(FISH.t>0)return;FISH.t=4+Math.random()*8;
+ const f=FISH.f.find(f=>!f.on);if(!f)return;
+ for(let n=0;n<20;n++){const q=WPTS[Math.random()*WPTS.length|0],a=Math.random()*6.28,len=.9+Math.random()*.7,x1=q[0]+Math.cos(a)*len,z1=q[1]+Math.sin(a)*len;
+  if(!WOK(x1,z1)||!WOK((q[0]+x1)/2,(q[1]+z1)/2))continue;
+  if(PADB&&PADB.pd.some(p=>Math.hypot(p.x-q[0],p.z-q[1])<.5||Math.hypot(p.x-x1,p.z-z1)<.5))continue;
+  Object.assign(f,{on:1,k:0,sp2:0,x0:q[0],z0:q[1],x1,z1,len,h:.45+Math.random()*.35,dur:.75+len*.15,ry:-a});
+  f.g.visible=true;splash(q[0],q[1]);break}
+}
+function tideStep(dt){faunaStep(dt);padStep();fishStep(dt);WT.value=tm;
  TIDE=-.25;
  if(WTR){WTR.position.y=TIDE;WTR2.position.y=TIDE+.008;const d=TIDE+.36;AQ[0].position.y=d;AQ[1].position.y=d}
 }
