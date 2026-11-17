@@ -403,6 +403,23 @@ CON=new THREE.ConeGeometry(1,1,8),CYU=new THREE.CylinderGeometry(1,1,1,8),BXU=ne
 const lam=c=>new THREE.MeshLambertMaterial({color:c}),bas=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o==null?1:o});
 const hex=c=>new THREE.Color(c).getHex();
 const cast=o=>{o.traverse(m=>{if(m.isMesh&&m.material&&!m.material.transparent&&!m.material.isMeshBasicMaterial){m.castShadow=true;m.receiveShadow=true}})};
+// Slår ihop flera små delar (med samma material) till en geometri, så att de ritas med ett enda anrop i stället för ett per del.
+function mergeGeo(meshes){
+ let n=0;const gs=meshes.map(o=>{o.updateMatrix();const g=(o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone()).applyMatrix4(o.matrix);n+=g.attributes.position.count;return g});
+ const P=new Float32Array(n*3),N=new Float32Array(n*3),U=new Float32Array(n*2);let k=0;
+ for(const g of gs){const c=g.attributes.position.count;P.set(g.attributes.position.array,k*3);if(g.attributes.normal)N.set(g.attributes.normal.array,k*3);if(g.attributes.uv)U.set(g.attributes.uv.array,k*2);k+=c;g.dispose()}
+ const m=new THREE.BufferGeometry();m.setAttribute('position',new THREE.BufferAttribute(P,3));m.setAttribute('normal',new THREE.BufferAttribute(N,3));m.setAttribute('uv',new THREE.BufferAttribute(U,2));m.computeBoundingSphere();return m}
+// Försvarare: slår ihop de fasta delarna (direkta barn som inte används av animationerna i userData) per material.
+// Osynliga delar tas bort, genomskinliga och animerade delar lämnas orörda.
+function mergeStatic(g,u){
+ const keep=new Set(),add=v=>{if(v&&v.isObject3D)keep.add(v);else if(Array.isArray(v))v.forEach(add)};for(const k in u)add(u[k]);
+ const groups=new Map(),drop=[];
+ for(const o of g.children){if(!o.isMesh||keep.has(o)||o.children.length)continue;if(!o.visible){drop.push(o);continue}
+  const m=o.material;if(!m||Array.isArray(m)||m.transparent||m.onBeforeCompile.toString().length>40)continue;
+  const key=m.type+'|'+m.color.getHex()+'|'+(m.map?m.map.uuid:'')+'|'+(m.emissive?m.emissive.getHex():'')+'|'+m.side+'|'+(o.userData.em||0);
+  if(!groups.has(key))groups.set(key,[]);groups.get(key).push(o)}
+ drop.forEach(o=>g.remove(o));
+ for(const l of groups.values()){if(l.length<2)continue;const m=new THREE.Mesh(mergeGeo(l),l[0].material);m.userData.em=l[0].userData.em||0;l.forEach(o=>g.remove(o));g.add(m)}}
 const GLT=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),g=x.createRadialGradient(32,32,2,32,32,32);g.addColorStop(0,'rgba(255,255,255,.9)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
 const GLG=new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),
 GLM=new THREE.MeshBasicMaterial({map:GLT,color:0xffc060,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}),
@@ -510,6 +527,25 @@ const MIST=[];
   const m=new THREE.Mesh(GLG,mat),s=9+r()*8;m.position.set(px,.5+r()*2.5,pz);m.scale.set(s,1,s*(.6+r()*.4));m.rotation.y=r()*6;m.renderOrder=3;sc.add(m);
   MIST.push({m,x:px,z:pz,s,ph:r()*6.3,sp:.08+r()*.12})}
 })();
+// Svaga jordstigar från broarnas ytterände ut genom skogen (i den trädfria korridoren), som smalnar av och försvinner i dimman
+(function(){
+ const S=64,SL=256,c=document.createElement('canvas');c.width=SL;c.height=S;const x=c.getContext('2d');let sd=301;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const img=x.createImageData(SL,S);for(let j=0;j<S;j++)for(let i=0;i<SL;i++){const v=Math.abs(j/(S-1)*2-1),edge=1-Math.min(1,Math.max(0,(v-.55)/.45)),a=edge*edge*(3-2*edge),k=(j*SL+i)*4,n=1;
+  img.data[k]=55;img.data[k+1]=43;img.data[k+2]=31;img.data[k+3]=a*32}
+ x.putImageData(img,0,0);
+ const tx=new THREE.CanvasTexture(c);tx.wrapS=THREE.RepeatWrapping;
+ const mat=new THREE.MeshLambertMaterial({map:tx,color:0xb8b0a0,transparent:true,depthWrite:false,side:THREE.DoubleSide});
+ for(const s of[-1,1])for(const zc of[1.5-HH,12.5-HH]){
+  const x0=s*(HW+3.9),len=13,N=60,ph=(zc>0?1.3:0)+(s>0?2.1:0),P=[];
+  for(let i=0;i<=N;i++){const t=i/N,px=x0+s*t*len,pz=zc+Math.sin(t*5+ph)*.55*t+Math.sin(t*11+ph*2)*.12*t;P.push([px,pz,t])}
+  const pos=[],uv=[],idx=[];let u=0;
+  P.forEach((p,i)=>{const q=P[Math.min(N,i+1)],o=P[Math.max(0,i-1)],dx=q[0]-o[0],dz=q[1]-o[1],l=Math.hypot(dx,dz)||1,nx=-dz/l,nz=dx/l,t=p[2],w=(1.05-.35*t)*(t>.7?1-(t-.7)/.3:1)*.5;
+   if(i)u+=Math.hypot(p[0]-P[i-1][0],p[1]-P[i-1][1]);
+   pos.push(p[0]+nx*w,-.205,p[1]+nz*w,p[0]-nx*w,-.205,p[1]-nz*w);uv.push(u/4,0,u/4,1);
+   if(i){const a=(i-1)*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}});
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.setAttribute('normal',new THREE.Float32BufferAttribute(pos.map((_,k)=>k%3==1?1:0),3));
+  const m=new THREE.Mesh(g,mat);m.receiveShadow=true;m.renderOrder=1;sc.add(m)}
+})();
 function mistStep(){for(const q of MIST){const t=tm*q.sp+q.ph;q.m.position.x=q.x+Math.sin(t)*1.6;q.m.position.z=q.z+Math.cos(t*.7)*1.1;q.m.rotation.y+=.0006;const k=1+.12*Math.sin(t*1.3);q.m.scale.x=q.s*k}}
 const MINEPOS=[[-14,-12.2],[0,-12.2],[14,-12.2],[-11,12.2],[4,12.2],[11,12.6],[-22.6,2.6],[22.6,-2.6]];
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
@@ -598,8 +634,8 @@ const MINES=[];
  const pos=MINEPOS;
  for(const[x,z]of pos){
   const g=new THREE.Group();g.position.set(x,0,z);
-  const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.45),lam(0x6a6458));r.scale.set(1.2,.7,1);r.position.y=.2;r.castShadow=true;g.add(r);
-  for(let i=0;i<5;i++){const n=new THREE.Mesh(new THREE.SphereGeometry(.07+(i%2)*.03,8,6),new THREE.MeshLambertMaterial({color:0xffc830,emissive:0x7a5a10}));const a=i*1.25;n.position.set(Math.cos(a)*.38,.22+.1*(i%3),Math.sin(a)*.32);g.add(n)}
+  const r=new THREE.Mesh(new THREE.DodecahedronGeometry(.45),lam(0x4c483f));r.scale.set(1.2,.7,1);r.position.y=.2;r.castShadow=true;g.add(r);
+  for(let i=0;i<5;i++){const n=new THREE.Mesh(new THREE.SphereGeometry(.07+(i%2)*.03,8,6),new THREE.MeshLambertMaterial({color:0xb08a2a,emissive:0x3a2a08}));const a=i*1.25;n.position.set(Math.cos(a)*.38,.22+.1*(i%3),Math.sin(a)*.32);g.add(n)}
   sc.add(g);MINES.push({x,z,busy:0});
  }
 })();
@@ -697,7 +733,7 @@ for(const s of[-1,1])for(const row of[1,12]){
   for(let k=0;k<5;k++){const x=-L/2+.2+(k+.5)*(L-.4)/5;const rp=bx((L-.4)/5-.03,.012,.012,0xb89a62,x,.25-.01*Math.sin((k+.5)*Math.PI/5),z)}
   for(const e of[-1,1]){const lx=e*(L/2-.2);const lt=new THREE.Mesh(new THREE.BoxGeometry(.09,.11,.09),new THREE.MeshBasicMaterial({color:0xffc864}));lt.position.set(lx,.48,z);g.add(lt);bx(.12,.02,.12,0x2a1a0e,lx,.55,z);bx(.12,.02,.12,0x2a1a0e,lx,.42,z)}
  }
- sc.add(g);BRG.push({y:row+.5,xi:s<0?.1:COLS-.1,xo:s<0?-3.9:COLS+3.9,s});
+ sc.add(g);BRG.push({y:row+.5,xi:s<0?.1:COLS-.1,xo:s<0?-3.9:COLS+3.9,s,m:g});
 }
 const RGX0=-4.4,RGX1=COLS+4.4,RGY0=-4.4,RGY1=ROWS+4.4,RGW=RGX1-RGX0,RGH=RGY1-RGY0,RGP=2*(RGW+RGH),RGC=[0,RGW,RGW+RGH,2*RGW+RGH];
 function ringS(x,y){const cx=Math.max(RGX0,Math.min(RGX1,x)),cy=Math.max(RGY0,Math.min(RGY1,y)),d=[Math.abs(cy-RGY0),Math.abs(cx-RGX1),Math.abs(cy-RGY1),Math.abs(cx-RGX0)],k=d.indexOf(Math.min(...d));
@@ -913,7 +949,7 @@ function loadGLB(){
  glbLoad('models/trees1.glb',gl=>forestSwap(glbPines(gl),false));
  glbLoad('models/trees2.glb',gl=>{const P=glbMeshes(gl);forestSwap([glbNorm(glbBake(P.map(p=>({g:p.g,col:p.col}))),2)],true)});
  glbLoad('models/base.glb',baseSwap);
-}
+ glbLoad('models/bridge.glb',bridgeSwap);}
 // ----- Skogen: trees1 (granar), trees2 (lövträd), båda av Quaternius (CC0) -----
 function glbLoad(u,cb){new THREE.GLTFLoader().load(u,gl=>{try{cb(gl)}catch(e){console.warn('Fel i '+u,e)}},undefined,e=>console.warn('Kunde inte ladda '+u+' – behåller de enkla träden',e))}
 // Basen: "Temple" av Quaternius (CC0) ersätter den enkla borgen. Den lysande kristallen svävar kvar ovanför taket.
@@ -927,6 +963,20 @@ function baseSwap(gl){
   const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:p.col}));m.castShadow=m.receiveShadow=true;base.add(m);
   m.userData.c0=m.material.color.clone();m.userData.e0=m.material.emissive.clone();bMesh.push(m)}
  base.userData.coreY=(bb.max.y-bb.min.y)*s+.28}
+// Broarna: "Dock Wide" av Quaternius (CC0), skalad till exakt samma mått som de gamla broarna
+// (4,1 lång, 1,1 bred, däcket i samma höjd och räcket ca 0,4 över däcket).
+function bridgeSwap(gl){
+ const P=glbMeshes(gl);if(!P.length||!BRG.length)return;
+ const bb=new THREE.Box3();for(const p of P){p.g.computeBoundingBox();bb.union(p.g.boundingBox)}
+ const c=bb.getCenter(new THREE.Vector3()),len=bb.max.z-bb.min.z,wid=bb.max.x-bb.min.x;
+ // däcket är den högsta plana nivån där de flesta hörn ligger; stolparna sticker upp ovanför och ner under
+ const hist={};for(const p of P){const a=p.g.attributes.position;for(let i=0;i<a.count;i++){const y=Math.round(a.getY(i)*4)/4;hist[y]=(hist[y]||0)+1}}
+ const deck=+Object.entries(hist).sort((x,y)=>y[1]-x[1])[0][0]+.25,sy=.4/Math.max(.1,bb.max.y-deck);
+ const M=new THREE.Matrix4().makeTranslation(-c.x,-deck,-c.z).premultiply(new THREE.Matrix4().makeRotationY(Math.PI/2)).premultiply(new THREE.Matrix4().makeScale(4.1/len,sy,1.1/wid)).premultiply(new THREE.Matrix4().makeTranslation(0,.03,0));
+ // mörkare brun ton än modellens rödaktiga trä
+ const brown=c=>{const h={};c.getHSL(h);return new THREE.Color().setHSL(.07,Math.min(.5,h.s*1.05),h.l*.62)};
+ const parts=P.map(p=>{const g=p.g.clone().applyMatrix4(M);g.computeBoundingSphere();return{g,mat:new THREE.MeshLambertMaterial({color:brown(p.col)})}});
+ for(const b of BRG){b.m.children.forEach(o=>{o.visible=false});for(const p of parts){const m=new THREE.Mesh(p.g,p.mat);m.castShadow=m.receiveShadow=true;b.m.add(m)}}}
 function glbMeshes(gl){const P=[];gl.scene.updateMatrixWorld(true);gl.scene.traverse(o=>{if(o.isMesh)P.push({g:o.geometry.clone().applyMatrix4(o.matrixWorld),m:o.material,col:o.material.color.clone().convertLinearToSRGB()})});return P}
 // delar en geometri i sammanhängande bitar (listor med vertexindex, tre per triangel)
 function glbIslands(gg){
@@ -959,7 +1009,7 @@ function forestSwap(geos,b){
  let trs=FOR.tr.filter(q=>!!q.b===b);
  if(b){const drop=new Set(trs.filter((_,j)=>j%5!=0));trs=trs.filter(q=>!drop.has(q));FOR.tr=FOR.tr.filter(q=>!drop.has(q))}// bara vart femte lövträd (trees2 är tung)
  const cnt=geos.map(()=>0);trs.forEach((q,j)=>{q.v=j%geos.length;q.gi=cnt[q.v]++});
- const ms=geos.map((g,v)=>{const m=new THREE.InstancedMesh(g,mat,Math.max(1,cnt[v]));m.count=cnt[v];m.castShadow=m.receiveShadow=true;const k=b?.7:.58;for(let i=0;i<m.count;i++){col.setRGB(k+rnd()*.15,k+rnd()*.15,k+rnd()*.12);m.setColorAt(i,col)}sc.add(m);return m});
+ const ms=geos.map((g,v)=>{const m=new THREE.InstancedMesh(g,mat,Math.max(1,cnt[v]));m.count=cnt[v];m.castShadow=m.receiveShadow=true;const k=b?.55:.46;for(let i=0;i<m.count;i++){col.setRGB(k+rnd()*.12,k+rnd()*.12,k+rnd()*.1);m.setColorAt(i,col)}sc.add(m);return m});
  old.slice(0,3).forEach(m=>{m.visible=false});
  if(b)FOR.gm2=ms;else FOR.gm=ms;
  for(const q of trs)treeSet(q,q.g)}
@@ -1284,6 +1334,7 @@ function mkModel(k,lv,br){
   eyes(.11,.64,.04,.016);
   ad(bx(.01,.34,.03),LEA,0,.4,-.1).visible=false;
  }
+ mergeStatic(g,u);
  return g;
 }
 function mkT(t){const g=mkModel(t.k);t.u=g.userData;t.tu=t.u.tu;t.pv=t.u.pv;g.position.set(t.x-HW,0,t.y-HH);{const gw=new THREE.Mesh(GLG,GLM);gw.position.y=.04;gw.scale.set(2.3,1,2.3);g.add(gw)}cast(g);gT.add(g);t.m=g}
@@ -1400,7 +1451,7 @@ function pvRender(){
  {const pu=pRoot.children[0]&&pRoot.children[0].userData;if(pu&&pu.drg)pu.wfl.value=.25+.45*Math.sin(tm*2.2)}
  pRoot.rotation.y=tm*.9;PR.render(ps,pcam);
 }
-const SHP={s:SPH,c:CON,y:CYU,b:BXU},MEYE=new THREE.MeshBasicMaterial({color:0xffe45a}),MBONE=lam(0xd8caa0),MPIP=new THREE.MeshBasicMaterial({color:0xffd84a}),TOR=new THREE.TorusGeometry(.25,.03,6,14),MSTUN=new THREE.MeshBasicMaterial({color:0xffffc8});
+const SHP={s:SPH,c:CON,y:CYU,b:BXU},MEYE=new THREE.MeshBasicMaterial({color:0xff2a12}),MBONE=lam(0xc9b78c),MPIP=new THREE.MeshBasicMaterial({color:0xffd84a}),TOR=new THREE.TorusGeometry(.25,.03,6,14),MSTUN=new THREE.MeshBasicMaterial({color:0xffffc8});
 const leg2=(x,z,H,w)=>[['y','d',x+.05,H*.5,z,w,H*.55,w,0,0,.45],['c','o',x+.1,.03,z,w*.8,.1,w*.7,0,0,-1.45]];
 const ED={
 Termagant:[['s','c',0,.27,0,.2,.16,.14],['s','d',-.15,.23,0,.12,.1,.09],['s','c',.19,.33,0,.1,.085,.085],['s','e',.27,.35,.045,.025,.025,.025],['c','o',.25,.27,0,.02,.07,.02,0,0,3.1],...leg2(.02,.07,.22,.035),['c','o',.22,.2,.1,.025,.28,.025,0,0,-1.3],['c','d',.06,.44,0,.04,.1,.04,0,0,.5],['c','d',-.1,.38,0,.035,.09,.035,0,0,.6],['s','d',-.26,.2,0,.07,.05,.05],['c','d',-.38,.17,0,.035,.2,.035,0,0,1.45]],
@@ -1415,20 +1466,57 @@ Tyranidkrigare:[['s','c',0,.62,0,.28,.38,.24],['s','d',-.14,.4,0,.18,.16,.14],['
 Carnifex:[['s','c',0,.72,0,.5,.42,.42],['s','d',-.4,.6,0,.3,.28,.28],['s','c',.5,.82,0,.28,.2,.22],['s','e',.72,.86,.1,.04,.04,.04],['c','o',.7,.7,.08,.03,.12,.03,0,0,3.1],['y','d',-.05,.28,.22,.1,.56,.1],['c','o',.12,.04,.22,.05,.14,.05,0,0,-1.4],['c','o',.5,.7,.42,.08,.9,.08,0,.4,-1],['c','o',.7,1,.14,.05,.4,.05,0,.3,-.5],['b','d',.15,1.1,0,.3,.1,.5],['b','d',-.2,1.12,0,.3,.1,.55],['c','o',0,1.24,.2,.06,.2,.06,0,0,.3],['c','o',-.25,1.26,.2,.06,.2,.06,0,0,.3],['c','d',-.3,1.2,0,.07,.2,.07,0,0,.6],['c','d',-.55,.55,0,.1,.9,.1,0,0,1.3],['s','d',-.95,.2,0,.2,.16,.16]],
 Leviatan:[['s','c',0,.4,0,.5,.3,.36],['s','d',-.15,.62,0,.2,.42,.55],['s','c',.4,.34,0,.3,.2,.26],['s','e',.62,.5,.15,.05,.05,.05],['c','o',.66,.24,.11,.035,.26,.035,0,0,3.1],['c','o',.58,.2,.06,.03,.16,.03,0,0,3.1],['c','d',.05,.78,0,.06,.4,.06,0,0,-.4],['c','d',-.12,.74,0,.05,.3,.05,0,0,-.7],['c','d',-.3,.88,0,.05,.3,.05,0,0,.2]]
 };
+// Läskiga detaljer per grundtyp (varianterna ärver dem). Format som ED: [form,material,x,y,z,sx,sy,sz,rx,ry,rz];
+// z>0 speglas till båda sidor. 'e' = glödande ögon, 'o' = ben/tänder, 'd' = mörkt kitin, 'g' = sken.
+{const sp=(x,y,h,r,t)=>['c','o',x,y,0,r,h,r,0,0,t],       // ryggtagg (lutar bakåt med t)
+  tooth=(x,y,z,h)=>['c','o',x,y,z,h*.28,h,h*.28,0,0,3.14],  // tand som pekar nedåt
+  eye=(x,y,z,r)=>['s','e',x,y,z,r,r,r];
+ const SCARY={
+  Termagant:[eye(.255,.385,.03,.016),eye(.235,.405,.02,.012),tooth(.3,.26,.035,.05),tooth(.31,.26,.012,.045),sp(.12,.44,.12,.024,.45),sp(-.02,.45,.14,.026,.6),sp(-.16,.4,.12,.024,.75),sp(-.3,.3,.1,.02,1),
+   ['c','o',0,.3,.14,.018,.12,.018,1.1,0,.2]],
+  Hormagaunt:[eye(.3,.535,.025,.014),eye(.27,.555,.015,.011),tooth(.35,.41,.03,.06),tooth(.36,.41,.008,.055),sp(.08,.56,.13,.024,.4),sp(-.06,.54,.14,.026,.6),sp(-.2,.46,.12,.022,.8),
+   ['c','o',.4,.46,.05,.02,.16,.02,0,.3,-1.2]],
+  Ripper:[eye(.2,.16,.02,.014),eye(.18,.175,.005,.01),tooth(.23,.07,.035,.04),tooth(.24,.07,.0,.04),['c','o',.24,.11,.045,.012,.05,.012,0,0,-1.57],
+   sp(.02,.19,.07,.018,.5),sp(-.12,.17,.07,.018,.7)],
+  Genestealer:[eye(.37,.66,.03,.016),eye(.35,.68,.018,.012),tooth(.42,.5,.035,.07),tooth(.43,.5,.01,.065),sp(.24,.72,.16,.03,.9),sp(.18,.76,.13,.024,1.1),
+   sp(0,.66,.12,.026,.5),sp(-.16,.58,.12,.024,.7),['c','o',.3,.52,.24,.022,.22,.022,0,.3,-1.4]],
+  Gargoyle:[eye(.27,.11,.025,.014),['c','o',.2,.13,.05,.016,.12,.016,-.4,0,.9],tooth(.29,0,.02,.04),['c','o',-.44,-.02,0,.025,.14,.025,0,0,1.57],sp(.05,.12,.08,.02,.5)],
+  Lictor:[eye(.32,.97,.022,.014),eye(.3,.99,.012,.011),['y','d',.36,.8,.03,.01,.16,.01,0,0,.25],['y','d',.37,.8,0,.01,.18,.01,0,0,.15],
+   sp(.18,1,.16,.028,.9),sp(.1,1.02,.12,.022,1.15),sp(-.05,.86,.12,.024,.6),sp(-.12,.7,.12,.024,.75)],
+  Zoanthrope:[eye(.215,.54,.06,.02),eye(.2,.6,.035,.015),['s','g',.15,.95,.12,.04,.04,.04],['s','g',-.12,.9,.14,.035,.035,.035],['s','g',0,1.1,0,.045,.045,.045],
+   tooth(.24,.42,.03,.05),['c','o',-.05,.25,.16,.018,.14,.018,.9,0,.8]],
+  Harpy:[eye(.47,.15,.035,.02),eye(.44,.17,.02,.015),['c','o',.36,.18,.05,.02,.16,.02,-.4,0,.9],tooth(.53,.02,.03,.06),tooth(.54,.02,.008,.055),
+   ['c','o',-.68,0,0,.04,.22,.04,0,0,1.57],sp(.1,.2,.12,.03,.5),sp(-.1,.18,.11,.028,.7)],
+  Tyranidkrigare:[eye(.47,.99,.045,.02),eye(.44,1.01,.03,.016),tooth(.53,.82,.04,.08),tooth(.54,.82,.012,.075),sp(.28,1.04,.2,.035,.9),sp(.22,1.08,.16,.03,1.1),
+   sp(.02,.98,.18,.034,.5),sp(-.14,.92,.16,.03,.65),sp(-.28,.8,.14,.028,.8),['c','o',0,.75,.24,.025,.18,.025,1,0,.3]],
+  Carnifex:[eye(.73,.95,.075,.03),eye(.7,.98,.05,.022),tooth(.8,.66,.06,.11),tooth(.82,.66,.02,.1),['c','o',.74,.68,.12,.04,.3,.04,0,0,-1.9],
+   sp(.3,1.2,.26,.05,.4),sp(.05,1.2,.3,.055,.55),sp(-.2,1.15,.28,.05,.7),sp(-.45,1,.24,.045,.9),['c','o',-.1,.95,.42,.04,.26,.04,1.1,0,.3]],
+  Leviatan:[eye(.66,.55,.12,.04),eye(.6,.6,.09,.03),tooth(.72,.24,.08,.09),tooth(.74,.24,.03,.08),['c','o',.5,.62,.18,.04,.32,.04,-.5,0,.7],sp(.15,.92,.22,.05,.4),sp(-.05,.95,.2,.045,.6)]};
+ for(const k in SCARY)ED[k]=ED[k].concat(SCARY[k])}
+const MGE={};// sammanslagna fiendegeometrier per fiendetyp
 function mkE(c){
- const e=c.e,gr=new THREE.Group(),body=new THREE.Group(),dk=e.dk||(e.dk=lam(new THREE.Color(e.col).multiplyScalar(.55)));
- c.mat=lam(e.col);c.wings=[];c.top=.3;
+ const e=c.e;
+ // mörkare, mättad kitinfärg (vinterfiender behåller sin ljusa isfärg)
+ if(!e.bc){const bc=new THREE.Color(e.col);if(!e.winter){const h={};bc.getHSL(h);bc.setHSL(h.h,Math.min(1,h.s*1.15),h.l*.55)}e.bc=bc}
+ const gr=new THREE.Group(),body=new THREE.Group(),dk=e.dk||(e.dk=lam(e.bc.clone().multiplyScalar(e.winter?.55:.42)));
+ c.mat=lam(e.bc);c.wings=[];c.top=.3;
  const M={c:c.mat,d:dk,e:MEYE,o:MBONE};
- if(e.n=='Zoanthrope'||e.gl)c.glow=M.g=new THREE.MeshLambertMaterial(e.gl?{color:e.gl,emissive:e.gl}:{color:0xff6ad0,emissive:0xaa2a88});
+ if(e.n=='Zoanthrope'||e.gl)c.glow=M.g=new THREE.MeshLambertMaterial(e.gl?{color:e.gl,emissive:e.gl}:{color:0x8a2ac8,emissive:0x5a0a90});
+ // de fasta delarna samlas per material och slås ihop till en geometri per material (sparas per fiendetyp);
+ // vingarna är egna delar eftersom de rör sig
+ const parts={},cached=MGE[e.n];
  for(const p of ED[e.base||e.n].concat(e.ex||[])){
   const[sh,mk,x,y,z,sx,sy,sz,rx,ry,rz]=p;
   for(const sd of z>0?[1,-1]:[1]){
    if(sh=='w'){const pw=new THREE.Group(),w=new THREE.Mesh(BXU,M[mk]);pw.position.set(x,y,z*sd);w.scale.set(sx,sy,sz);w.position.z=sz/2*sd;pw.add(w);pw.userData.s=sd;body.add(pw);c.wings.push(pw);continue}
+   c.top=Math.max(c.top,y+(sh=='s'?sy:sy/2));if(cached)continue;
    const o=new THREE.Mesh(SHP[sh],M[mk]);o.position.set(x,y,z*sd);o.scale.set(sx,sy,sz);
    if(rx!=null)o.rotation.set(rx*sd,ry*sd,rz);
-   body.add(o);c.top=Math.max(c.top,y+(sh=='s'?sy:sy/2));
+   (parts[mk]||(parts[mk]=[])).push(o);
   }
  }
+ const geos=cached||(MGE[e.n]=Object.fromEntries(Object.entries(parts).map(([k,l])=>[k,mergeGeo(l)])));
+ for(const k in geos)body.add(new THREE.Mesh(geos[k],M[k]));
  body.position.y=c.y0=e.air?1:0;body.scale.setScalar(e.k||1);c.top*=e.k||1;gr.add(body);c.mesh=body;
  {const shd=new THREE.Mesh(DISC,bas(0x000000,.12)),sr=(e.boss?.62:.3)*Math.sqrt(e.k||1);shd.position.y=.02;shd.scale.set(sr,1,sr);gr.add(shd)}
  if(e.boss){const bgl=new THREE.Mesh(GLG,GLB);bgl.position.y=.04;bgl.scale.setScalar(3.4*(e.k||1));gr.add(bgl)}
