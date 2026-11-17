@@ -1527,10 +1527,31 @@ function setBases(two){
  dist=bfs();dist2=BASE2?bfs(null,BASE2):null;
  if(S&&S.h){S.h.x=BASE[0]+.5;S.h.y=BASE[1]+2.5;S.h.go=null}
 }
-function botPathCells(){
+function botPathCells(me){
  const P=new Set();
- const D=BASE2&&dist2?dist2:dist;for(const sp of (BASE2?SPW.filter(q=>q[0]>=HW):SPW)){let x=sp[0],y=sp[1],n=0;while(n++<400){P.add(x+','+y);const bd=D[y][x];if(!(bd>0&&bd<1e9))break;let nb=null,nd=bd;for(const[dx,dy]of DN){const a=x+dx,b=y+dy;if(a<0||b<0||a>=COLS||b>=ROWS)continue;if(dx&&dy&&(occ[y][a]||occ[b][x]))continue;if(D[b][a]<nd){nd=D[b][a];nb=[a,b]}}if(!nb)break;[x,y]=nb}}
+ const D=!me&&BASE2&&dist2?dist2:dist;for(const sp of (BASE2?SPW.filter(q=>me?q[0]<HW:q[0]>=HW):SPW)){let x=sp[0],y=sp[1],n=0;while(n++<400){P.add(x+','+y);const bd=D[y][x];if(!(bd>0&&bd<1e9))break;let nb=null,nd=bd;for(const[dx,dy]of DN){const a=x+dx,b=y+dy;if(a<0||b<0||a>=COLS||b>=ROWS)continue;if(dx&&dy&&(occ[y][a]||occ[b][x]))continue;if(D[b][a]<nd){nd=D[b][a];nb=[a,b]}}if(!nb)break;[x,y]=nb}}
  return [...P].map(q=>q.split(',').map(Number));
+}
+function suggestCell(k,nr){
+ const d=T[k];if(!d||d.wall)return null;
+ const left=S.gold-S.o.reduce((a,o)=>a+(T[o.k].pts?0:T[o.k].c),0);if(!d.pts&&left<d.c)return null;
+ if(d.max&&S.tw.filter(x=>x.k==k).length+S.o.filter(o=>o.k==k).length>=d.max)return null;
+ const path=botPathCells(1),ps=new Set(path.map(p=>p[0]+','+p[1])),R=d.r,C=[];
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+  if(occ[y][x]||ps.has(x+','+y)||S.o.some(o=>o.c==x&&o.r==y))continue;
+  if(x==BASE[0]&&y==BASE[1]||BASE2&&x==BASE2[0]&&y==BASE2[1]||SPW.some(q=>q[0]==x&&q[1]==y))continue;
+  if(S.bot&&S.bot.job&&S.bot.job.c==x&&S.bot.job.r==y)continue;
+  const dn=Math.hypot(x-nr[0],y-nr[1]);if(dn>5)continue;
+  let near=1e9,cov=0;for(const[px,py]of path){const dd=Math.hypot(px-x,py-y);if(dd<near)near=dd;if(dd<=R)cov++}
+  if(near>(R>=3?2.3:1.5))continue;
+  C.push([x,y,cov-dn*.8])}
+ C.sort((a,b)=>b[2]-a[2]);
+ for(const[x,y]of C.slice(0,10))if(!why(x,y))return[x,y];
+ return null;
+}
+function buildAndSuggest(c,r){
+ const n=S.o.length,k=S.bt;orderBuild(c,r);
+ if(MODE=='mob'&&CONF&&S.bt===k&&S.o.length>n){const q=suggestCell(k,[c,r]);if(q){PEND=[q[0],q[1],k];S.hov=[q[0],q[1]]}}
 }
 function botPick(){
  const nx=E[evt(S.st=='bygg'?S.L:Math.min(MAXL,S.L+1))],cnt=k=>S.tw.filter(t=>t.k==k).length;
@@ -2846,7 +2867,7 @@ cv.addEventListener('wheel',e=>{
  if(p0&&CZ>1.01){const p1=ground(e);if(p1){CX+=p0.x-p1.x;CY+=p0.y-p1.y;camSet()}}
 },{passive:false});
 cv.addEventListener('mousedown',e=>{if(e.button==1)e.preventDefault()});
-$('pbt').onclick=e=>{e.stopPropagation();if(PEND&&PEND[2]==S.bt){const[c,r]=PEND;PEND=null;orderBuild(c,r);sync()}};$('pbx').onclick=e=>{e.stopPropagation();PEND=null;S.bt=null;S.hov=null;sync()};
+$('pbt').onclick=e=>{e.stopPropagation();if(PEND&&PEND[2]==S.bt){const[c,r]=PEND;PEND=null;buildAndSuggest(c,r);sync()}};$('pbx').onclick=e=>{e.stopPropagation();PEND=null;S.bt=null;S.hov=null;sync()};
 const cfb=$('cfm'),cfs=()=>{cfb.textContent=CONF?'✔ Bygg 2 tryck':'Bygg 1 tryck';cfb.style.display=MODE=='mob'?'':'none'};cfs();setInterval(cfs,1000);cfb.onclick=()=>{CONF=!CONF;PEND=null;try{localStorage.setItem('wh40kconf',CONF?'1':'0')}catch(x){}cfs();toast(CONF?'Bygg: tryck två gånger':'Bygg: ett tryck')};
 $('snd').onclick=()=>{MUTE=!MUTE;try{localStorage.setItem('wh40kmute',MUTE?'1':'0')}catch(x){}if(ac())AM.gain.value=MUTE?0:.55;$('snd').textContent=MUTE?'🔇':'🔊'};
 $('snd').textContent=MUTE?'🔇':'🔊';
@@ -3138,7 +3159,7 @@ function leftClick(e){
  if(S.cpm){const pm=S.cpm;S.cpm=null;if(S.tw.includes(pm)&&b&&b!==pm&&!T[b.k].wall&&!T[b.k].dbl){copyTower(pm,b);S.sel=[pm];return}if(b===pm){S.cpm=pm;return}toast('Avbröt kopiering')}
  S.base=0;CAMLOCK=0;
  if(S.bt==null&&!b&&Math.hypot(p.x-BASE[0]-.5,p.y-BASE[1]-.5)<.9){sfxChurch();S.base=1;S.sel=[];S.menu='';FOLLOW=false;CAMLOCK=1;CZT=1;CAMYT=0;CAMAT=.72;LOCKH=false;return}
- if(S.bt!=null&&!b){if(inb){if(MODE=='mob'&&CONF&&!(PEND&&PEND[0]==c&&PEND[1]==r&&PEND[2]==S.bt)){PEND=[c,r,S.bt];return}PEND=null;orderBuild(c,r)}return}
+ if(S.bt!=null&&!b){if(inb){if(MODE=='mob'&&CONF&&!(PEND&&PEND[0]==c&&PEND[1]==r&&PEND[2]==S.bt)){PEND=[c,r,S.bt];return}PEND=null;buildAndSuggest(c,r)}return}
  let b2=b;if(!b2&&S.bt==null&&(e.pointerType=='touch'||MODE=='mob')){let bd=1.0;for(const t of S.tw){const dd=Math.hypot(p.x-t.x,p.y-t.y);if(dd<bd){bd=dd;b2=t}}}
  const pk=Math.hypot(p.x-S.h.x,p.y-S.h.y)<(MODE=='mob'?.9:.7)?S.h:b2;
  if(pk){if(pk===S.h){FOLLOW=true}else FOLLOW=false;S.bt=null;S.menu='';S.sel=add?(S.sel.includes(pk)?S.sel.filter(x=>x!==pk):[...S.sel,pk]):[pk]}
