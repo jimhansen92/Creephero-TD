@@ -347,7 +347,7 @@ const E=[
 {n:'Världsormen',base:'Leviatan',snake:28,k:1.2,hp:20000,s:1,g:1500,c:1,nn:1,a:.5,boss:1,col:'#2a6a4a'}];
 let CAMA=.72,CAMAT=.72,FITA=.72,CAMY=0,CAMYT=0,FITP=null,FITY=0;
 let S,occ,dist,gk='',gm='',tm=0,tq,sig={},MODE=null,LOWQ=0,SLOW=0,CAMD=20,CZ=1,CX=0,CY=0,FOLLOW=false,LOCKH=false,CAMLOCK=0,CZT=null,trg=null;
-const lvf=t=>T[t.k].branch?(t.br?t.l-2:0):t.l-1,dmg=t=>T[t.k].d*1.8**lvf(t)*(t.bd||1)*(t.br=='fire'?1.6:1),rng=t=>T[t.k].r+.25*lvf(t)+(t.br=='long'?1.4:0),heroD=()=>Math.round(10+2.5*S.L);
+const lvf=t=>T[t.k].branch?(t.br?t.l-2:0):t.l-1,dmg=t=>T[t.k].d*1.8**lvf(t)*(t.bd||1)*1,rng=t=>T[t.k].r+.25*lvf(t)+(t.br=='long'?1.4:0),heroD=()=>Math.round(10+2.5*S.L);
 
 /* ---------- vägsökning ---------- */
 const DN=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
@@ -1458,9 +1458,9 @@ function detail(k,l,t){
  if(d.max)sp.push('Max '+d.max+' åt gången');
  if(d.pts)sp.push('Specialvapen: finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng, slumpad supergubbe)');
  return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+(d.branch?(br=='long'?1.4:0)+(br?.25*(l-2):0):.25*(l-1))).toFixed(1)}, ${tg}</small><br>`
-  +ln(C.r,`Dmg: ${Math.round(d.d*m*(br=='fire'?1.6:1))}`)+'<br>'
+  +ln(C.r,`Dmg: ${Math.round(d.d*m)}`)+'<br>'
   +ln(C.y,`Attackspeed: ${d.f}/s`)+'<br>'
-  +ln(C.b,`Fly dmg: ${d.air?Math.round(d.d*m*(br=='fire'?1.6:1)*(d.fm||1)*(br=='long'?1.5:br=='fire'?.5:1)):'–'}`)+'<br>'
+  +ln(C.b,`Fly dmg: ${d.air?Math.round(d.d*m*(d.fm||1)*(br=='long'?1.5:br=='fire'?.75:1)):'–'}`)+'<br>'
   +ln(C.w,`Armorpenetrate: ${Math.round((d.ap||0)*100)} %`)
   +(sp.length?'<br>'+ln(C.p,'Special: '+sp.join(', ')):'');
 }
@@ -2248,7 +2248,7 @@ mkE(c);S.en.push(c);
    }else if(d.melee){
     hit(b,dmg(t),d.ap);flash(b.x,b.y,.45,'#ffffff',.9,.15);
    }else{
-    const cr=d.cr&&Math.random()<d.cr.p,fa=t.br=='fire',fmv=(d.fm||1)*(t.br=='long'?1.5:t.br=='fire'?.5:1);
+    const cr=d.cr&&Math.random()<d.cr.p,fa=t.br=='fire',fmv=(d.fm||1)*(t.br=='long'?1.5:t.br=='fire'?.75:1);
     hit(b,dmg(t)*(b.e.air?fmv:1)*(cr?1+d.cr.m:1),d.ap,fa?1:0);
     if(fa){b.burn=3;b.bdps=dmg(t)*d.f*.35;b.bk=t.k}
     burst(b.x,b.y,cr?'#ffe27a':fa?'#ff8a2a':d.col,cr?8:2,b.e.air?1:.4);
