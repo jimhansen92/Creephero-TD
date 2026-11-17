@@ -283,7 +283,7 @@ const T=[
 {n:'Älvskytten',c:80,d:8,r:4.6,f:1.2,air:1,gr:1,ap:.1,fm:8,cr:{p:.25,m:.5},col:'#4fa59a',kind:'archer',branch:1,bcost:100,vis:1,ty:'Skytt',i:'🏹',k:'S',t:'Långsam skytt med lång räckvidd. Skjuter på både mark och luft, extra mot flygare.'},
 {n:'Frostmagikern',c:450,pts:30000,d:4,r:3,f:2,air:1,gr:1,slow:.4,col:'#6ab8e8',kind:'mage',ty:'Stöd',i:'❄️',k:'D',t:'Saktar ner alla fiender i närheten och skadar lite.'},
 {n:'Lilla knekten',c:15,uc:40,d:8,r:1.3,f:1.6,gr:1,melee:1,col:'#c9a66b',kind:'squire',vis:1,ty:'Närstrid',i:'🗡️',k:'G',t:'Billig liten gubbe som står still och slår på kort håll med lite skada. Bara mark.'},
-{n:'Bumerangkastaren',c:120,d:8,r:6,f:1/3,air:1,gr:1,ap:0,boom:1,max:4,col:'#d08a3a',kind:'boomer',vis:1,ty:'Långt avstånd',i:'🪃',k:'B',t:'Kastar en bumerang långt ut och tillbaka. Den träffar alla fiender den flyger igenom, både mark och luft, men gör låg skada.'},
+{n:'Bumerangkastaren',c:120,d:12,r:6,f:.4,air:1,gr:1,ap:0,boom:1,max:4,col:'#d08a3a',kind:'boomer',vis:1,ty:'Långt avstånd',i:'🪃',k:'B',t:'Kastar en bumerang långt ut och tillbaka. Den träffar alla fiender den flyger igenom, både mark och luft, men gör låg skada.'},
 {n:'Magiska kulan',c:250,max:3,r:2.4,col:'#ffd84a',kind:'orb',ty:'Stöd',buff:{as:.3,dm:.15},i:'🔆',k:'C',t:'Lysande kula som ger gubbar i närheten snabbare attacker och lite mer skada.'},
 {n:'Jätten',c:900,d:50,r:1.9,f:.7,gr:1,melee:1,col:'#b08a64',kind:'giant',ty:'Närstrid',pts:30000,rock:{dmg:3000,r:4.6,cd:60},i:'🗿',k:'J',t:'Enorm jätte som slår hårt på kort håll och kastar en stor sten på lång håll.'},
 {n:'Eldspyaren',c:150,d:6,r:2.4,f:4,gr:1,fire:1,fsp:.9,burn:{t:3,k:.3},col:'#ff7a2a',kind:'fire',ty:'Eld',i:'🔥',k:'Q',t:'Spyr eld på marken i en liten cirkel och sätter fiender i brand. Mycket effektiv mot vinterfiender.'},
@@ -1434,7 +1434,7 @@ function booms(dt){
   if(k<1){const e=Math.sin(k*Math.PI/2);px=b.sx+(b.ex-b.sx)*e+b.nx*Math.sin(k*Math.PI)*b.cw;py=b.sy+(b.ey-b.sy)*e+b.ny*Math.sin(k*Math.PI)*b.cw}
   else{const k2=Math.min(1,k-1),e=1-Math.cos(k2*Math.PI/2);px=b.ex+(b.sx-b.ex)*e-b.nx*Math.sin(k2*Math.PI)*b.cw;py=b.ey+(b.sy-b.ey)*e-b.ny*Math.sin(k2*Math.PI)*b.cw}
   b.m.position.set(px-HW,.55+.15*Math.sin(Math.min(2,k)*Math.PI),py-HH);b.m.rotation.y+=dt*22;
-  if(b.n<8){const hs=k<1?b.h1:b.h2;for(const c of S.en){if(c.dead||hs.has(c)||b.n>=8)continue;if(Math.hypot(c.x-px,c.y-py)<.6){hs.add(c);b.n++;CUR=b.src;hit(c,b.v,b.ap);CUR=null;burst(c.x,c.y,'#e8b060',3,c.e.air?1:.5)}}}
+  if(b.n<10){const hs=k<1?b.h1:b.h2;for(const c of S.en){if(c.dead||hs.has(c)||b.n>=10)continue;if(Math.hypot(c.x-px,c.y-py)<.6){hs.add(c);b.n++;CUR=b.src;hit(c,b.v,b.ap);CUR=null;burst(c.x,c.y,'#e8b060',3,c.e.air?1:.5)}}}
   if(k>=2){gF.remove(b.m);b.done=1;if(b.tw)b.tw.bmOut=0}
  }
  S.bm=S.bm.filter(b=>!b.done);
@@ -1488,7 +1488,7 @@ function detail(k,l,t,ex){
  const atk=d.d&&!d.crow&&!d.wolf;
  if(atk){const hd=d.d*m*d.f,cr=d.cr?1+d.cr.p*d.cr.m:1,bk=d.fire?d.burn.k:br=='fire'?.35:0;g=d.gr?hd*cr+hd*bk:0;a=d.air?hd*cr*(d.fm||1)*(br=='long'?1.5:br=='fire'?.75:1)+hd*bk:0;w=g?hd*cr*(fire?2.5:.35)+hd*bk*2.5:0;f=d.f;ap=d.ap||0;hit=d.aoe?'Alla markfiender i cirkeln':d.fsp?'Flera i en liten cirkel':'En fiende'}
  if(d.crow){g=a=Math.round(d.d*m).toLocaleString('sv-SE');w=Math.round(d.d*m*.35).toLocaleString('sv-SE');sp.push('Skadan är per träff');f='3 per fiende';rg='Runt borgen';ap=d.ap;hit='Allt kråkan flyger igenom';sp.push('En kråka flyger i cirkel runt borgen. Flera kråkträd ger flera kråkor')}
- if(d.boom){g=a=d.d*m*d.f*2;w=g*.35;f=String(+d.f.toFixed(2)).replace('.',',');hit='Alla den flyger igenom, max 8 per kast';sp.push('Varje fiende kan träffas en gång på väg ut och en gång på väg tillbaka')}
+ if(d.boom){g=a=d.d*m*d.f*2;w=g*.35;f=String(+d.f.toFixed(2)).replace('.',',');hit='Alla den flyger igenom, max 10 per kast';sp.push('Varje fiende kan träffas en gång på väg ut och en gång på väg tillbaka')}
  if(d.wolf){g=d.d*m*d.f;w=g*.35;f=d.f;rg='Hela banan';ap=d.ap;hit='En fiende, inte bossar';sp.push('Sover där du placerar den, springer efter närmaste markfiende och går sedan tillbaka')}
  if(d.shark){const CD=[6,4.5,3][L3];g=w='Dödar';f='1 per '+CD+' s';rg=String([2.6,3.1,3.6][L3]).replace('.',',')+' (vatten)';ap='100 %';hit='En fiende, inte bossar';sp.push('Simmar i vallgraven och äter markfiender direkt när de kommer nära vattnet')}
  if(d.slowAir){rg=R;hit='–';sp.push(`Saktar flygare ${Math.round((d.slowAir+.05*(l-1))*100)} %`,`Förhäxar ${3+(l-1)} slumpade vanliga gubbar varje nivå så de gör ${Math.round(d.curse*100)} % mer skada`)}
