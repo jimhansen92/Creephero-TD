@@ -1439,7 +1439,7 @@ function pts(dt){
 function flash(x,y,r,col,o,L){const m=new THREE.Mesh(DISC,bas(hex(col),o));m.position.set(x-HW,.08,y-HH);m.scale.set(r,1,r);gF.add(m);S.fx.push({m,t:L,o,L})}
 function detail(k,l,t,ex){
  l=l||1;const d=T[k],m=d.branch?(t&&t.br?1.8**(l-2):1):1.8**(l-1),br=t&&t.br,L3=Math.min(2,l-1);
- const nm=`<b style="color:${d.col}">${d.i} ${d.n}${br?' ('+(br=='fire'?['Eldpilar','Eldskytt','Eldmästare']:['Långbåge','Örnskytt','Örnöga'])[Math.max(0,Math.min(2,l-2))]+')':l>1&&!d.branch?' (nivå '+l+')':''}</b> <small style="color:#9a8f78">– ${d.ty||''}, ${d.pts?'Mystery box':d.c+' guld'}</small>`;
+ const nm=`<b style="color:${d.col}">${d.n}${br?' ('+(br=='fire'?['Eldpilar','Eldskytt','Eldmästare']:['Långbåge','Örnskytt','Örnöga'])[Math.max(0,Math.min(2,l-2))]+')':l>1&&!d.branch?' (nivå '+l+')':''}</b> <small style="color:#9a8f78">– ${d.ty||''}, ${d.pts?'Mystery box':d.c+' guld'}</small>`;
  const R=(d.r+(d.branch?(br=='long'?1.4:0)+(br?.25*(l-2):0):.25*(l-1))).toFixed(1).replace('.',',');
  const fire=!!(d.fire||br=='fire');
  let g=0,a=0,w=0,f=0,rg=R,ap=0,hit='En fiende';const sp=[];
