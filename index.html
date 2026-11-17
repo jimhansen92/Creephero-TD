@@ -267,6 +267,7 @@ body:not(.mob) #bot,body.mob #bot{border:3px solid #2e241a;border-radius:14px 14
 </style></head><body>
 <div id="rot">Vrid telefonen till liggande läge</div>
 <div id="app">
+<div id="pbc" style="display:none;position:absolute;top:calc(env(safe-area-inset-top,0px) + 46px);left:50%;transform:translateX(-50%);z-index:30;gap:8px"><button id="pbt" style="padding:10px 18px;font-size:16px;font-weight:bold;background:#2f6a2a;border:2px solid #8ad06a;color:#fff;border-radius:10px">✔ Bygg</button><button id="pbx" style="padding:10px 14px;font-size:16px;background:#5a2a22;border:2px solid #c07060;color:#fff;border-radius:10px">✖</button></div>
 <div id="top"><div class="rs"><button id="mn">Meny (F10)</button><button id="sp"></button><button id="fs">⛶</button><button id="snd" title="Ljud av/på">🔊</button><button id="stb" title="Resultattavla (Tab)">📊</button><button id="cfm" title="Bekräfta bygge (mobil)" style="display:none"></button></div><div class="rs" id="rs"></div></div>
 <div id="w"><canvas id="c"></canvas><div id="zb"><button id="zi">＋</button><button id="zo">－</button><button id="zf">◎</button></div><div id="sb"></div><div id="vg"></div><div id="fl"></div><div id="tt"></div><button id="bn"></button><div id="ov"></div></div>
 <div id="bot"><canvas id="mm" width="204" height="84"></canvas><div id="pt"></div><div id="mid"><canvas id="pv"></canvas><div id="inf"></div></div><div class="cw"><div id="fy"></div><div id="cd"></div></div></div>
@@ -901,6 +902,15 @@ sc.add(hm);
 const rd=new THREE.Mesh(DISC,bas(0xd4a84a,.16)),rr=new THREE.Mesh(RING,bas(0xd4a84a,.9)),gh=new THREE.Mesh(new THREE.BoxGeometry(.8,.45,.8),bas(0xd4a84a,.5));
 const rings=[],mkRing=()=>{const m=new THREE.Mesh(SRG,bas(0x3cff3c,.95));sc.add(m);return m};
 for(const m of [rd,rr,gh]){m.visible=false;sc.add(m)}
+let MGRID=null;
+function mobBuildUI(){
+ const on=MODE=='mob'&&S&&S.bt!=null;
+ if(on&&!MGRID){const P=[];for(let x=0;x<=COLS;x++)P.push(x-HW,.035,-HH,x-HW,.035,HH);for(let y=0;y<=ROWS;y++)P.push(-HW,.035,y-HH,HW,.035,y-HH);
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));MGRID=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.22,depthWrite:false}));MGRID.renderOrder=2;sc.add(MGRID)}
+ if(MGRID)MGRID.visible=on;
+ const el=$('pbc'),show=on&&CONF&&PEND&&PEND[2]==S.bt;
+ if(el){if(show){const t=T[S.bt].n;if(el.dataset.n!==t+PEND[0]+','+PEND[1]){el.dataset.n=t+PEND[0]+','+PEND[1];$('pbt').textContent='✔ Bygg '+t}if(el.style.display!=='flex')el.style.display='flex';if(S.hov&&(S.hov[0]!==PEND[0]||S.hov[1]!==PEND[1]))S.hov=[PEND[0],PEND[1]]}else if(el.style.display!=='none')el.style.display='none'}
+}
 function rs(){
  const w=wr.clientWidth,h=wr.clientHeight;if(!w||!h)return;
  const pr=LOWQ?1:Math.min(devicePixelRatio||1,MODE=='mob'?1.5:2);
@@ -1727,7 +1737,7 @@ function mkE(c){
   const tl=new THREE.Mesh(CON,dk);tl.scale.set(.09,.5,.09);tl.rotation.z=-Math.PI/2;gr.add(tl);c.segs.push(tl);
  }
  const bg=new THREE.Sprite(new THREE.SpriteMaterial({color:0x000000,depthTest:false})),fg=new THREE.Sprite(new THREE.SpriteMaterial({color:0x6fcf5a,depthTest:false}));
- bg.scale.set(.6,.08,1);fg.scale.set(.6,.08,1);fg.center.set(0,.5);fg.position.x=-.3;
+ const hbw=MODE=='mob'?.85:.6,hbh=MODE=='mob'?.13:.08;c.hbw=hbw;bg.scale.set(hbw,hbh,1);fg.scale.set(hbw,hbh,1);fg.center.set(0,.5);fg.position.x=-hbw/2;
  bg.position.y=fg.position.y=(e.air?1:0)+c.top+.22;bg.renderOrder=5;fg.renderOrder=6;bg.visible=fg.visible=false;
  gr.add(bg,fg);c.bg=bg;c.fg=fg;cast(gr);gE.add(gr);c.m=gr;
 }
@@ -2510,7 +2520,7 @@ function render(){
   if(c.stun>0){if(!c.sm){c.sm=new THREE.Mesh(TOR,MSTUN);c.sm.rotation.x=Math.PI/2;c.m.add(c.sm)}c.sm.visible=true;c.sm.position.y=(c.e.air?1:0)+c.top+.35;c.sm.rotation.z=tm*8}else if(c.sm)c.sm.visible=false;
   c.mat.emissive.setHex(c.stun>0?0x555500:c.burn>0?0x7a3300:c.sf<1?0x4a3a90:tm-(c.hf||-9)<.1?0x663322:0);
   const hurt=c.hp<c.max;c.bg.visible=c.fg.visible=hurt;
-  if(hurt)c.fg.scale.x=.6*Math.max(0,c.hp/c.max);
+  if(hurt)c.fg.scale.x=(c.hbw||.6)*Math.max(0,c.hp/c.max);
  }
  gridM.material.opacity+=((S.bt!=null?.5:0)-gridM.material.opacity)*.2;gridM.visible=gridM.material.opacity>.01;
  prings.forEach((r,i)=>{r.rotation.z=tm*(i%2?-2:2.4)});
@@ -2533,6 +2543,7 @@ function render(){
   }
  }
  gh.visible=gp;
+ mobBuildUI();
  for(const m of [rd,rr]){m.visible=!!rg;m.material.color.setHex(col)}
  if(rg)for(const m of [rd,rr]){m.position.set(rg[0]-HW,.05,rg[1]-HH);m.scale.set(rg[2],1,rg[2])}
  camStep();$('zf').classList.toggle('on',LOCKH);pvRender();R.render(sc,cam);
@@ -2757,6 +2768,7 @@ cv.addEventListener('wheel',e=>{
  if(p0&&CZ>1.01){const p1=ground(e);if(p1){CX+=p0.x-p1.x;CY+=p0.y-p1.y;camSet()}}
 },{passive:false});
 cv.addEventListener('mousedown',e=>{if(e.button==1)e.preventDefault()});
+$('pbt').onclick=e=>{e.stopPropagation();if(PEND&&PEND[2]==S.bt){const[c,r]=PEND;PEND=null;orderBuild(c,r);sync()}};$('pbx').onclick=e=>{e.stopPropagation();PEND=null};
 const cfb=$('cfm'),cfs=()=>{cfb.textContent=CONF?'✔ Bygg 2 tryck':'Bygg 1 tryck';cfb.style.display=MODE=='mob'?'':'none'};cfs();setInterval(cfs,1000);cfb.onclick=()=>{CONF=!CONF;PEND=null;try{localStorage.setItem('wh40kconf',CONF?'1':'0')}catch(x){}cfs();toast(CONF?'Bygg: tryck två gånger':'Bygg: ett tryck')};
 $('snd').onclick=()=>{MUTE=!MUTE;try{localStorage.setItem('wh40kmute',MUTE?'1':'0')}catch(x){}if(ac())AM.gain.value=MUTE?0:.55;$('snd').textContent=MUTE?'🔇':'🔊'};
 $('snd').textContent=MUTE?'🔇':'🔊';
@@ -3048,7 +3060,7 @@ function leftClick(e){
  if(S.cpm){const pm=S.cpm;S.cpm=null;if(S.tw.includes(pm)&&b&&b!==pm&&!T[b.k].wall&&!T[b.k].dbl){copyTower(pm,b);S.sel=[pm];return}if(b===pm){S.cpm=pm;return}toast('Avbröt kopiering')}
  S.base=0;CAMLOCK=0;
  if(S.bt==null&&!b&&Math.hypot(p.x-BASE[0]-.5,p.y-BASE[1]-.5)<.9){sfxChurch();S.base=1;S.sel=[];S.menu='';FOLLOW=false;CAMLOCK=1;CZT=1;CAMYT=0;CAMAT=.72;LOCKH=false;return}
- if(S.bt!=null&&!b){if(inb){if(MODE=='mob'&&CONF&&!(PEND&&PEND[0]==c&&PEND[1]==r&&PEND[2]==S.bt)){PEND=[c,r,S.bt];toast('Tryck igen för att bygga');return}PEND=null;orderBuild(c,r)}return}
+ if(S.bt!=null&&!b){if(inb){if(MODE=='mob'&&CONF&&!(PEND&&PEND[0]==c&&PEND[1]==r&&PEND[2]==S.bt)){const first=!PEND;PEND=[c,r,S.bt];if(first)toast('Tryck ✔ Bygg, eller samma ruta igen');return}PEND=null;orderBuild(c,r)}return}
  let b2=b;if(!b2&&S.bt==null&&(e.pointerType=='touch'||MODE=='mob')){let bd=1.0;for(const t of S.tw){const dd=Math.hypot(p.x-t.x,p.y-t.y);if(dd<bd){bd=dd;b2=t}}}
  const pk=Math.hypot(p.x-S.h.x,p.y-S.h.y)<(MODE=='mob'?.9:.7)?S.h:b2;
  if(pk){if(pk===S.h){FOLLOW=true}else FOLLOW=false;S.bt=null;S.menu='';S.sel=add?(S.sel.includes(pk)?S.sel.filter(x=>x!==pk):[...S.sel,pk]):[pk]}
