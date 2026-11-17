@@ -1549,9 +1549,24 @@ function suggestCell(k,nr){
  for(const[x,y]of C.slice(0,10))if(!why(x,y))return[x,y];
  return null;
 }
+function adjCell(k,c,r,pd){
+ const d=T[k];if(!d||d.wall)return null;
+ const left=S.gold-S.o.reduce((a,o)=>a+(T[o.k].pts?0:T[o.k].c),0);if(!d.pts&&left<d.c)return null;
+ if(d.max&&S.tw.filter(x=>x.k==k).length+S.o.filter(o=>o.k==k).length>=d.max)return null;
+ const D=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+ if(pd){const i=D.findIndex(q=>q[0]==pd[0]&&q[1]==pd[1]);if(i>0)D.unshift(D.splice(i,1)[0])}
+ for(const[dx,dy]of D){const x=c+dx,y=r+dy;
+  if(x<0||y<0||x>=COLS||y>=ROWS||S.o.some(o=>o.c==x&&o.r==y))continue;
+  if(S.bot&&S.bot.job&&S.bot.job.c==x&&S.bot.job.r==y)continue;
+  if(!why(x,y))return[x,y]}
+ return null;
+}
 function buildAndSuggest(c,r){
  const n=S.o.length,k=S.bt;orderBuild(c,r);
- if(MODE=='mob'&&CONF&&S.bt===k&&S.o.length>n){const q=suggestCell(k,[c,r]);if(q){PEND=[q[0],q[1],k];S.hov=[q[0],q[1]]}}
+ if(MODE=='mob'&&CONF&&S.bt===k&&S.o.length>n){
+  const lb=S.lastB,pd=lb&&lb.k===k&&Math.max(Math.abs(c-lb.c),Math.abs(r-lb.r))==1?[c-lb.c,r-lb.r]:null;
+  S.lastB={k,c,r};
+  const q=adjCell(k,c,r,pd);if(q){PEND=[q[0],q[1],k];S.hov=[q[0],q[1]]}}
 }
 function botPick(){
  const nx=E[evt(S.st=='bygg'?S.L:Math.min(MAXL,S.L+1))],cnt=k=>S.tw.filter(t=>t.k==k).length;
