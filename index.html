@@ -3138,7 +3138,7 @@ function leftClick(e){
  if(S.cpm){const pm=S.cpm;S.cpm=null;if(S.tw.includes(pm)&&b&&b!==pm&&!T[b.k].wall&&!T[b.k].dbl){copyTower(pm,b);S.sel=[pm];return}if(b===pm){S.cpm=pm;return}toast('Avbröt kopiering')}
  S.base=0;CAMLOCK=0;
  if(S.bt==null&&!b&&Math.hypot(p.x-BASE[0]-.5,p.y-BASE[1]-.5)<.9){sfxChurch();S.base=1;S.sel=[];S.menu='';FOLLOW=false;CAMLOCK=1;CZT=1;CAMYT=0;CAMAT=.72;LOCKH=false;return}
- if(S.bt!=null&&!b){if(inb){if(MODE=='mob'&&CONF&&!(PEND&&PEND[0]==c&&PEND[1]==r&&PEND[2]==S.bt)){const first=!PEND;PEND=[c,r,S.bt];if(first)toast('Tryck ✔ Bygg, eller samma ruta igen');return}PEND=null;orderBuild(c,r)}return}
+ if(S.bt!=null&&!b){if(inb){if(MODE=='mob'&&CONF&&!(PEND&&PEND[0]==c&&PEND[1]==r&&PEND[2]==S.bt)){PEND=[c,r,S.bt];return}PEND=null;orderBuild(c,r)}return}
  let b2=b;if(!b2&&S.bt==null&&(e.pointerType=='touch'||MODE=='mob')){let bd=1.0;for(const t of S.tw){const dd=Math.hypot(p.x-t.x,p.y-t.y);if(dd<bd){bd=dd;b2=t}}}
  const pk=Math.hypot(p.x-S.h.x,p.y-S.h.y)<(MODE=='mob'?.9:.7)?S.h:b2;
  if(pk){if(pk===S.h){FOLLOW=true}else FOLLOW=false;S.bt=null;S.menu='';S.sel=add?(S.sel.includes(pk)?S.sel.filter(x=>x!==pk):[...S.sel,pk]):[pk]}
