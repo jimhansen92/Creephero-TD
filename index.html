@@ -1470,7 +1470,7 @@ function detail(k,l,t,ex){
  return `<div style="line-height:1.22">`+nm+(ex?' <small>'+ex+'</small>':'')+`<div style="display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:0 9px;margin-top:1px">`
   +c('⚔️','Mark',v(g),'#ff7a5a')+c('🪽','Luft',v(a),'#7ab8ff')+c('❄️','Vinter',v(w),'#bfe6ff')
   +c('⏱️','Attacker/s',fv,'#ffd84a')+c('🎯','Räckvidd',rg,'#e8dcc0')+c('🛡️','Pansar',apv,'#e8dcc0')+`</div>`
-  +`<div>💥 <b style="color:#e8dcc0">${hit}</b>${sp.length?` <span style="color:#c9a0ff">· ✨ ${sp.join(' · ')}</span>`:''}</div>`+`</div>`;
+  +`<div>💥 <span style="opacity:.75">Träffar</span> <b style="color:#e8dcc0">${hit}</b></div>`+(sp.length?`<div style="color:#c9a0ff">✨ ${sp.join(' · ')}</div>`:'')+`</div>`;
 }
 const pvC=$('pv'),PR=new THREE.WebGLRenderer({canvas:pvC,antialias:true,alpha:true,preserveDrawingBuffer:true}),ps=new THREE.Scene(),pcam=new THREE.PerspectiveCamera(32,1,.1,50),pRoot=new THREE.Group();
 PR.setClearColor(0x000000,0);ps.add(new THREE.AmbientLight(0xffffff,.85));
