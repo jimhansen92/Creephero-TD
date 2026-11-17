@@ -1419,6 +1419,50 @@ function applyBuffs(){
   t.bf=1+Math.min(a,1);t.bd=1+Math.min(m,1);if(t.hex)t.bd*=1+(T.find(x=>x.curse)||{curse:.5}).curse;
  }
 }
+// ---------- Datorspelare (2 spelare) ----------
+const BOTC='#4a9aff';
+function botPathCells(){
+ const P=new Set();
+ for(const sp of SPW){let x=sp[0],y=sp[1],n=0;while(n++<400){P.add(x+','+y);const bd=dist[y][x];if(!(bd>0&&bd<1e9))break;let nb=null,nd=bd;for(const[dx,dy]of DN){const a=x+dx,b=y+dy;if(a<0||b<0||a>=COLS||b>=ROWS)continue;if(dx&&dy&&(occ[y][a]||occ[b][x]))continue;if(dist[b][a]<nd){nd=dist[b][a];nb=[a,b]}}if(!nb)break;[x,y]=nb}}
+ return [...P].map(q=>q.split(',').map(Number));
+}
+function botPick(){
+ const nx=E[evt(S.st=='bygg'?S.L:Math.min(MAXL,S.L+1))],cnt=k=>S.tw.filter(t=>t.k==k).length;
+ const W=[];T.forEach((d,k)=>{if(d.pts||d.wall||d.dbl||d.buff||d.stun)return;if(d.max&&cnt(k)>=d.max)return;
+  let w={knight:3,dwarf:3,archer:2,fire:2,squire:1,boomer:1.5}[d.kind]||0;
+  if(nx.air&&d.kind=='archer')w+=5;if(nx.air&&!d.air)w*=.3;if(nx.winter&&d.kind=='fire')w+=5;if(nx.winter&&d.kind=='archer')w+=1.5;
+  if(w>0)W.push([k,w])});
+ let r=Math.random()*W.reduce((a,x)=>a+x[1],0);for(const[k,w]of W){r-=w;if(r<=0)return k}return W.length?W[0][0]:null;
+}
+function botBuild(k){
+ const d=T[k],R=d.r,path=botPathCells(),ps=new Set(path.map(p=>p[0]+','+p[1]));
+ const C=[];
+ for(let y=0;y<ROWS;y++)for(let x=0;x<COLS;x++){
+  if(occ[y][x]||ps.has(x+','+y)||S.o.some(o=>o.c==x&&o.r==y))continue;
+  if(x==BASE[0]&&y==BASE[1]||SPW.some(q=>q[0]==x&&q[1]==y))continue;
+  let near=1e9,cov=0;for(const[px,py]of path){const dd=Math.hypot(px-x,py-y);if(dd<near)near=dd;if(dd<=R)cov++}
+  if(near>(R>=3?2.3:1.5))continue;
+  C.push([x,y,cov+Math.random()*2])}
+ C.sort((a,b)=>b[2]-a[2]);
+ for(const[x,y]of C.slice(0,12)){if(!why(x,y)){S.bot.g-=d.c;build(x,y,k);const t=occ[y][x];if(t){t.bot=1;t.sp=d.c}S.ST.built++;return true}}
+ return false;
+}
+function botUpgrade(){
+ const ts=S.tw.filter(t=>t.bot).sort((a,b)=>a.l-b.l);
+ for(const t of ts){const d=T[t.k];
+  if(d.branch&&!t.br){if(S.bot.g>=d.bcost){S.bot.g-=d.bcost;t.sp+=d.bcost;const nx=E[evt(Math.min(MAXL,S.L+1))];t.br=nx.air?'long':Math.random()<.5?'fire':'long';t.l=2;remodel(t);return true}continue}
+  if(t.l>=4)continue;const c=Math.round((d.uc||d.c)*.9*t.l);if(S.bot.g>=c){S.bot.g-=c;t.sp+=c;t.l++;if(d.vis)remodel(t);return true}}
+ return false;
+}
+function botStep(dt){
+ if(S.np!=2)return;if(!S.bot)S.bot={g:250,t:1.5,nx:null};
+ const b=S.bot;b.t-=dt;if(b.t>0)return;b.t=1+Math.random()*1.2;
+ if(b.nx==null)b.nx=botPick();if(b.nx==null)return;
+ const mine=S.tw.filter(t=>t.bot).length,cheapUp=S.tw.filter(t=>t.bot&&t.l<4).reduce((m,t)=>Math.min(m,Math.round((T[t.k].uc||T[t.k].c)*.9*t.l)),1e9);
+ const wantUp=mine>=5&&Math.random()<Math.min(.7,.25+mine*.04);
+ if(wantUp&&b.g>=cheapUp){if(botUpgrade()){sync();return}}
+ if(b.g>=T[b.nx].c){if(botBuild(b.nx)){b.nx=null;sync()}else b.nx=null}
+}
 let BMG=null;
 function throwBoom(t,b,Rg){
  if(!BMG){BMG=new THREE.Group();const wm=lam(0x9a6a32),sm=lam(0xc03a2a);for(const s2 of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.34,.04,.08),wm);w.position.set(.1,0,s2*.07);w.rotation.y=s2*.6;BMG.add(w);const st=new THREE.Mesh(new THREE.BoxGeometry(.07,.045,.085),sm);st.position.set(.22,0,s2*.14);st.rotation.y=s2*.6;BMG.add(st)}}
@@ -1915,7 +1959,7 @@ function stKill(g){const r=stRow();if(r)r.k++;S.ST.kills++;S.ST.gk+=g;const l=st
 function hit(c,d,p,f){
  if(c.dead)return;
  const hp0=c.hp;if(c.e.winter)d*=f?2.5:.35;c.hp-=d*(1-(c.ar!=null?c.ar:(c.e.a||0))*(1-(p||0)));c.hf=tm;stDmg(Math.max(0,Math.min(hp0,hp0-c.hp)));
- if(c.hp<=0){c.dead=1;stKill(Math.round(c.gd));sfxDeath(c);S.gold+=Math.round(c.gd);{const gp=diggerPct();if(gp>0){const ex=Math.max(1,Math.round(c.gd*gp));S.gold+=ex;S.ST.gb+=ex;flash(c.x,c.y,.22,'#ffd84a',.4,.7)}}S.score+=Math.round(c.gd)*2+(c.e.boss?30000:0);S.rp=(S.rp||0)+Math.round(c.gd)*2+(c.e.boss?30000:0);if(c.e.boss)toast('Boss besegrad! +30 000 poäng');burst(c.x,c.y,c.e.col,c.e.boss?24:c.e.air?8:10,c.e.air?1:.4);flash(c.x,c.y,c.e.boss?.7:.35,'#3a5a22',.45,1.4)}
+ if(c.hp<=0){c.dead=1;stKill(Math.round(c.gd));sfxDeath(c);S.gold+=Math.round(c.gd);if(S.np==2&&S.bot)S.bot.g+=Math.round(c.gd*.5);{const gp=diggerPct();if(gp>0){const ex=Math.max(1,Math.round(c.gd*gp));S.gold+=ex;S.ST.gb+=ex;flash(c.x,c.y,.22,'#ffd84a',.4,.7)}}S.score+=Math.round(c.gd)*2+(c.e.boss?30000:0);S.rp=(S.rp||0)+Math.round(c.gd)*2+(c.e.boss?30000:0);if(c.e.boss)toast('Boss besegrad! +30 000 poäng');burst(c.x,c.y,c.e.col,c.e.boss?24:c.e.air?8:10,c.e.air?1:.4);flash(c.x,c.y,c.e.boss?.7:.35,'#3a5a22',.45,1.4)}
 }
 function build(c,r,k){
  const t={c,r,x:c+.5,y:r+.5,k,l:1,cd:0,a:0,sp:T[k].c,born:tm};
@@ -2243,7 +2287,7 @@ function leak(c){S.ST.leaks++;let d=c.e.boss?(c.e.mini?3:5):1;c.dead=1;S.leak=1;
 function update(dt){
  if(S.st=='slut'||S.st=='seger')return;
  CUR=null;heroU(dt);spearStep(dt);skStep(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt);else if(T[t.k].digger)diggerU(t,dt);else if(T[t.k].shark)sharkU(t,dt);else if(T[t.k].fisher)fisherU(t,dt)}lumberGrow(dt);
- pts(dt);rocks(dt);booms(dt);applyBuffs();
+ pts(dt);rocks(dt);booms(dt);botStep(dt);applyBuffs();
  if(S.st=='strid'){
   S.ST.time+=dt;const q=S.q;
   if(q&&q.n>0){
@@ -2323,7 +2367,7 @@ mkE(c);S.en.push(c);
  const q=S.q;
  if(S.st=='strid'&&q&&q.n==0&&!S.en.length){
   const i=interest(!S.leak);
-  const bo=25+S.L*3;S.ST.gb+=bo;S.ST.gi+=i;stLv().g+=bo+i;S.gold+=bo+i;S.score+=S.L*100;lumberBonus();S.q=null;interestFx(i,bo,!S.leak);
+  const bo=25+S.L*3;S.ST.gb+=bo;S.ST.gi+=i;stLv().g+=bo+i;S.gold+=bo+i;if(S.np==2&&S.bot)S.bot.g+=Math.round(bo*.6+Math.min(200+S.L*15,S.bot.g*.15));S.score+=S.L*100;lumberBonus();S.q=null;interestFx(i,bo,!S.leak);
   hexClear();if(S.L>=MAXL)S.st='seger';else{S.L++;S.st='bygg'}
   sync();
  }
@@ -2352,6 +2396,7 @@ function render(){
  const pc=$('pt').classList;pc.toggle('dance',!!dn);pc.toggle('happy',hp&&!dn);
  for(const t of S.tw){
   const d=T[t.k],u=t.u,sw=Math.sin(Math.min(1,(tm-(t.fl||-9))/.35)*Math.PI);if(d.wolf)wolfVis(t);if(d.lumber)lumberVis(t);if(d.crow)crowVis(t);if(d.digger)diggerVis(t);if(d.shark)sharkVis(t);if(d.fisher)fisherVis(t);if(t.hxm){t.hxm.rotation.y=tm*2;t.hxm.children[0].material.opacity=.6+.3*Math.sin(tm*4)}
+  if(t.bot&&t.bmk!==t.m){t.bmk=t.m;const rg=new THREE.Mesh(RING,bas(0x4a9aff,.9));rg.position.y=.04;rg.scale.set(.62,1,.62);t.m.add(rg)}
   t.m.scale.setScalar(Math.min(1,(tm-t.born)/.3+.1)*(d.wall||t.tu?1:(d.lvs?d.lvs[t.l-1]:1+.07*(t.l-1))));
   if(!t.tu&&!d.wall)t.m.scale.y*=1+.025*Math.sin(tm*2.4+t.c);
   if(!d.wall&&t.pl!==t.l){t.pl=t.l;if(t.pg)t.m.remove(t.pg);const pg=new THREE.Group();for(let i=0;i<t.l;i++){const o=new THREE.Mesh(SPH,MPIP);o.scale.setScalar(.04);o.position.set(.45,.05,(i-(t.l-1)/2)*.12);pg.add(o)}t.m.add(pg);t.pg=pg}
@@ -2435,7 +2480,7 @@ function heroFace(){const k=S&&S.hc||'knight';if(k=='knight')return FACE;
  if(k=='mage')f=R(f,'<ellipse class="mo"','<path d="M17 39Q30 64 43 39Q37 47 30 47Q23 47 17 39Z" fill="#e8e8e8"/><ellipse class="mo"');
  return f}
 const FACE='<svg class="face" viewBox="0 0 60 60"><g class="head"><path d="M30 8Q38 -2 50 6Q40 8 36 14Z" fill="#c0392b"/><ellipse cx="30" cy="32" rx="17" ry="20" fill="#e0b890"/><path d="M11 32Q10 4 30 4Q50 4 49 32L44 32Q44 13 30 13Q16 13 16 32Z" fill="#aab4c0"/><rect x="10" y="28" width="7" height="18" rx="3" fill="#aab4c0"/><rect x="43" y="28" width="7" height="18" rx="3" fill="#aab4c0"/><rect x="28.5" y="14" width="3" height="20" fill="#8a94a2"/><g class="brows"><path d="M17 23 26 26M43 23 34 26" stroke="#2a1f3a" stroke-width="2.5" stroke-linecap="round"/></g><g class="eyes"><ellipse cx="23" cy="31" rx="4" ry="3" fill="#ffffff"/><ellipse cx="37" cy="31" rx="4" ry="3" fill="#ffffff"/><circle cx="23" cy="31" r="1.6" fill="#2a5a9a"/><circle cx="37" cy="31" r="1.6" fill="#2a5a9a"/></g><ellipse class="mo" cx="30" cy="44" rx="4" ry="1.6" fill="#2a1020"/><path class="sm" d="M20 41Q30 54 40 41Z" fill="#2a1020" stroke="#2a1020" stroke-width="2" stroke-linejoin="round"/></g></svg><small>700 / 700</small><small>270 / 270</small>';
-const selT=()=>S.sel.filter(x=>x!==S.h);
+const selT=()=>S.sel.filter(x=>x!==S.h&&!x.bot);
 function cardList(){
  const hs=S.sel.includes(S.h),ts=selT(),L=[];
  if(hs)L.push({k:'B',i:'🔨',n:'Bygg',a:'build'},{k:'V',i:'💃',n:'Dans',a:'dance'});
@@ -2595,7 +2640,7 @@ function sync(){
  const e=E[evt(S.L)],end=S.st=='slut'||S.st=='seger';
  if(!S.menu)S.pvk=null;
  if(S.tgt&&S.tgt.dead)S.tgt=null;
- setH('rs',`<span title="Guld">🪙 ${S.gold|0}</span><span title="Poäng">🌲 ${S.score.toLocaleString('sv-SE')}</span><span title="Liv">🍖 ${S.lives}/20</span>${S.sh>0?`<span title="Skyddsaura: tar skadan före HP" style="color:#6ab8ff">🛡️ ${S.sh}</span>`:''}<span class="int" title="Ränta på sparat guld när du vinner rundan. Högst när ingen fiende tar sig igenom.">Ränta +${interest(true)}</span>`);
+ setH('rs',`<span title="Guld">🪙 ${S.gold|0}</span>${S.np==2&&S.bot?`<span title="Datorspelarens guld" style="color:#7ab8ff">🤖 ${S.bot.g|0}</span>`:''}<span title="Poäng">🌲 ${S.score.toLocaleString('sv-SE')}</span><span title="Liv">🍖 ${S.lives}/20</span>${S.sh>0?`<span title="Skyddsaura: tar skadan före HP" style="color:#6ab8ff">🛡️ ${S.sh}</span>`:''}<span class="int" title="Ränta på sparat guld när du vinner rundan. Högst när ingen fiende tar sig igenom.">Ränta +${interest(true)}</span>`);
  $('sp').textContent='Fart ×'+S.sp;
  const bn=$('bn');bn.style.display=S.st=='bygg'&&!S.paused?'block':'none';bn.textContent=`▶ Starta nivå ${S.L}: ${e.n}${e.air?' (luft)':''}${e.winter?' (vinter)':''}${e.boss?(e.mini?' (MINIBOSS)':' (STOR BOSS)'):''}`;
  let oh='';
@@ -2604,6 +2649,7 @@ function sync(){
  else if(!MODE)oh='<h2>Välj spelläge</h2><div style="display:flex;gap:10px"><button data-a="m:pc" style="padding:12px 18px">🖥️ Dator<br><small>Mus och tangentbord</small></button><button data-a="m:mob" style="padding:12px 18px">📱 Mobil<br><small>Pekskärm, liggande läge</small></button></div>';
  else if(!S.hc){let last='knight';try{last=localStorage.getItem('wh40khc')||'knight'}catch(x){}
   oh='<h2>Välj hjälte</h2><div style="display:grid;grid-template-columns:repeat(2,minmax(0,220px));gap:8px">'+Object.entries(HC).map(([k,c])=>`<button data-a="hc:${k}" style="padding:10px 12px;text-align:left;${k==last?'outline:2px solid #ffd84a;':''}"><b style="font-size:1.1em">${c.i} ${c.n}</b><br><small style="display:block;line-height:1.3;margin-top:3px">${c.t}</small></button>`).join('')+'</div>'}
+ else if(!S.np)oh='<h2>Antal spelare</h2><div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button data-a="np:1" style="padding:12px 18px">👤 1 spelare<br><small>Du spelar själv</small></button><button data-a="np:2" style="padding:12px 18px">👤🤖 2 spelare<br><small>Med en datorspelare som bygger egna gubbar</small></button></div>';
  else if(S.paused&&S.cheat){const ic='style="width:110px;font:inherit;padding:4px 6px;color:#f0e2b0;background:#0d0a07;border:1px solid #6e5a38;border-radius:3px;user-select:text;-webkit-user-select:text"';oh=`<h2>Fusk</h2><div style="display:grid;grid-template-columns:auto auto;gap:6px 10px;align-items:center;text-align:left"><label for="ch-g">Guld</label><input id="ch-g" type="number" min="0" step="100" value="${S.gold|0}" ${ic}><label for="ch-p">Poäng</label><input id="ch-p" type="number" min="0" step="1000" value="${S.score|0}" ${ic}><label for="ch-l">Nivå (1–${MAXL})</label><input id="ch-l" type="number" min="1" max="${MAXL}" step="1" value="${S.L}" ${ic}></div><button data-a="csup">Supergubbar i byggmenyn: ${S.allsup?'PÅ':'AV'}</button><small style="color:#bfb08a">När det är PÅ kan du köpa alla supergubbar direkt för guld, utan Mystery box.</small><small style="color:#bfb08a">Byter du nivå avbryts pågående strid och du hamnar i byggläge.</small><div style="display:flex;gap:8px"><button data-a="capply">Använd</button><button data-a="cback">Tillbaka</button></div>`}
  else if(S.paused)oh='<h2>Meny</h2><button data-a="res">Fortsätt</button><button data-a="cheat">Fusk</button><button data-a="mode">Byt spelläge</button><button data-a="new">Starta om</button><small style="color:#bfb08a;opacity:.75;max-width:280px">Drakmodell: "Red Dragon" av Tomek Zamojski (CC-BY 3.0), via Poly Pizza</small>';
  $('ov').classList.toggle('on',!!oh);setH('ov',oh);
@@ -2652,6 +2698,7 @@ $('ov').onclick=e=>{
  const b=e.target.closest('[data-a]'),a=b?b.dataset.a:'';
  if(!MODE){if(a.startsWith('m:'))setMode(a.slice(2))}
  else if(!S.hc){if(a.startsWith('hc:')){S.hc=a.slice(3);heroClass(S.hc);try{localStorage.setItem('wh40khc',S.hc)}catch(x){}playVoice('s_hero',S.h.x)}}
+ else if(!S.np){if(a.startsWith('np:')){S.np=+a.slice(3);if(S.np==2){S.bot={g:250,t:2,nx:null};toast('🤖 Datorspelaren är med! Blå ring = hans gubbar')}sync()}}
  else if((S.st=='slut'&&performance.now()>ENDAT||S.st=='seger'))reset();
  else if(a=='new'){S.cheat=0;reset()}
  else if(a=='res'){S.paused=0;S.cheat=0}
