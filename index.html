@@ -272,7 +272,7 @@ const $=id=>document.getElementById(id),cv=$('c'),wr=$('w');
 const COLS=34,ROWS=14,HW=COLS/2,HH=ROWS/2,BASE=[17,7],SPW=[[0,1],[0,12],[33,1],[33,12]];
 const T=[
 {n:'Riddaren',c:200,d:80,r:1.6,f:.9,gr:1,melee:1,ap:.7,col:'#b8c4d0',kind:'knight',ty:'Närstrid',i:'⚔️',k:'E',t:'Står helt stilla och slår väldigt hårt, men bara på kort håll.'},
-{n:'Draken',c:600,d:100,r:4.5,f:.7,air:1,gr:1,ap:1,pts:30000,col:'#e8504a',kind:'dragon',ty:'Drake',i:'🐉',k:'R',t:'Specialvapen: drake som skjuter en kraftig stråle ur munnen och går rakt igenom pansar.'},
+{n:'Draken',c:600,d:150,r:4.5,f:.75,air:1,gr:1,ap:1,pts:30000,col:'#e8504a',kind:'dragon',ty:'Drake',i:'🐉',k:'R',t:'Specialvapen: drake som skjuter en kraftig stråle ur munnen och går rakt igenom pansar.'},
 {n:'Rapande dvärgen',c:80,d:44,r:1.9,f:.7,gr:1,aoe:1,col:'#9ac84a',kind:'dwarf',vis:1,lvs:[.8,.97,1.14,1.3],ty:'Områdesskada',i:'🍺',k:'A',t:'Tjock dvärg med stor mage som rapar ut skada i en cirkel runt sig.'},
 {n:'Älvskytten',c:80,d:5,r:4.6,f:1.2,air:1,gr:1,ap:.1,fm:8,cr:{p:.25,m:.5},col:'#4fa59a',kind:'archer',branch:1,bcost:100,vis:1,ty:'Skytt',i:'🏹',k:'S',t:'Långsam skytt med lång räckvidd. Skjuter på både mark och luft, extra mot flygare.'},
 {n:'Frostmagikern',c:450,pts:30000,d:4,r:3,f:2,air:1,gr:1,slow:.4,col:'#6ab8e8',kind:'mage',ty:'Stöd',i:'❄️',k:'D',t:'Saktar ner alla fiender i närheten och skadar lite.'},
@@ -280,11 +280,11 @@ const T=[
 {n:'Magiska kulan',c:250,max:3,r:2.4,col:'#ffd84a',kind:'orb',ty:'Stöd',buff:{as:.3,dm:.15},i:'🔆',k:'C',t:'Lysande kula som ger gubbar i närheten snabbare attacker och lite mer skada.'},
 {n:'Jätten',c:900,d:50,r:1.9,f:.7,gr:1,melee:1,col:'#b08a64',kind:'giant',ty:'Närstrid',pts:30000,rock:{dmg:3000,r:4.6,cd:60},i:'🗿',k:'J',t:'Enorm jätte som slår hårt på kort håll och kastar en stor sten på lång håll.'},
 {n:'Eldspyaren',c:150,d:6,r:2.4,f:4,gr:1,fire:1,fsp:.9,burn:{t:3,k:.3},col:'#ff7a2a',kind:'fire',ty:'Eld',i:'🔥',k:'Q',t:'Spyr eld på marken i en liten cirkel och sätter fiender i brand. Mycket effektiv mot vinterfiender.'},
-{n:'Vargen',c:600,d:60,r:1,f:1.3,gr:1,ap:.2,wolf:1,pts:30000,col:'#8c9099',kind:'wolf',ty:'Jägare',i:'🐺',k:'W',t:'Specialvapen: sover där du placerar den, springer sedan efter vanliga markfiender och biter dem. När alla är döda går den tillbaka och somnar.'},
+{n:'Vargen',c:600,d:85,r:1,f:1.4,gr:1,ap:.2,wolf:1,pts:30000,col:'#8c9099',kind:'wolf',ty:'Jägare',i:'🐺',k:'W',t:'Specialvapen: sover där du placerar den, springer sedan efter vanliga markfiender och biter dem. När alla är döda går den tillbaka och somnar.'},
 {n:'Häxan',c:600,r:3.8,slowAir:.45,curse:.5,pts:30000,col:'#a060d0',kind:'witch',ty:'Förhäxning',i:'🧙‍♀️',k:'Y',t:'Specialvapen: saktar ner flygande fiender och förhäxar tre slumpade vanliga gubbar varje nivå så de gör 50 % mer skada. Uppgradera henne för att förhäxa fler.'},
 {n:'Skogshuggaren',c:600,r:1,lumber:1,pts:30000,col:'#5a8a3a',kind:'lumber',ty:'Skogsarbetare',i:'🪓',k:'K',t:'Specialvapen: springer runt utanför banan och hugger ner träd. Ger extra poäng efter varje runda: 5 % (nivå 1), 8 % (nivå 2) och 12 % (nivå 3). Träden växer upp långsamt igen.'},
 {n:'Dubbelgångaren',c:600,r:1,dbl:1,pts:30000,col:'#9aa0c8',kind:'dbl',ty:'Kopiering',i:'🪞',k:'N',t:'Specialvapen: gör en kopia av valfri gubbe på spelplanen. Kopian får samma typ, nivå och gren.'},
-{n:'Kråkträdet',c:600,d:80,r:1,ap:.3,crow:1,pts:30000,col:'#6a5a4a',kind:'crow',ty:'Fågel',i:'🌳',k:'T',t:'Specialvapen: ett träd utan blad med ett skatbo. Därifrån flyger en kråka i cirkel runt borgen och skadar alla fiender, både på marken och i luften, som den flyger igenom.'},
+{n:'Kråkträdet',c:600,d:140,r:1,ap:.3,crow:1,pts:30000,col:'#6a5a4a',kind:'crow',ty:'Fågel',i:'🌳',k:'T',t:'Specialvapen: ett träd utan blad med ett skatbo. Därifrån flyger en kråka i cirkel runt borgen och skadar alla fiender, både på marken och i luften, som den flyger igenom.'},
 {n:'Guldgrävaren',c:600,r:1,digger:1,pts:30000,col:'#d8a820',kind:'digger',ty:'Gruvarbetare',i:'⛏️',k:'1',t:'Specialvapen: springer runt utanför banan och gräver guld. Du får extra guld för varje fiende som dör: +10 % (nivå 1), +16 % (nivå 2) och +25 % (nivå 3).'},
 {n:'Hajen',c:600,r:1,shark:1,pts:30000,col:'#5a7a90',kind:'shark',ty:'Vattenjägare',i:'🦈',k:'2',t:'Specialvapen: simmar runt i vattnet runt banan med fenan uppe. Kommer en vanlig markfiende nära vattnet, till exempel på en bro, hoppar hajen upp och äter den direkt.'},
 {n:'Fiskaren',c:600,r:1,fisher:1,pts:30000,col:'#4a8ab0',kind:'fisher',ty:'Fiskare',i:'🎣',k:'3',t:'Specialvapen: sitter vid vallgraven och fiskar. Någon gång ibland, helt slumpmässigt, får han upp en fisk och du får +1 liv (max 20). Högre nivå = napp lite oftare.'}];
@@ -1438,7 +1438,7 @@ function detail(k,l,t){
  const tg=d.air&&d.gr?'mark och luft':d.air?'bara luft':'bara mark',sp=[];
  if(d.slowAir){return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: –')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,`Special: Saktar flygande fiender ${Math.round((d.slowAir+.05*(l-1))*100)} %. Varje nivå förhäxar hon ${3+(l-1)} slumpade vanliga gubbar (inga supergubbar) som gör ${Math.round(d.curse*100)} % mer skada under nivån. Varje uppgradering ger en gubbe till.`)+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.shark){const CD=[6,4.5,3];return nm+`<small style="color:#9a8f78">${d.ty}, simmar i vattnet</small><br>`+ln(C.r,'Dmg: äter en vanlig markfiende direkt, med ett hugg')+'<br>'+ln(C.y,`Väntetid ${CD[Math.min(2,l-1)]} s mellan hoppen. Räckvidd ${[2.6,3.1,3.6][Math.min(2,l-1)]} från vattnet. Simfart: ${['låg','medel','hög'][Math.min(2,l-1)]} (ökar med nivå)`)+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.p,'Special: Simmar runt i vattnet runt banan med fenan uppe. Kommer en vanlig markfiende nära vattnet, till exempel på en bro, hoppar den upp och äter den. Tar inte bossar eller flygare.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.fisher){const P=[90,65,45];return nm+`<small style="color:#9a8f78">${d.ty}, vid vallgraven</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,`Napp: slumpmässigt, i snitt var ${P[Math.min(2,l-1)]}:e sekund under en våg`)+'<br>'+ln(C.w,l<3?`Nästa nivå: i snitt var ${P[l]}:e sekund`:'Max nivå')+'<br>'+ln(C.p,'Special: Varje fisk han får upp ger +1 liv (max 20). Fiskar bara när du har tappat liv, och inte när vattnet är fruset.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
+ if(d.fisher){const P=[60,40,25];return nm+`<small style="color:#9a8f78">${d.ty}, vid vallgraven</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,`Napp: slumpmässigt, i snitt var ${P[Math.min(2,l-1)]}:e sekund under en våg`)+'<br>'+ln(C.w,l<3?`Nästa nivå: i snitt var ${P[l]}:e sekund`:'Max nivå')+'<br>'+ln(C.p,'Special: Varje fisk han får upp ger +1 liv (max 20). Fiskar bara när du har tappat liv, och inte när vattnet är fruset.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.digger){const P=[10,16,25];return nm+`<small style="color:#9a8f78">${d.ty}, utanför banan</small><br>`+ln(C.y,`Extra guld: +${P[Math.min(2,l-1)]} % för varje dödad fiende`)+'<br>'+ln(C.w,l<3?`Nästa nivå: +${P[l]} %`:'Max nivå')+'<br>'+ln(C.p,'Special: Springer runt utanför banan och gräver guld. Du får bara extra guld när en fiende dör, inte annars. Flera guldgrävare lägger ihop sina procent.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.crow){return nm+`<small style="color:#9a8f78">${d.ty}, cirkulerar runt borgen</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per träff`)+'<br>'+ln(C.y,'Träffar varje fiende högst ca 3 gånger per sekund')+'<br>'+ln(C.b,'Fly dmg: ja, samma skada')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: En kråka flyger runt borgen i en cirkel och skadar allt den flyger igenom, både på marken och i luften. Flera kråkträd ger flera kråkor.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.dbl){return nm+`<small style="color:#9a8f78">${d.ty}</small><br>`+ln(C.p,'Special: Gör en kopia av valfri gubbe på spelplanen (samma typ, nivå och gren). Välj Kopiera och tryck sedan på gubben. Gäller en gång.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
@@ -1446,7 +1446,7 @@ function detail(k,l,t){
  if(d.wolf){return nm+`<small style="color:#9a8f78">${d.ty}, bara markfiender</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per bett`)+'<br>'+ln(C.y,`Attackspeed: ${d.f}/s`)+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: Sover där du placerar den. Springer efter närmaste vanliga markfiende och biter (tar inte bossar eller flygare). När alla är döda går den tillbaka och sover.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
  if(d.stun){const du=d.stun.dur+.5*(l-1);return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: 1 stun var '+d.stun.every+' s')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,'Special: Stunnar en fiende i '+du+' s (den med mest HP först). Specialvapen: kostar '+d.pts.toLocaleString('sv-SE')+' poäng, som dras av vid köp')}
  if(d.buff){const f=1+.5*(l-1);return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: –')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,`Special: Gubbar i närheten får +${Math.round(d.buff.as*f*100)} % attackspeed och +${Math.round(d.buff.dm*f*100)} % skada`)}
- if(d.slow)sp.push('Saktar fiender '+Math.round((d.slow+.05*(l-1))*100)+' %');
+ if(d.slow)sp.push('Saktar fiender '+Math.round((d.slow+.05*(l-1))*100)+' %, och de förblir saktade 2,5 s efter att de lämnat räckvidden');
  if(d.fire){sp.push('Eldskada: 2,5x skada mot vinterfiender');sp.push('Sätter fiender i brand ('+d.burn.t+' s)')}
  if(d.fsp)sp.push('Träffar flera i en liten cirkel');
  if(d.aoe)sp.push('Skadar alla markfiender i en cirkel');
@@ -1972,7 +1972,7 @@ function wolfU(t,dt){
   if(!t.wt){let bd=1e9;for(const c of S.en){if(c.dead||c.e.air||c.e.boss||c.pre!=null||c.prz!=null)continue;const q=Math.hypot(c.x-t.wx,c.y-t.wy);if(q<bd){bd=q;t.wt=c}}}
   tg=t.wt;
  }else t.wt=null;
- const sp=3.4*dt;
+ const sp=4.2*dt;
  if(tg){
   t.ws='hunt';const dx=tg.x-t.wx,dy=tg.y-t.wy,L=Math.hypot(dx,dy);t.wa=Math.atan2(dy,dx);
   if(L>.55){const m=Math.min(sp,L-.5);t.wx+=dx/L*m;t.wy+=dy/L*m}
@@ -2032,13 +2032,13 @@ function lumberVis(t){
 function crowU(t,dt){
  const cs=S.tw.filter(x=>T[x.k].crow),idx=Math.max(0,cs.indexOf(t)),d=T[t.k];
  if(t.ca==null)t.ca=idx*Math.PI;
- t.ca+=2.2*dt;const R=3.2+(idx%2)*.8;
+ t.ca+=2.2*dt;const R=4.2+(idx%2)*.9;
  t.cx=BASE[0]+.5+Math.cos(t.ca)*R;t.cy=BASE[1]+.5+Math.sin(t.ca)*R;
  if(S.st!='strid')return;
  let hitn=0;
  for(const c of S.en){
   if(c.dead||(c.ct||0)>tm)continue;
-  if(Math.hypot(c.x-t.cx,c.y-t.cy)<1.0){c.ct=tm+.35;CUR=t.k;hit(c,dmg(t),d.ap);CUR=null;burst(c.x,c.y,'#25252f',3,c.e.air?1:.5);hitn++}
+  if(Math.hypot(c.x-t.cx,c.y-t.cy)<1.5){c.ct=tm+.3;CUR=t.k;hit(c,dmg(t),d.ap);CUR=null;burst(c.x,c.y,'#25252f',3,c.e.air?1:.5);hitn++}
  }
  if(hitn)sfxAtk('crow',t.cx);
 }
@@ -2139,7 +2139,7 @@ function fisherSpot(t){
 function fisherU(t,dt){
  if(!t.fw)fisherSpot(t);
  if(t.fs==null){t.fs='idle';t.ft=0}
- const l=Math.min(3,t.l),P=[1/90,1/65,1/45][l-1];
+ const l=Math.min(3,t.l),P=[1/60,1/40,1/25][l-1];
  if(t.fs=='idle'){if(S.st=='strid'&&ICE<.3&&S.lives<20&&Math.random()<P*dt){t.fs='bite';t.ft=0;const w=t.fw;splash(w[0]+w[2]*w[4],w[1]+w[3]*w[4]);sfxAtk('fish',t.x)}}
  else if(t.fs=='bite'){t.ft+=dt;if(t.ft>=1.1){t.fs='reel';t.ft=0;t.fgot=0;sfxAtk('reel',t.x);const w=t.fw;splash(w[0]+w[2]*w[4],w[1]+w[3]*w[4])}}
  else{t.ft+=dt;if(t.ft>=1&&!t.fgot){t.fgot=1;if(S.lives<20){S.lives=Math.min(20,S.lives+1);toast('🎣 Fiskaren fick en fisk! +1 liv');sfxAuraGain();const w=t.fw;flash(w[0]+HW,w[1]+HH,.4,'#7ad8ff',.6,.8);sync()}}if(t.ft>=1.5){t.fs='idle';t.ft=0}}
@@ -2206,7 +2206,7 @@ function update(dt){
 mkE(c);S.en.push(c);
    }
   }
-  for(const c of S.en)c.sf=c.nsl>tm?.55:1;
+  for(const c of S.en)c.sf=Math.min(c.nsl>tm?.55:1,c.fsl>tm?c.fsv:1);
   for(const c of S.en)if(c.burn>0&&!c.dead){c.burn-=dt;const h0=c.hf;CUR=c.bk==null?null:c.bk;hit(c,c.bdps*dt,1,1);CUR=null;c.hf=h0}
   for(const t of S.tw){
    const d=T[t.k];if(d.wall||d.buff||d.wolf||d.lumber||d.dbl||d.crow||d.digger||d.shark||d.fisher)continue;CUR=t.k;
@@ -2229,7 +2229,7 @@ mkE(c);S.en.push(c);
     }
    }
    if(d.slowAir){for(const c of S.en)if(!c.dead&&c.e.air&&Math.hypot(c.x-t.x,c.y-t.y)<=Rg)c.sf=Math.min(c.sf,1-d.slowAir-.05*(t.l-1));continue}
-   if(d.slow)for(const c of S.en)if(!c.dead&&Math.hypot(c.x-t.x,c.y-t.y)<=Rg)c.sf=Math.min(c.sf,1-d.slow-.05*(t.l-1));
+   if(d.slow)for(const c of S.en)if(!c.dead&&Math.hypot(c.x-t.x,c.y-t.y)<=Rg){const v=1-d.slow-.05*(t.l-1);c.sf=Math.min(c.sf,v);if(!(c.fsl>tm)||v<=c.fsv)c.fsv=v;c.fsl=tm+2.5}
    if(t.cd>0)continue;
    let b=null;
    for(const c of S.en){
