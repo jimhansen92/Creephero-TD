@@ -208,7 +208,7 @@ body.mob .fb i,body.mob .fb em{font-size:10px}
 #bx.win{animation:bxw .5s ease-out}
 @keyframes bxw{0%{transform:translate(-50%,-50%) scale(.6)}60%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1)}}
 body:not(.mob) #app{position:relative}
-body:not(.mob) #bot{position:absolute;left:50%;transform:translateX(-50%);width:68%;min-width:min(880px,calc(100vw - 20px));bottom:8px;z-index:5;margin:0;border:2px solid #7a6540;border-radius:10px;justify-content:center;background:linear-gradient(#34281ad9,#120d08d9)}
+body:not(.mob) #bot{position:absolute;left:50%;transform:translateX(-50%);width:76%;min-width:min(980px,calc(100vw - 20px));bottom:8px;z-index:5;margin:0;border:2px solid #7a6540;border-radius:10px;justify-content:center;background:linear-gradient(#34281ad9,#120d08d9)}
 body:not(.mob) #bn{bottom:auto;top:40px;z-index:6}
 body.mob #bot{left:clamp(10px,7vw,90px);right:clamp(10px,7vw,90px);bottom:max(4px,env(safe-area-inset-bottom,0px));border:2px solid #7a6540;border-radius:10px;justify-content:center}
 
@@ -1449,7 +1449,7 @@ function detail(k,l,t,ex){
  if(d.wolf){g=d.d*m*d.f;w=g*.35;f=d.f;rg='Hela banan';ap=d.ap;hit='En fiende, inte bossar';sp.push('Sover där du placerar den, springer efter närmaste markfiende och går sedan tillbaka')}
  if(d.shark){const CD=[6,4.5,3][L3];g=w='Dödar';f='1 per '+CD+' s';rg=String([2.6,3.1,3.6][L3]).replace('.',',')+' (vatten)';ap='100 %';hit='En fiende, inte bossar';sp.push('Simmar i vallgraven och äter markfiender direkt när de kommer nära vattnet')}
  if(d.slowAir){rg=R;hit='–';sp.push(`Saktar flygare ${Math.round((d.slowAir+.05*(l-1))*100)} %`,`Förhäxar ${3+(l-1)} slumpade vanliga gubbar varje nivå så de gör ${Math.round(d.curse*100)} % mer skada`)}
- if(d.fisher){const P=[60,40,25];rg='Vid vallgraven';hit='–';sp.push(`Får napp i snitt var ${P[L3]}:e sekund under en våg och ger då +1 liv (max 20)`+(l<3?`. Nästa nivå: var ${P[l]}:e s`:''),'Fiskar inte när vattnet är fruset')}
+ if(d.fisher){const P=[60,40,25];rg='Vid vallgraven';hit='–';sp.push(`Napp i snitt var ${P[L3]}:e s under en våg: +1 liv (max 20)`+(l<3?`, nästa nivå var ${P[l]}:e s`:''),'inte när vattnet är fruset')}
  if(d.digger){const P=[10,16,25];rg='Utanför banan';hit='–';sp.push(`+${P[L3]} % guld för varje dödad fiende`+(l<3?` (nästa nivå +${P[l]} %)`:''))}
  if(d.lumber){const P=[5,8,12];rg='Utanför banan';hit='–';sp.push(`+${P[L3]} % poäng efter varje runda`+(l<3?` (nästa nivå +${P[l]} %)`:''))}
  if(d.dbl){rg='–';hit='–';sp.push('Gör en kopia av valfri gubbe på spelplanen, med samma nivå och klass. Gäller en gång')}
@@ -1467,7 +1467,7 @@ function detail(k,l,t,ex){
  const c=(i,lb,x,col)=>`<span style="white-space:nowrap">${i} <span style="opacity:.75">${lb}</span> <b style="color:${col}">${x}</b></span>`;
  const apv=typeof ap=='number'?(ap>0?Math.round(ap*100)+' %':'<span style="opacity:.45">0 %</span>'):ap;
  const fv=typeof f=='number'?(f>0?String(+f.toFixed(2)).replace('.',','):'<span style="opacity:.45">0</span>'):f;
- return `<div style="line-height:1.22">`+nm+(ex?' <small>'+ex+'</small>':'')+`<div style="display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:0 9px;margin-top:1px">`
+ return `<div style="line-height:1.22">`+nm+(ex?' <small>'+ex+'</small>':'')+`<div style="display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:0 9px;margin-top:1.1em">`
   +c('⚔️','Mark',v(g),'#ff7a5a')+c('🪽','Luft',v(a),'#7ab8ff')+c('❄️','Vinter',v(w),'#bfe6ff')
   +c('⏱️','Attacker/s',fv,'#ffd84a')+c('🎯','Räckvidd',rg,'#e8dcc0')+c('🛡️','Pansar',apv,'#e8dcc0')+`</div>`
   +`<div>💥 <span style="opacity:.75">Träffar</span> <b style="color:#e8dcc0">${hit}</b></div>`+(sp.length?`<div style="color:#c9a0ff">✨ ${sp.join(' · ')}</div>`:'')+`</div>`;
