@@ -265,7 +265,14 @@ body:not(.mob) #bot,body.mob #bot{border:3px solid #2e241a;border-radius:14px 14
 #mm{border:2px solid #2e241a}
 .cb{background:linear-gradient(160deg,#6b5d4d,#2c241c 60%,#33281f);border:1px solid #2e241a;box-shadow:inset 0 1px 0 #ffffff2a,inset 0 -7px 12px #0009,0 2px 5px #000b}
 body.mob #fy.on{overflow-x:auto!important;overflow-y:hidden!important;max-height:none!important;-webkit-overflow-scrolling:touch}
-body.mob #fy #fg{justify-content:start!important}
+body.mob #fy #fg{justify-content:start!important;gap:5px!important}
+body.mob #fy{padding:4px!important;bottom:52px!important;left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content!important;max-width:calc(100vw - 12px)!important}
+body.mob #fy .fb{height:calc(var(--cwid,60px)*1.08)!important;padding:1px!important;gap:0!important;touch-action:pan-x}
+body.mob #fy .fb img{width:calc(var(--cwid,60px)*.46)!important;height:calc(var(--cwid,60px)*.46)!important}
+body.mob #fy .fb b{font-size:8.5px!important;line-height:1.05!important}
+body.mob #fy .fb em,body.mob #fy .fb i{font-size:8px!important}
+body.mob #fy .fb div{font-size:20px!important;line-height:1.1!important}
+body.mob.menuon #mid{display:none!important}
 body.mob.mbuild #bot{display:none!important}
 body.mob #pbt[disabled]{opacity:.75;background:#3a3a30!important;border-color:#8a8a70!important;font-weight:normal!important}
 </style></head><body>
@@ -2597,7 +2604,7 @@ function fitMenu(){
  const g=$('fg');if(!g)return;
  const num=(v,d)=>{v=+v;return isFinite(v)&&v>0?v:d},mob=MODE=='mob',n=T.length,vw=num(innerWidth,900),vh=num(innerHeight,500);
  const bh=num($('bot').offsetHeight,120),th=num($('top').offsetHeight,28);
- if(mob){const cnt=g.children.length||1,w=Math.max(66,Math.min(84,Math.floor((vw-40-(cnt-1)*6)/cnt)));g.style.setProperty('--cwid',w+'px');g.style.gridTemplateColumns='repeat('+cnt+','+w+'px)';return[cnt,w,vw,vh]}
+ if(mob){const cnt=g.children.length||1,w=Math.max(54,Math.min(64,Math.floor((vw-40-(cnt-1)*5)/cnt)));g.style.setProperty('--cwid',w+'px');g.style.gridTemplateColumns='repeat('+cnt+','+w+'px)';return[cnt,w,vw,vh]}
  const aw=mob?vw-36:Math.min(vw-50,num($('cd').getBoundingClientRect().right,vw)-30),ah=mob?vh-56-th-24:vh-bh-th-70;
  let best=0,bc=n;
  for(let c=1;c<=n;c++){const r=Math.ceil(n/c),w=Math.min((aw-(c-1)*6)/c,(ah-(r-1)*6)/(r*1.2));if(w>best){best=w;bc=c}}
@@ -2686,7 +2693,7 @@ function openBox(){
 }
 function flyR(){
  const L=S.menu?flyList():[];
- $('fy').classList.toggle('on',!!S.menu);
+ $('fy').classList.toggle('on',!!S.menu);document.body.classList.toggle('menuon',!!S.menu);
  setH('fy',S.menu?`<div class="ti">Bygg: välj vad du vill placera (håll musen över för förhandsvisning). Klicka utanför för att stänga.</div><div id="fg">`+L.map((x,i)=>fbHtml(x,i)).join('')+'</div>':'');
 }
 function enemyInfo(c){
@@ -2760,8 +2767,11 @@ function sync(){
  setH('cd',cardList().map((x,i)=>x?`<button class="cb${x.bt!=null&&S.bt===x.bt||x.a=='build'&&(S.menu||S.bt!=null)||x.a=='dance'&&S.dance?' on':''}${x.x!=null&&S.gold<x.x&&(x.bt!=null||x.a=='up'||x.a=='br')?' poor':''}" data-i="${i}" title="${x.n}"><span class="ic">${x.i}</span><span class="hk">${x.k}</span>${x.x!=null?`<em>${x.x}</em>`:''}</button>`:'<div></div>').join(''));
 }
 $('cd').onclick=e=>{const b=e.target.closest('button');if(b)act(cardList()[+b.dataset.i])};
-$('fy').onclick=e=>{const b=e.target.closest('button');if(b)act(flyList()[+b.dataset.i])};
-$('fy').onpointerover=e=>{const b=e.target.closest('.fb'),v=b&&b.dataset.b!=null?+b.dataset.b:null;if(v!==S.pvk){S.pvk=v;sync()}};
+$('fy').onclick=e=>{if(MODE=='mob')return;const b=e.target.closest('button');if(b)act(flyList()[+b.dataset.i])};
+{let fd=null;$('fy').addEventListener('pointerdown',e=>{if(MODE!='mob')return;const b=e.target.closest('button');fd=b?{i:+b.dataset.i,x:e.clientX,y:e.clientY}:null},true);
+ $('fy').addEventListener('pointerup',e=>{if(MODE!='mob'||!fd)return;const d=fd;fd=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<18){e.preventDefault();act(flyList()[d.i])}},true);
+ $('fy').addEventListener('pointercancel',()=>{fd=null},true)}
+$('fy').onpointerover=e=>{if(MODE=='mob'||e.pointerType=='touch')return;const b=e.target.closest('.fb'),v=b&&b.dataset.b!=null?+b.dataset.b:null;if(v!==S.pvk){S.pvk=v;sync()}};
 $('fy').onpointerleave=()=>{if(S.pvk!=null){S.pvk=null;sync()}};
 $('inf').onclick=e=>{const c=e.target.closest('.ch');if(c){S.sel=[S.sel[+c.dataset.j]];sync()}};
 $('mn').onclick=()=>act({a:'menu'});
