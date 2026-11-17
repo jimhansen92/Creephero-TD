@@ -283,6 +283,7 @@ const T=[
 {n:'Älvskytten',c:80,d:8,r:4.6,f:1.2,air:1,gr:1,ap:.1,fm:8,cr:{p:.25,m:.5},col:'#4fa59a',kind:'archer',branch:1,bcost:100,vis:1,ty:'Skytt',i:'🏹',k:'S',t:'Långsam skytt med lång räckvidd. Skjuter på både mark och luft, extra mot flygare.'},
 {n:'Frostmagikern',c:450,pts:30000,d:4,r:3,f:2,air:1,gr:1,slow:.4,col:'#6ab8e8',kind:'mage',ty:'Stöd',i:'❄️',k:'D',t:'Saktar ner alla fiender i närheten och skadar lite.'},
 {n:'Lilla knekten',c:15,uc:40,d:8,r:1.3,f:1.6,gr:1,melee:1,col:'#c9a66b',kind:'squire',vis:1,ty:'Närstrid',i:'🗡️',k:'G',t:'Billig liten gubbe som står still och slår på kort håll med lite skada. Bara mark.'},
+{n:'Bumerangkastaren',c:120,d:8,r:6,f:1/3,air:1,gr:1,ap:0,boom:1,max:4,col:'#d08a3a',kind:'boomer',vis:1,ty:'Långt avstånd',i:'🪃',k:'B',t:'Kastar en bumerang långt ut och tillbaka. Den träffar alla fiender den flyger igenom, både mark och luft, men gör låg skada.'},
 {n:'Magiska kulan',c:250,max:3,r:2.4,col:'#ffd84a',kind:'orb',ty:'Stöd',buff:{as:.3,dm:.15},i:'🔆',k:'C',t:'Lysande kula som ger gubbar i närheten snabbare attacker och lite mer skada.'},
 {n:'Jätten',c:900,d:50,r:1.9,f:.7,gr:1,melee:1,col:'#b08a64',kind:'giant',ty:'Närstrid',pts:30000,rock:{dmg:3000,r:4.6,cd:60},i:'🗿',k:'J',t:'Enorm jätte som slår hårt på kort håll och kastar en stor sten på lång håll.'},
 {n:'Eldspyaren',c:150,d:6,r:2.4,f:4,gr:1,fire:1,fsp:.9,burn:{t:3,k:.3},col:'#ff7a2a',kind:'fire',ty:'Eld',i:'🔥',k:'Q',t:'Spyr eld på marken i en liten cirkel och sätter fiender i brand. Mycket effektiv mot vinterfiender.'},
@@ -1151,6 +1152,27 @@ function mkModel(k,lv,br){
   const f=u.fl=new THREE.Group();f.position.y=.64;g.add(f);
   const mo=new THREE.Mesh(sph(.16),new THREE.MeshLambertMaterial({color:0xffe27a,emissive:0xffb020}));mo.userData.em=0xffb020;f.add(mo);
   const rg=u.ring=new THREE.Mesh(new THREE.TorusGeometry(.26,.015,6,20),new THREE.MeshBasicMaterial({color:0xffd84a}));rg.rotation.x=1.2;f.add(rg);
+ }else if(d.kind=='boomer'){
+  const dc=lv>=4?0x2a5a8a:lv>=3?0x2a7a5a:0x3a8a6a,hc=0xb8622a,sk=0xe8c4a0;
+  for(const z of[-.06,.06]){ad(new THREE.CylinderGeometry(.035,.035,.16,6),sk,0,.08,z);ad(bx(.1,.05,.07),0x4a2e18,.02,.02,z)}
+  ad(new THREE.ConeGeometry(.2,.3,10),dc,0,.3,0);
+  ad(new THREE.CylinderGeometry(.085,.12,.22,9),dc,0,.5,0);
+  ad(new THREE.CylinderGeometry(.09,.09,.035,9),0x6a4220,0,.41,0);ad(bx(.03,.04,.04),0xd4a84a,.09,.41,0);
+  ad(sph(.095),sk,0,.7,0);
+  ad(sph(.1),hc,-.02,.73,0).scale.set(1,1,1.05);
+  {const pt=ad(new THREE.ConeGeometry(.045,.22,6),hc,-.13,.62,0);pt.rotation.z=-.5}
+  ad(sph(.05),hc,-.1,.7,0);
+  {const hb=ad(new THREE.TorusGeometry(.098,.012,5,14),lv>=4?0xd4a84a:0xc03a2a,0,.76,0);hb.rotation.x=Math.PI/2;hb.rotation.y=.15}
+  for(const z of[-.035,.035])ad(sph(.014),0x222222,.085,.71,z);
+  if(lv>=2){ad(bx(.12,.04,.1),0x8a5a2a,0,.61,-.11);ad(bx(.12,.04,.1),0x8a5a2a,0,.61,.11)}
+  if(lv>=3){const fe=ad(bx(.02,.18,.05),0xf0e8d0,-.06,.86,.06);fe.rotation.x=-.4;fe.rotation.z=.3}
+  if(lv>=4){const cp=ad(bx(.03,.36,.24),0x8a2a2a,-.11,.44,0);cp.rotation.z=.08}
+  {const o=ad(new THREE.CylinderGeometry(.028,.028,.2,6),sk,0,.5,-.12);o.rotation.x=-.25}
+  const a=u.arm=new THREE.Group();a.position.set(0,.6,.12);
+  {const ar=new THREE.Mesh(new THREE.CylinderGeometry(.028,.028,.2,6),lam(sk));ar.position.y=.1;a.add(ar)}
+  const bh=u.bmh=new THREE.Group();bh.position.set(.02,.22,0);bh.rotation.x=Math.PI/2;
+  {const bc=lv>=4?0xd4a84a:0x8a5a2a;for(const s2 of[-1,1]){const w=new THREE.Mesh(bx(.2,.025,.05),lam(bc));w.position.set(.07,0,s2*.045);w.rotation.y=s2*.6;bh.add(w);const st=new THREE.Mesh(bx(.05,.028,.052),lam(0xc03a2a));st.position.set(.14,0,s2*.09);st.rotation.y=s2*.6;bh.add(st)}}
+  a.add(bh);g.add(a);
  }else if(d.kind=='squire'){
   const tc=lv>=4?0xc4ccd8:lv>=3?0x9aa0a8:lv>=2?0xb08a52:0xa8864a,hc=lv>=2?0xb8c0c8:0x6a5a3a;
   ad(bx(.1,.2,.1),lv>=3?0x6a6a74:0x5a4630,0,.1,.07);ad(bx(.1,.2,.1),lv>=3?0x6a6a74:0x5a4630,0,.1,-.07);
@@ -1397,6 +1419,26 @@ function applyBuffs(){
   t.bf=1+Math.min(a,1);t.bd=1+Math.min(m,1);if(t.hex)t.bd*=1+(T.find(x=>x.curse)||{curse:.5}).curse;
  }
 }
+let BMG=null;
+function throwBoom(t,b,Rg){
+ if(!BMG){BMG=new THREE.Group();const wm=lam(0x9a6a32),sm=lam(0xc03a2a);for(const s2 of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.34,.04,.08),wm);w.position.set(.1,0,s2*.07);w.rotation.y=s2*.6;BMG.add(w);const st=new THREE.Mesh(new THREE.BoxGeometry(.07,.045,.085),sm);st.position.set(.22,0,s2*.14);st.rotation.y=s2*.6;BMG.add(st)}}
+ const m=BMG.clone();if(t.l>=4)m.children.forEach((c,i)=>{if(i%2==0){c.material=lam(0xd4a84a)}});gF.add(m);
+ const dx=b.x-t.x,dy=b.y-t.y,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,D=Rg;
+ t.bs=-(t.bs||1);t.bmOut=1;
+ (S.bm||(S.bm=[])).push({src:t.k,tw:t,m,t:0,T:D/7,sx:t.x,sy:t.y,ex:t.x+ux*D,ey:t.y+uy*D,nx:-uy*t.bs,ny:ux*t.bs,cw:.22*D,v:dmg(t),ap:T[t.k].ap||0,n:0,h1:new Set(),h2:new Set()});
+}
+function booms(dt){
+ if(!S.bm||!S.bm.length)return;
+ for(const b of S.bm){
+  b.t+=dt;const k=b.t/b.T;let px,py;
+  if(k<1){const e=Math.sin(k*Math.PI/2);px=b.sx+(b.ex-b.sx)*e+b.nx*Math.sin(k*Math.PI)*b.cw;py=b.sy+(b.ey-b.sy)*e+b.ny*Math.sin(k*Math.PI)*b.cw}
+  else{const k2=Math.min(1,k-1),e=1-Math.cos(k2*Math.PI/2);px=b.ex+(b.sx-b.ex)*e-b.nx*Math.sin(k2*Math.PI)*b.cw;py=b.ey+(b.sy-b.ey)*e-b.ny*Math.sin(k2*Math.PI)*b.cw}
+  b.m.position.set(px-HW,.55+.15*Math.sin(Math.min(2,k)*Math.PI),py-HH);b.m.rotation.y+=dt*22;
+  if(b.n<8){const hs=k<1?b.h1:b.h2;for(const c of S.en){if(c.dead||hs.has(c)||b.n>=8)continue;if(Math.hypot(c.x-px,c.y-py)<.6){hs.add(c);b.n++;CUR=b.src;hit(c,b.v,b.ap);CUR=null;burst(c.x,c.y,'#e8b060',3,c.e.air?1:.5)}}}
+  if(k>=2){gF.remove(b.m);b.done=1;if(b.tw)b.tw.bmOut=0}
+ }
+ S.bm=S.bm.filter(b=>!b.done);
+}
 function throwRock(t,b,v){
  const m=new THREE.Mesh(new THREE.DodecahedronGeometry(.3),lam(0x8a8478));gF.add(m);
  S.rk.push({src:t.k,m,t:0,T:.9,sx:t.x,sy:t.y,b,v,lx:b.x,ly:b.y});
@@ -1446,6 +1488,7 @@ function detail(k,l,t,ex){
  const atk=d.d&&!d.crow&&!d.wolf;
  if(atk){const hd=d.d*m*d.f,cr=d.cr?1+d.cr.p*d.cr.m:1,bk=d.fire?d.burn.k:br=='fire'?.35:0;g=d.gr?hd*cr+hd*bk:0;a=d.air?hd*cr*(d.fm||1)*(br=='long'?1.5:br=='fire'?.75:1)+hd*bk:0;w=g?hd*cr*(fire?2.5:.35)+hd*bk*2.5:0;f=d.f;ap=d.ap||0;hit=d.aoe?'Alla markfiender i cirkeln':d.fsp?'Flera i en liten cirkel':'En fiende'}
  if(d.crow){g=a=Math.round(d.d*m).toLocaleString('sv-SE');w=Math.round(d.d*m*.35).toLocaleString('sv-SE');sp.push('Skadan är per träff');f='3 per fiende';rg='Runt borgen';ap=d.ap;hit='Allt kråkan flyger igenom';sp.push('En kråka flyger i cirkel runt borgen. Flera kråkträd ger flera kråkor')}
+ if(d.boom){g=a=d.d*m*d.f*2;w=g*.35;f=String(+d.f.toFixed(2)).replace('.',',');hit='Alla den flyger igenom, max 8 per kast';sp.push('Varje fiende kan träffas en gång på väg ut och en gång på väg tillbaka')}
  if(d.wolf){g=d.d*m*d.f;w=g*.35;f=d.f;rg='Hela banan';ap=d.ap;hit='En fiende, inte bossar';sp.push('Sover där du placerar den, springer efter närmaste markfiende och går sedan tillbaka')}
  if(d.shark){const CD=[6,4.5,3][L3];g=w='Dödar';f='1 per '+CD+' s';rg=String([2.6,3.1,3.6][L3]).replace('.',',')+' (vatten)';ap='100 %';hit='En fiende, inte bossar';sp.push('Simmar i vallgraven och äter markfiender direkt när de kommer nära vattnet')}
  if(d.slowAir){rg=R;hit='–';sp.push(`Saktar flygare ${Math.round((d.slowAir+.05*(l-1))*100)} %`,`Förhäxar ${3+(l-1)} slumpade vanliga gubbar varje nivå så de gör ${Math.round(d.curse*100)} % mer skada`)}
@@ -1719,6 +1762,7 @@ function sfxAtk(k,x){
   const T=(ty,a,b,d,v,dl,vb)=>tone(o,ty,a,b,d,v*V,dl,vb),N=(ty,a,b,d,v,dl,q)=>noise(o,ty,a,b,d,v*V,dl,q);
   switch(k){
    case 'knight':N('bandpass',3000,1800,.09,.12,0,3);T('square',900,520,.07,.05);T('sine',150,70,.08,.12);break;
+   case 'boomer':N('bandpass',900,2400,.35,.06,0,1.5);T('sine',300,500,.3,.025,0,[18,40]);break;
    case 'squire':N('bandpass',3500,2200,.06,.08,0,2);T('triangle',700,400,.05,.04);break;
    case 'dwarf':T('sawtooth',120,65,.22,.1,0,[28,6]);N('lowpass',500,180,.2,.07);break;
    case 'archer':T('triangle',620,180,.1,.08);N('highpass',5000,2500,.1,.07,.03);break;
@@ -2195,7 +2239,7 @@ function leak(c){S.ST.leaks++;let d=c.e.boss?(c.e.mini?3:5):1;c.dead=1;S.leak=1;
 function update(dt){
  if(S.st=='slut'||S.st=='seger')return;
  CUR=null;heroU(dt);spearStep(dt);skStep(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt);else if(T[t.k].digger)diggerU(t,dt);else if(T[t.k].shark)sharkU(t,dt);else if(T[t.k].fisher)fisherU(t,dt)}lumberGrow(dt);
- pts(dt);rocks(dt);applyBuffs();
+ pts(dt);rocks(dt);booms(dt);applyBuffs();
  if(S.st=='strid'){
   S.ST.time+=dt;const q=S.q;
   if(q&&q.n>0){
@@ -2253,6 +2297,8 @@ mkE(c);S.en.push(c);
     const dm=dmg(t);
     for(const c of S.en)if(!c.dead&&!c.e.air&&Math.hypot(c.x-b.x,c.y-b.y)<=d.fsp){hit(c,dm,d.ap,1);c.burn=d.burn.t;c.bdps=dm*d.f*d.burn.k;c.bk=t.k}
     S.fx.push({m:beam(t.x,t.y,b.x,b.y,0xff7a20,.1),t:.12,o:1,L:.12});flash(b.x,b.y,d.fsp,'#ff8a2a',.6,.25);burst(b.x,b.y,'#ffa040',3,.4);
+   }else if(d.boom){
+    throwBoom(t,b,Rg);
    }else if(d.melee){
     hit(b,dmg(t),d.ap);flash(b.x,b.y,.45,'#ffffff',.9,.15);
    }else{
@@ -2312,6 +2358,7 @@ function render(){
    if(u.arm)u.arm.rotation.z=-.15-2*sw;
    if(u.belly)u.belly.scale.setScalar(1+.3*sw);
    if(u.rock)u.rock.visible=!(t.rc>0);
+   if(u.bmh)u.bmh.visible=!t.bmOut;
    if(u.flame)u.flame.scale.set(1+.5*sw,1+1.5*sw,1+.5*sw);
    if(u.wL){const f=Math.sin(tm*3+t.c)*.3;u.wL.rotation.x=-.45+f;u.wR.rotation.x=.45-f}
    if(u.jaw)u.jaw.rotation.z=-.5*sw;
