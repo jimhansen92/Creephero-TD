@@ -1432,37 +1432,40 @@ function pts(dt){
 }
 function flash(x,y,r,col,o,L){const m=new THREE.Mesh(DISC,bas(hex(col),o));m.position.set(x-HW,.08,y-HH);m.scale.set(r,1,r);gF.add(m);S.fx.push({m,t:L,o,L})}
 function detail(k,l,t){
- l=l||1;const d=T[k],m=d.branch?(t&&t.br?1.8**(l-2):1):1.8**(l-1),br=t&&t.br,C={r:'#ff5a4a',y:'#ffd84a',b:'#5aa8ff',w:'#ffffff',p:'#c07aff'},ln=(c,t)=>`<span style="color:${c}">${t}</span>`;
- const nm=`<b style="color:${d.col}">${d.i} ${d.n}${br?' ('+(br=='fire'?['Eldpilar','Eldskytt','Eldmästare']:['Långbåge','Örnskytt','Örnöga'])[Math.max(0,Math.min(2,l-2))]+')':l>1&&!d.branch?' (nivå '+l+')':''}</b> – ${d.pts?'kommer ur en Mystery box':d.c+' guld'}<br>`;
- if(d.wall)return nm+ln(C.p,'Special: Blockerar vägen. Bygg gångar och labyrinter.');
- const tg=d.air&&d.gr?'mark och luft':d.air?'bara luft':'bara mark',sp=[];
- if(d.slowAir){return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: –')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,`Special: Saktar flygande fiender ${Math.round((d.slowAir+.05*(l-1))*100)} %. Varje nivå förhäxar hon ${3+(l-1)} slumpade vanliga gubbar (inga supergubbar) som gör ${Math.round(d.curse*100)} % mer skada under nivån. Varje uppgradering ger en gubbe till.`)+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.shark){const CD=[6,4.5,3];return nm+`<small style="color:#9a8f78">${d.ty}, simmar i vattnet</small><br>`+ln(C.r,'Dmg: äter en vanlig markfiende direkt, med ett hugg')+'<br>'+ln(C.y,`Väntetid ${CD[Math.min(2,l-1)]} s mellan hoppen. Räckvidd ${[2.6,3.1,3.6][Math.min(2,l-1)]} från vattnet. Simfart: ${['låg','medel','hög'][Math.min(2,l-1)]} (ökar med nivå)`)+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.p,'Special: Simmar runt i vattnet runt banan med fenan uppe. Kommer en vanlig markfiende nära vattnet, till exempel på en bro, hoppar den upp och äter den. Tar inte bossar eller flygare.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.fisher){const P=[60,40,25];return nm+`<small style="color:#9a8f78">${d.ty}, vid vallgraven</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,`Napp: slumpmässigt, i snitt var ${P[Math.min(2,l-1)]}:e sekund under en våg`)+'<br>'+ln(C.w,l<3?`Nästa nivå: i snitt var ${P[l]}:e sekund`:'Max nivå')+'<br>'+ln(C.p,'Special: Varje fisk han får upp ger +1 liv (max 20). Fiskar bara när du har tappat liv, och inte när vattnet är fruset.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.digger){const P=[10,16,25];return nm+`<small style="color:#9a8f78">${d.ty}, utanför banan</small><br>`+ln(C.y,`Extra guld: +${P[Math.min(2,l-1)]} % för varje dödad fiende`)+'<br>'+ln(C.w,l<3?`Nästa nivå: +${P[l]} %`:'Max nivå')+'<br>'+ln(C.p,'Special: Springer runt utanför banan och gräver guld. Du får bara extra guld när en fiende dör, inte annars. Flera guldgrävare lägger ihop sina procent.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.crow){return nm+`<small style="color:#9a8f78">${d.ty}, cirkulerar runt borgen</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per träff`)+'<br>'+ln(C.y,'Träffar varje fiende högst ca 3 gånger per sekund')+'<br>'+ln(C.b,'Fly dmg: ja, samma skada')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: En kråka flyger runt borgen i en cirkel och skadar allt den flyger igenom, både på marken och i luften. Flera kråkträd ger flera kråkor.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.dbl){return nm+`<small style="color:#9a8f78">${d.ty}</small><br>`+ln(C.p,'Special: Gör en kopia av valfri gubbe på spelplanen (samma typ, nivå och gren). Välj Kopiera och tryck sedan på gubben. Gäller en gång.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.lumber){const P=[5,8,12];return nm+`<small style="color:#9a8f78">${d.ty}, utanför banan</small><br>`+ln(C.y,`Poängbonus: +${P[Math.min(2,l-1)]} % per runda`)+'<br>'+ln(C.w,l<3?`Nästa nivå: +${P[l]} %`:'Max nivå')+'<br>'+ln(C.p,'Special: Springer runt utanför banan och hugger ner träd. Bonusen är en procent av poängen du fick under rundan. Träden växer upp långsamt igen.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.wolf){return nm+`<small style="color:#9a8f78">${d.ty}, bara markfiender</small><br>`+ln(C.r,`Dmg: ${Math.round(d.d*m)} per bett`)+'<br>'+ln(C.y,`Attackspeed: ${d.f}/s`)+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,`Armorpenetrate: ${Math.round(d.ap*100)} %`)+'<br>'+ln(C.p,'Special: Sover där du placerar den. Springer efter närmaste vanliga markfiende och biter (tar inte bossar eller flygare). När alla är döda går den tillbaka och sover.')+'<br><small style="color:#9a8f78">Finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng)</small>'}
- if(d.stun){const du=d.stun.dur+.5*(l-1);return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: 1 stun var '+d.stun.every+' s')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,'Special: Stunnar en fiende i '+du+' s (den med mest HP först). Specialvapen: kostar '+d.pts.toLocaleString('sv-SE')+' poäng, som dras av vid köp')}
- if(d.buff){const f=1+.5*(l-1);return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+.25*(l-1)).toFixed(1)}</small><br>`+ln(C.r,'Dmg: –')+'<br>'+ln(C.y,'Attackspeed: –')+'<br>'+ln(C.b,'Fly dmg: –')+'<br>'+ln(C.w,'Armorpenetrate: –')+'<br>'+ln(C.p,`Special: Gubbar i närheten får +${Math.round(d.buff.as*f*100)} % attackspeed och +${Math.round(d.buff.dm*f*100)} % skada`)}
- if(d.slow)sp.push('Saktar fiender '+Math.round((d.slow+.05*(l-1))*100)+' %, och de förblir saktade 2,5 s efter att de lämnat räckvidden');
- if(d.fire){sp.push('Eldskada: 2,5x skada mot vinterfiender');sp.push('Sätter fiender i brand ('+d.burn.t+' s)')}
- if(d.fsp)sp.push('Träffar flera i en liten cirkel');
- if(d.aoe)sp.push('Skadar alla markfiender i en cirkel');
- if(d.cr)sp.push('Kritisk träff: '+Math.round(d.cr.p*100)+' % chans för +'+Math.round(d.cr.m*100)+' % skada');
- if(d.branch&&!br)sp.push('Välj en klass: Eldpilar (eldskada, bra mot vinter) eller Långbåge (längre räckvidd, bra mot flyg). Klassen går sedan att uppgradera 2 gånger till men är då låst');
- if(br=='fire')sp.push('Eldpilar: eldskada, 2,5x mot vinterfiender, sätter fiender i brand, men hälften så bra mot flygare');
- if(br=='long')sp.push('Långbåge: +1,4 räckvidd och 50 % mer skada mot flygare');
- if(d.rock)sp.push('Superkraft: Stenkast på en fiende, '+Math.round(d.rock.dmg*1.8**(l-1))+' skada, räckvidd '+(d.rock.r+.25*(l-1)).toFixed(1)+', var '+d.rock.cd+' s (ignorerar pansar)');
+ l=l||1;const d=T[k],m=d.branch?(t&&t.br?1.8**(l-2):1):1.8**(l-1),br=t&&t.br,L3=Math.min(2,l-1);
+ const nm=`<b style="color:${d.col}">${d.i} ${d.n}${br?' ('+(br=='fire'?['Eldpilar','Eldskytt','Eldmästare']:['Långbåge','Örnskytt','Örnöga'])[Math.max(0,Math.min(2,l-2))]+')':l>1&&!d.branch?' (nivå '+l+')':''}</b> <small style="color:#9a8f78">– ${d.ty||''}, ${d.pts?'Mystery box':d.c+' guld'}</small>`;
+ const R=(d.r+(d.branch?(br=='long'?1.4:0)+(br?.25*(l-2):0):.25*(l-1))).toFixed(1).replace('.',',');
+ const fire=!!(d.fire||br=='fire');
+ let g=0,a=0,w=0,f=0,rg=R,ap=0,hit='En fiende';const sp=[];
+ const atk=d.d&&!d.crow&&!d.wolf;
+ if(atk){g=d.gr?d.d*m:0;a=d.air?d.d*m*(d.fm||1)*(br=='long'?1.5:br=='fire'?.75:1):0;w=g*(fire?2.5:.35);f=d.f;ap=d.ap||0;hit=d.aoe?'Alla markfiender i cirkeln':d.fsp?'Flera i en liten cirkel':'En fiende'}
+ if(d.crow){g=a=d.d*m;w=g*.35;f='3 per fiende';rg='Runt borgen';ap=d.ap;hit='Allt kråkan flyger igenom';sp.push('En kråka flyger i cirkel runt borgen. Flera kråkträd ger flera kråkor')}
+ if(d.wolf){g=d.d*m;w=g*.35;f=d.f;rg='Hela banan';ap=d.ap;hit='En fiende, inte bossar';sp.push('Sover där du placerar den, springer efter närmaste markfiende och går sedan tillbaka')}
+ if(d.shark){const CD=[6,4.5,3][L3];g=w='Dödar direkt';f='1 per '+CD+' s';rg=String([2.6,3.1,3.6][L3]).replace('.',',')+' från vattnet';ap='100 %';hit='En fiende, inte bossar';sp.push('Simmar i vallgraven och hoppar upp och äter markfiender som kommer nära vattnet')}
+ if(d.slowAir){rg=R;hit='–';sp.push(`Saktar flygare ${Math.round((d.slowAir+.05*(l-1))*100)} %`,`Förhäxar ${3+(l-1)} slumpade vanliga gubbar varje nivå så de gör ${Math.round(d.curse*100)} % mer skada`)}
+ if(d.fisher){const P=[60,40,25];rg='Vid vallgraven';hit='–';sp.push(`Får napp i snitt var ${P[L3]}:e sekund under en våg och ger då +1 liv (max 20)`+(l<3?`. Nästa nivå: var ${P[l]}:e s`:''),'Fiskar inte när vattnet är fruset')}
+ if(d.digger){const P=[10,16,25];rg='Utanför banan';hit='–';sp.push(`+${P[L3]} % guld för varje dödad fiende`+(l<3?` (nästa nivå +${P[l]} %)`:''))}
+ if(d.lumber){const P=[5,8,12];rg='Utanför banan';hit='–';sp.push(`+${P[L3]} % poäng efter varje runda`+(l<3?` (nästa nivå +${P[l]} %)`:''))}
+ if(d.dbl){rg='–';hit='–';sp.push('Gör en kopia av valfri gubbe på spelplanen, med samma nivå och klass. Gäller en gång')}
+ if(d.buff){const q=1+.5*(l-1);hit='Egna gubbar i närheten';sp.push(`Gubbar i närheten får +${Math.round(d.buff.as*q*100)} % attackfart och +${Math.round(d.buff.dm*q*100)} % skada`)}
+ if(d.stun){hit='En fiende';sp.push('Stunnar en fiende i '+(d.stun.dur+.5*(l-1))+' s, var '+d.stun.every+' s')}
+ if(d.wall){rg='–';hit='–';sp.push('Blockerar vägen. Bygg gångar och labyrinter')}
+ if(d.slow)sp.push('Saktar fiender '+Math.round((d.slow+.05*(l-1))*100)+' %, i 2,5 s efter att de lämnat räckvidden');
+ if(fire)sp.push('Eld: 2,5× mot vinterfiender och sätter fiender i brand');
+ if(d.cr)sp.push(Math.round(d.cr.p*100)+' % chans till kritisk träff (+'+Math.round(d.cr.m*100)+' %)');
+ if(d.branch&&!br)sp.push('Välj klass: Eldpilar (vinter) eller Långbåge (flyg)');
+ if(br=='long')sp.push('Långbåge: +1,4 räckvidd och 50 % mer mot flygare');
+ if(d.rock)sp.push('Stenkast: '+Math.round(d.rock.dmg*1.8**(l-1)).toLocaleString('sv-SE')+' skada var '+d.rock.cd+' s, räckvidd '+(d.rock.r+.25*(l-1)).toFixed(1).replace('.',',')+', ignorerar pansar');
  if(d.max)sp.push('Max '+d.max+' åt gången');
- if(d.pts)sp.push('Specialvapen: finns bara i Mystery box ('+BOXC+' guld + '+BOXP.toLocaleString('sv-SE')+' poäng, slumpad supergubbe)');
- return nm+`<small style="color:#9a8f78">${d.ty}, räckvidd ${(d.r+(d.branch?(br=='long'?1.4:0)+(br?.25*(l-2):0):.25*(l-1))).toFixed(1)}, ${tg}</small><br>`
-  +ln(C.r,`Dmg: ${Math.round(d.d*m)}`)+'<br>'
-  +ln(C.y,`Attackspeed: ${d.f}/s`)+'<br>'
-  +ln(C.b,`Fly dmg: ${d.air?Math.round(d.d*m*(d.fm||1)*(br=='long'?1.5:br=='fire'?.75:1)):'–'}`)+'<br>'
-  +ln(C.w,`Armorpenetrate: ${Math.round((d.ap||0)*100)} %`)
-  +(sp.length?'<br>'+ln(C.p,'Special: '+sp.join(', ')):'');
+ const v=x=>typeof x=='number'?(x>0?Math.round(x).toLocaleString('sv-SE'):'<span style="opacity:.45">0</span>'):x;
+ const c=(i,lb,x,col)=>`<span><span style="opacity:.8">${i} ${lb}</span> <b style="color:${col}">${v(x)}</b></span>`;
+ const apv=typeof ap=='number'?(ap>0?Math.round(ap*100)+' %':'<span style="opacity:.45">0 %</span>'):ap;
+ return nm+`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1px 10px;margin:3px 0">`
+  +c('⚔️','Mark',g,'#ff7a5a')+c('🪽','Luft',a,'#7ab8ff')
+  +c('❄️','Vinter',w,'#bfe6ff')+c('⏱️','Attacker/s',typeof f=='number'?(f>0?String(+f.toFixed(2)).replace('.',','):0):f,'#ffd84a')
+  +c('🎯','Räckvidd',rg,'#e8dcc0')+`<span><span style="opacity:.8">🛡️ Pansargen.</span> <b style="color:#e8dcc0">${apv}</b></span>`
+  +`<span style="grid-column:1/3"><span style="opacity:.8">💥 Träffar</span> <b style="color:#e8dcc0">${hit}</b></span></div>`
+  +(sp.length?`<div style="color:#c9a0ff;font-size:.95em">✨ ${sp.join(' · ')}</div>`:'');
 }
 const pvC=$('pv'),PR=new THREE.WebGLRenderer({canvas:pvC,antialias:true,alpha:true,preserveDrawingBuffer:true}),ps=new THREE.Scene(),pcam=new THREE.PerspectiveCamera(32,1,.1,50),pRoot=new THREE.Group();
 PR.setClearColor(0x000000,0);ps.add(new THREE.AmbientLight(0xffffff,.85));
