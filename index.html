@@ -276,7 +276,7 @@ const T=[
 {n:'Rapande dvärgen',c:80,d:44,r:2.0,f:.7,gr:1,aoe:1,col:'#9ac84a',kind:'dwarf',vis:1,lvs:[.8,.97,1.14,1.3],ty:'Områdesskada',i:'🍺',k:'A',t:'Tjock dvärg med stor mage som rapar ut skada i en cirkel runt sig.'},
 {n:'Älvskytten',c:80,d:5,r:4.6,f:1.2,air:1,gr:1,ap:.1,fm:8,cr:{p:.25,m:.5},col:'#4fa59a',kind:'archer',branch:1,bcost:100,vis:1,ty:'Skytt',i:'🏹',k:'S',t:'Långsam skytt med lång räckvidd. Skjuter på både mark och luft, extra mot flygare.'},
 {n:'Frostmagikern',c:450,pts:30000,d:4,r:3,f:2,air:1,gr:1,slow:.4,col:'#6ab8e8',kind:'mage',ty:'Stöd',i:'❄️',k:'D',t:'Saktar ner alla fiender i närheten och skadar lite.'},
-{n:'Lilla knekten',c:15,d:8,r:1.3,f:1.6,gr:1,melee:1,col:'#c9a66b',kind:'squire',vis:1,ty:'Närstrid',i:'🗡️',k:'G',t:'Billig liten gubbe som står still och slår på kort håll med lite skada. Bara mark.'},
+{n:'Lilla knekten',c:15,uc:40,d:8,r:1.3,f:1.6,gr:1,melee:1,col:'#c9a66b',kind:'squire',vis:1,ty:'Närstrid',i:'🗡️',k:'G',t:'Billig liten gubbe som står still och slår på kort håll med lite skada. Bara mark.'},
 {n:'Magiska kulan',c:250,max:3,r:2.4,col:'#ffd84a',kind:'orb',ty:'Stöd',buff:{as:.3,dm:.15},i:'🔆',k:'C',t:'Lysande kula som ger gubbar i närheten snabbare attacker och lite mer skada.'},
 {n:'Jätten',c:900,d:50,r:1.9,f:.7,gr:1,melee:1,col:'#b08a64',kind:'giant',ty:'Närstrid',pts:30000,rock:{dmg:3000,r:4.6,cd:60},i:'🗿',k:'J',t:'Enorm jätte som slår hårt på kort håll och kastar en stor sten på lång håll.'},
 {n:'Eldspyaren',c:150,d:6,r:2.4,f:4,gr:1,fire:1,fsp:.9,burn:{t:3,k:.3},col:'#ff7a2a',kind:'fire',ty:'Eld',i:'🔥',k:'Q',t:'Spyr eld på marken i en liten cirkel och sätter fiender i brand. Mycket effektiv mot vinterfiender.'},
@@ -2382,7 +2382,7 @@ function cardList(){
  if(hs)L.push({k:'B',i:'🔨',n:'Bygg',a:'build'},{k:'V',i:'💃',n:'Dans',a:'dance'});
  if(ts.length){
   const up=ts.filter(t=>!T[t.k].wall&&!T[t.k].dbl&&(!T[t.k].branch||t.br)&&t.l<(T[t.k].lumber||T[t.k].digger||T[t.k].shark||T[t.k].fisher?3:4)),ab=ts.filter(t=>T[t.k].branch&&!t.br),abc=ab.reduce((a,t)=>a+T[t.k].bcost,0);
-  if(up.length)L.push({k:'U',i:'⬆️',n:'Uppgradera',x:up.reduce((a,t)=>a+Math.round(T[t.k].c*.9*t.l),0),a:'up'});
+  if(up.length)L.push({k:'U',i:'⬆️',n:'Uppgradera',x:up.reduce((a,t)=>a+Math.round((T[t.k].uc||T[t.k].c)*.9*t.l),0),a:'up'});
   if(ab.length)L.push({k:'I',i:'🔥',n:'Eldpilar (bra mot vinter)',x:abc,a:'br',br:'fire'},{k:'O',i:'🏹',n:'Långbåge (längre räckvidd, bra mot flyg)',x:abc,a:'br',br:'long'});
   if(ts.some(t=>T[t.k].dbl))L.push({k:'P',i:'🪞',n:'Kopiera en gubbe',a:'cp'});
   L.push({k:'S',i:'💰',n:'Sälj',x:ts.reduce((a,t)=>a+Math.round(t.sp*.7),0),a:'sell'});
@@ -2509,7 +2509,7 @@ function enemyInfo(c){
   +`<span style="color:#ffb04a">Svag mot: ${w.join(', ')}</span>`;
 }
 function multi(){
- const ts=selT(),up=ts.filter(t=>!T[t.k].wall&&!T[t.k].dbl&&t.l<(T[t.k].lumber||T[t.k].digger||T[t.k].shark||T[t.k].fisher?3:4)).reduce((a,t)=>a+Math.round(T[t.k].c*.9*t.l),0),sv=ts.reduce((a,t)=>a+Math.round(t.sp*.7),0);
+ const ts=selT(),up=ts.filter(t=>!T[t.k].wall&&!T[t.k].dbl&&t.l<(T[t.k].lumber||T[t.k].digger||T[t.k].shark||T[t.k].fisher?3:4)).reduce((a,t)=>a+Math.round((T[t.k].uc||T[t.k].c)*.9*t.l),0),sv=ts.reduce((a,t)=>a+Math.round(t.sp*.7),0);
  return`<b>${S.sel.length} valda</b><br>${S.sel.map((s,i)=>`<span class="ch" data-j="${i}">${s===S.h?'😈':T[s.k].i+(T[s.k].wall?'':s.l)}</span>`).join('')}<br>${ts.length?`Uppgradera alla: ${up} guld, sälj alla: +${sv}`:''}`;
 }
 function act(e){
@@ -2526,7 +2526,7 @@ function act(e){
  else if(e.a=='sp')S.sp=S.sp%3+1;
  else if(e.a=='cancel'){if(S.menu||S.bt!=null||S.o.length){S.menu='';S.bt=null;cancelOrders()}else S.sel=[S.h]}
  else if(e.a=='menu')S.paused=!S.paused;
- else if(e.a=='up'){let n=0;for(const s of selT()){const c=Math.round(T[s.k].c*.9*s.l);if(!T[s.k].wall&&!T[s.k].dbl&&(!T[s.k].branch||s.br)&&s.l<(T[s.k].lumber||T[s.k].digger||T[s.k].shark||T[s.k].fisher?3:4)&&S.gold>=c){S.gold-=c;s.sp+=c;s.l++;n++;if(T[s.k].vis)remodel(s)}}if(!n)toast('Kan inte uppgradera');else sfxPlop(n)}
+ else if(e.a=='up'){let n=0;for(const s of selT()){const c=Math.round((T[s.k].uc||T[s.k].c)*.9*s.l);if(!T[s.k].wall&&!T[s.k].dbl&&(!T[s.k].branch||s.br)&&s.l<(T[s.k].lumber||T[s.k].digger||T[s.k].shark||T[s.k].fisher?3:4)&&S.gold>=c){S.gold-=c;s.sp+=c;s.l++;n++;if(T[s.k].vis)remodel(s)}}if(!n)toast('Kan inte uppgradera');else sfxPlop(n)}
  else if(e.a=='br'){let n=0;for(const s of selT()){const d=T[s.k];if(d.branch&&!s.br&&S.gold>=d.bcost){S.gold-=d.bcost;s.sp+=d.bcost;s.br=e.br;s.l=2;remodel(s);n++}}toast(n?(e.br=='fire'?'Eldpilar vald!':'Långbåge vald!'):'Inte tillräckligt med guld');if(n)sfxPlop(n)}
  else if(e.a=='cp'){const t=selT().find(x=>T[x.k].dbl);if(t){S.cpm=t;toast('Tryck på gubben du vill kopiera')}}
  else if(e.a=='sell'){let n=0,gs=0;for(const s of selT()){const v=Math.round(s.sp*.7);gs+=v;n++;S.gold+=v;gT.remove(s.m);occ[s.r][s.c]=null;S.tw=S.tw.filter(x=>x!==s)}S.sel=[S.h];dist=bfs();S.v++;if(n)toast('Sålde '+n+(n>1?' objekt':' objekt')+' för +'+gs+' guld')}
