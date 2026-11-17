@@ -32,6 +32,9 @@ button:focus-visible{outline:2px solid #4fa59a}
 #pv{display:none;flex:none;width:calc(var(--bh) - 30px);height:100%;background:radial-gradient(#3a2f1f,#100c08);border-radius:4px}
 #mid.pv #pv{display:block}
 #inf{flex:1;min-width:0;font-size:12px;line-height:1.25;overflow:auto}
+body:not(.mob) #inf{font-size:11.5px;min-width:330px}
+#inf>div{line-height:1.17!important}
+@media (max-height:660px){body:not(.mob) #inf{font-size:10.5px}}
 #cd{flex:none;display:grid;grid-template-columns:repeat(4,calc(var(--rh)*1.12));grid-auto-rows:var(--rh);gap:4px}
 .cb{position:relative;padding:0;min-height:0;height:100%;width:100%;text-align:center}
 .cb.on{border-color:#ffe070;box-shadow:0 0 6px #ffe070}
@@ -120,6 +123,9 @@ body.mob #pt{width:46px}
 body.mob .face{width:38px;height:38px}
 body.mob #bn,body.mob #tt,body.mob #zb{top:30px}
 body.mob #mid{height:128px}
+body.mob #mid{width:min(450px,64vw);height:auto;min-height:112px;max-height:calc(100vh - var(--bh) - 16px)}
+body.mob #mid #pv{width:72px;height:72px;align-self:center}
+body.mob #inf{font-size:10.5px}
 body.mob #fy{position:fixed;left:6px;right:6px;bottom:56px;width:auto;max-width:none;max-height:calc(100vh - 90px);overflow-y:auto;padding:6px}
 body.mob #fg{display:grid;grid-template-rows:none;grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));grid-auto-columns:auto;overflow:visible;padding:4px}
 body.mob .fb{height:auto;min-height:76px;padding:3px 2px}
@@ -202,7 +208,7 @@ body.mob .fb i,body.mob .fb em{font-size:10px}
 #bx.win{animation:bxw .5s ease-out}
 @keyframes bxw{0%{transform:translate(-50%,-50%) scale(.6)}60%{transform:translate(-50%,-50%) scale(1.12)}100%{transform:translate(-50%,-50%) scale(1)}}
 body:not(.mob) #app{position:relative}
-body:not(.mob) #bot{position:absolute;left:50%;transform:translateX(-50%);width:62%;min-width:min(660px,calc(100vw - 20px));bottom:8px;z-index:5;margin:0;border:2px solid #7a6540;border-radius:10px;justify-content:center;background:linear-gradient(#34281ad9,#120d08d9)}
+body:not(.mob) #bot{position:absolute;left:50%;transform:translateX(-50%);width:68%;min-width:min(880px,calc(100vw - 20px));bottom:8px;z-index:5;margin:0;border:2px solid #7a6540;border-radius:10px;justify-content:center;background:linear-gradient(#34281ad9,#120d08d9)}
 body:not(.mob) #bn{bottom:auto;top:40px;z-index:6}
 body.mob #bot{left:clamp(10px,7vw,90px);right:clamp(10px,7vw,90px);bottom:max(4px,env(safe-area-inset-bottom,0px));border:2px solid #7a6540;border-radius:10px;justify-content:center}
 
@@ -1431,7 +1437,7 @@ function pts(dt){
  S.pt=S.pt.filter(p=>p.t>0);
 }
 function flash(x,y,r,col,o,L){const m=new THREE.Mesh(DISC,bas(hex(col),o));m.position.set(x-HW,.08,y-HH);m.scale.set(r,1,r);gF.add(m);S.fx.push({m,t:L,o,L})}
-function detail(k,l,t){
+function detail(k,l,t,ex){
  l=l||1;const d=T[k],m=d.branch?(t&&t.br?1.8**(l-2):1):1.8**(l-1),br=t&&t.br,L3=Math.min(2,l-1);
  const nm=`<b style="color:${d.col}">${d.i} ${d.n}${br?' ('+(br=='fire'?['Eldpilar','Eldskytt','Eldmästare']:['Långbåge','Örnskytt','Örnöga'])[Math.max(0,Math.min(2,l-2))]+')':l>1&&!d.branch?' (nivå '+l+')':''}</b> <small style="color:#9a8f78">– ${d.ty||''}, ${d.pts?'Mystery box':d.c+' guld'}</small>`;
  const R=(d.r+(d.branch?(br=='long'?1.4:0)+(br?.25*(l-2):0):.25*(l-1))).toFixed(1).replace('.',',');
@@ -1439,9 +1445,9 @@ function detail(k,l,t){
  let g=0,a=0,w=0,f=0,rg=R,ap=0,hit='En fiende';const sp=[];
  const atk=d.d&&!d.crow&&!d.wolf;
  if(atk){const hd=d.d*m*d.f,cr=d.cr?1+d.cr.p*d.cr.m:1,bk=d.fire?d.burn.k:br=='fire'?.35:0;g=d.gr?hd*cr+hd*bk:0;a=d.air?hd*cr*(d.fm||1)*(br=='long'?1.5:br=='fire'?.75:1)+hd*bk:0;w=g?hd*cr*(fire?2.5:.35)+hd*bk*2.5:0;f=d.f;ap=d.ap||0;hit=d.aoe?'Alla markfiender i cirkeln':d.fsp?'Flera i en liten cirkel':'En fiende'}
- if(d.crow){g=a=Math.round(d.d*m).toLocaleString('sv-SE')+' per träff';w=Math.round(d.d*m*.35).toLocaleString('sv-SE')+' per träff';f='3 per fiende';rg='Runt borgen';ap=d.ap;hit='Allt kråkan flyger igenom';sp.push('En kråka flyger i cirkel runt borgen. Flera kråkträd ger flera kråkor')}
+ if(d.crow){g=a=Math.round(d.d*m).toLocaleString('sv-SE');w=Math.round(d.d*m*.35).toLocaleString('sv-SE');sp.push('Skadan är per träff');f='3 per fiende';rg='Runt borgen';ap=d.ap;hit='Allt kråkan flyger igenom';sp.push('En kråka flyger i cirkel runt borgen. Flera kråkträd ger flera kråkor')}
  if(d.wolf){g=d.d*m*d.f;w=g*.35;f=d.f;rg='Hela banan';ap=d.ap;hit='En fiende, inte bossar';sp.push('Sover där du placerar den, springer efter närmaste markfiende och går sedan tillbaka')}
- if(d.shark){const CD=[6,4.5,3][L3];g=w='Dödar direkt';f='1 per '+CD+' s';rg=String([2.6,3.1,3.6][L3]).replace('.',',')+' från vattnet';ap='100 %';hit='En fiende, inte bossar';sp.push('Simmar i vallgraven och hoppar upp och äter markfiender som kommer nära vattnet')}
+ if(d.shark){const CD=[6,4.5,3][L3];g=w='Dödar';f='1 per '+CD+' s';rg=String([2.6,3.1,3.6][L3]).replace('.',',')+' (vatten)';ap='100 %';hit='En fiende, inte bossar';sp.push('Simmar i vallgraven och äter markfiender direkt när de kommer nära vattnet')}
  if(d.slowAir){rg=R;hit='–';sp.push(`Saktar flygare ${Math.round((d.slowAir+.05*(l-1))*100)} %`,`Förhäxar ${3+(l-1)} slumpade vanliga gubbar varje nivå så de gör ${Math.round(d.curse*100)} % mer skada`)}
  if(d.fisher){const P=[60,40,25];rg='Vid vallgraven';hit='–';sp.push(`Får napp i snitt var ${P[L3]}:e sekund under en våg och ger då +1 liv (max 20)`+(l<3?`. Nästa nivå: var ${P[l]}:e s`:''),'Fiskar inte när vattnet är fruset')}
  if(d.digger){const P=[10,16,25];rg='Utanför banan';hit='–';sp.push(`+${P[L3]} % guld för varje dödad fiende`+(l<3?` (nästa nivå +${P[l]} %)`:''))}
@@ -1457,15 +1463,14 @@ function detail(k,l,t){
  if(br=='long')sp.push('Långbåge: +1,4 räckvidd och 50 % mer mot flygare');
  if(d.rock)sp.push('Stenkast: '+Math.round(d.rock.dmg*1.8**(l-1)).toLocaleString('sv-SE')+' skada var '+d.rock.cd+' s, räckvidd '+(d.rock.r+.25*(l-1)).toFixed(1).replace('.',',')+', ignorerar pansar');
  if(d.max)sp.push('Max '+d.max+' åt gången');
- const v=x=>typeof x=='number'?(x>0?Math.round(x).toLocaleString('sv-SE'):'<span style="opacity:.45">0</span>'):x;
- const c=(i,lb,x,col)=>`<span><span style="opacity:.8">${i} ${lb}</span> <b style="color:${col}">${v(x)}</b></span>`;
+ const v=x=>typeof x=='number'?(x>0?Math.round(x).toLocaleString('sv-SE')+'/s':'<span style="opacity:.45">0</span>'):x;
+ const c=(i,lb,x,col)=>`<span style="white-space:nowrap">${i} <span style="opacity:.75">${lb}</span> <b style="color:${col}">${x}</b></span>`;
  const apv=typeof ap=='number'?(ap>0?Math.round(ap*100)+' %':'<span style="opacity:.45">0 %</span>'):ap;
- return nm+`<div style="font-size:.85em;opacity:.65;margin-top:2px">Skada per sekund, allt inräknat (brand, kritiska träffar)</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1px 10px;margin:3px 0">`
-  +c('⚔️','Mark',g,'#ff7a5a')+c('🪽','Luft',a,'#7ab8ff')
-  +c('❄️','Vinter',w,'#bfe6ff')+c('⏱️','Attacker/s',typeof f=='number'?(f>0?String(+f.toFixed(2)).replace('.',','):0):f,'#ffd84a')
-  +c('🎯','Räckvidd',rg,'#e8dcc0')+`<span><span style="opacity:.8">🛡️ Pansargen.</span> <b style="color:#e8dcc0">${apv}</b></span>`
-  +`<span style="grid-column:1/3"><span style="opacity:.8">💥 Träffar</span> <b style="color:#e8dcc0">${hit}</b></span></div>`
-  +(sp.length?`<div style="color:#c9a0ff;font-size:.95em">✨ ${sp.join(' · ')}</div>`:'');
+ const fv=typeof f=='number'?(f>0?String(+f.toFixed(2)).replace('.',','):'<span style="opacity:.45">0</span>'):f;
+ return `<div style="line-height:1.22">`+nm+(ex?' <small>'+ex+'</small>':'')+`<div style="display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:0 9px;margin-top:1px">`
+  +c('⚔️','Mark',v(g),'#ff7a5a')+c('🪽','Luft',v(a),'#7ab8ff')+c('❄️','Vinter',v(w),'#bfe6ff')
+  +c('⏱️','Attacker/s',fv,'#ffd84a')+c('🎯','Räckvidd',rg,'#e8dcc0')+c('🛡️','Pansar',apv,'#e8dcc0')+`</div>`
+  +`<div>💥 <b style="color:#e8dcc0">${hit}</b>${sp.length?` <span style="color:#c9a0ff">· ✨ ${sp.join(' · ')}</span>`:''}</div>`+`</div>`;
 }
 const pvC=$('pv'),PR=new THREE.WebGLRenderer({canvas:pvC,antialias:true,alpha:true,preserveDrawingBuffer:true}),ps=new THREE.Scene(),pcam=new THREE.PerspectiveCamera(32,1,.1,50),pRoot=new THREE.Group();
 PR.setClearColor(0x000000,0);ps.add(new THREE.AmbientLight(0xffffff,.85));
@@ -2560,7 +2565,7 @@ function sync(){
  else if(S.base){const pc=Math.max(0,Math.min(100,S.lives/20*100));h=`<b style="color:#ffe070">Guds kyrka</b> (ljuset i mitten)<br>HP: ${S.lives} / 20${S.sh>0?' · 🛡️ Sköld: '+S.sh:''}<div style="height:12px;background:#2a1510;border:1px solid #6e5a38;border-radius:3px;overflow:hidden;margin:4px 0"><div style="width:${pc}%;height:100%;background:${pc>50?'#6fcf5a':pc>25?'#e0b040':'#d0442e'}"></div></div><small style="color:#9a8f78">Varje fiende som tar sig fram kostar 1 HP (miniboss 3, boss 5). När HP är 0 har hiven fallit.</small>`}
  else if(S.sel.length>1)h=multi();
  else if(!S.sel.length)h='<i>Inget valt. Tryck på hjälten eller dra en ruta runt byggnader.</i>';
- else if(sl&&sl!==S.h)h=detail(sl.k,sl.l,sl)+(T[sl.k].rock?'<br><span style="color:#c07aff">Stenkast: '+(sl.rc>0?'klar om '+Math.ceil(sl.rc)+' s':'REDO')+'</span>':'')+(sl.bf>1?'<br><span style="color:#ffd84a">Buff: +'+Math.round((sl.bf-1)*100)+' % attackspeed, +'+Math.round((sl.bd-1)*100)+' % skada</span>':'')+'<br><i>Sälj för +'+Math.round(sl.sp*.7)+' guld (Delete)</i>';
+ else if(sl&&sl!==S.h)h=detail(sl.k,sl.l,sl,[T[sl.k].rock?'<span style="color:#c07aff">Sten: '+(sl.rc>0?'klar om '+Math.ceil(sl.rc)+' s':'REDO')+'</span>':'',sl.bf>1?'<span style="color:#ffd84a">Buff: +'+Math.round((sl.bf-1)*100)+' % fart, +'+Math.round((sl.bd-1)*100)+' % skada</span>':'','<i style="opacity:.8">sälj +'+Math.round(sl.sp*.7)+' guld</i>'].filter(Boolean).join(' · '));
  else h=`<b>${HC[S.hc||'knight'].lv[(S.hlv||1)-1]}</b> (hjälte, nivå ${S.hlv||1} av 3)<br>Skada ${Math.round(heroD()*HS().dm)}, fart ${HS().spd}, räckvidd ${HS().rng}${HS().sp?' (kastar spjut)':HS().multi?' (tre pilar)':HS().aoe?` (eldklot ${HS().aoe} rutor${HS().chain?', kedjeblixt':''})`:HS().slow?` (saktar ner${HS().raise?', väcker döda':''})`:''}<br>${(S.hlv||1)<3?'<small>Nästa nivå kommer ur Mystery box.</small><br>':''}<i>Högerklicka på marken för att gå. Tryck på hammaren (B) för att bygga. Dra en ruta för att markera flera.</i>`;
  p=S.base?`<svg viewBox="0 0 60 60" style="width:100%;height:auto"><polygon points="8,54 12,46 48,46 52,54" fill="#4a463f"/><polygon points="12,46 15,40 45,40 48,46" fill="#66625a"/><rect x="21" y="18" width="18" height="22" fill="#8a867a"/><rect x="20" y="16" width="20" height="3" fill="#4a463f"/><rect x="20" y="13" width="3" height="4" fill="#66625a"/><rect x="26" y="13" width="3" height="4" fill="#66625a"/><rect x="31" y="13" width="3" height="4" fill="#66625a"/><rect x="37" y="13" width="3" height="4" fill="#66625a"/><polygon points="30,3 21,13 39,13" fill="#c9a24a"/><rect x="29" y="0" width="2" height="5" fill="#e0c070"/><rect x="27.5" y="1.5" width="5" height="1.6" fill="#e0c070"/><rect x="27" y="24" width="6" height="9" rx="3" fill="#fff2a0"/><rect x="10" y="32" width="5" height="8" fill="#8a1f1a"/><rect x="45" y="32" width="5" height="8" fill="#8a1f1a"/><circle cx="12" cy="30" r="3" fill="#ff8a2a"/><circle cx="48" cy="30" r="3" fill="#ff8a2a"/></svg><small>${S.lives} / 20</small>`:S.sel.includes(S.h)?heroFace()+`<small style="color:#ffd84a">Nivå ${S.hlv||1} / 3</small>`:S.sel.length>1?`<div class="pi">👥</div><small>${S.sel.length} valda</small>`:sl?`<img src="${T[sl.k].img}" style="width:100%" alt=""><small>nivå ${sl.l}</small>`:'<div class="pi">😈</div><small>700 / 700</small><small>270 / 270</small>';
  setH('inf',h);setH('pt',p);flyR();fitMenu();
