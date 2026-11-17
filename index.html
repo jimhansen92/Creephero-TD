@@ -805,6 +805,17 @@ portals.forEach(m=>{m.visible=false});prings.forEach(r=>{r.visible=false});
 const hm=new THREE.Group(),hhorse=new THREE.Group(),hrider=new THREE.Group(),hrl=[],hfl=[];hm.add(hhorse,hrider);
 const hlegs=[],hwings=[];let hcape,htail;
 const arms=[];
+// Hjälteklasser: namn per nivå, färger [rustning, rustning mörk, mantel, häst, häst mörk, man], beskrivning
+const KN=[],HG={knight:KN,archer:[],mage:[],necro:[]};let HMAT=null;
+const HC={
+ knight:{n:'Riddaren',i:'⚔️',lv:['Riddaren till fots','Riddaren på hästen','Riddaren med spjut'],col:[0xb4bcc8,0x7e8896,0xa8221c,0xf2efe8,0xd9d4c8,0x6a5a48],
+  t:'Närstrid med hårda slag. Blir snabbare på häst och kastar till sist spjut på långt håll.',up:[['🐴','Häst till hjälten','Hjälten får en häst: snabbare, längre räckvidd och mer skada!'],['🔱','Spjutkastning','Hjälten kan nu kasta spjut med lång räckvidd och stor skada!']]},
+ archer:{n:'Bågskytten',i:'🏹',lv:['Bågskytten till fots','Bågskytten på hästen','Mästerskytten'],col:[0x4a6a34,0x34502a,0x3a5a24,0xb08a5a,0x8a6a44,0x3a2a1a],
+  t:'Skjuter pilar på långt håll, mot både mark och luft. Blir snabbare på häst och skjuter till sist tre pilar samtidigt.',up:[['🐴','Häst till bågskytten','Snabbare, längre räckvidd och tätare skott!'],['🏹','Trippelskott','Bågskytten skjuter nu tre pilar samtidigt mot olika fiender!']]},
+ mage:{n:'Magikern',i:'🔥',lv:['Magikern till fots','Magikern på hästen','Ärkemagikern'],col:[0x2c3f8f,0x1e2c66,0x5a2a8a,0xe8e4f0,0xc8c0d8,0xb0a0d0],
+  t:'Kastar eldklot som skadar alla fiender i ett område och bränner vinterfiender extra. Blir till sist en kedjeblixt.',up:[['🐴','Häst till magikern','Snabbare, större eldklot och mer skada!'],['⚡','Kedjeblixt','Varje eldklot skickar nu en blixt vidare till tre fiender till!']]},
+ necro:{n:'Nekromantikern',i:'💀',lv:['Nekromantikern till fots','Nekromantikern på benhästen','Dödens herre'],col:[0x2a2630,0x1a1720,0x141218,0x3a3640,0x2a2730,0x3aa86a],
+  t:'Dränerar fiender med mörk magi och saktar ner dem. Väcker till sist döda fiender som skelett som slåss en stund.',up:[['🐴','Benhäst','En odöd häst: snabbare, längre räckvidd och mer skada!'],['💀','Väck de döda','Fiender som nekromantikern dödar reser sig som skelett och slåss för dig!']]}};
 {
  const M=(c,e)=>new THREE.MeshLambertMaterial(e?{color:c,emissive:e}:{color:c}),BX=(w,h,d)=>new THREE.BoxGeometry(w,h,d),CYb=(a,b,h,n)=>new THREE.CylinderGeometry(a,b,h,n||8);
  let PAR=hhorse;const put=(g,m,x,y,z,rx,ry,rz,par)=>{const o=new THREE.Mesh(g,m);o.position.set(x,y,z);o.rotation.set(rx||0,ry||0,rz||0);(par||PAR).add(o);return o};
@@ -834,20 +845,44 @@ const arms=[];
  put(CYb(.11,.09,.3,8),steel,0,.78,0);put(BX(.2,.03,.2),gold,0,.65,0);
  put(BX(.02,.22,.1),gold,.092,.8,0);
  put(SPH,steel,0,.97,0).scale.setScalar(.12);
- put(BX(.02,.025,.1),M(0x151515),.115,.98,0);
- put(BX(.02,.1,.01),steelD,.118,.96,0);
- put(CYb(.012,.012,.14,5),steel,0,1.1,0);
- put(new THREE.ConeGeometry(.04,.2,6),red,-.04,1.18,0,0,0,.5);
+ KN.push(put(BX(.02,.025,.1),M(0x151515),.115,.98,0));
+ KN.push(put(BX(.02,.1,.01),steelD,.118,.96,0));
+ KN.push(put(CYb(.012,.012,.14,5),steel,0,1.1,0));
+ KN.push(put(new THREE.ConeGeometry(.04,.2,6),red,-.04,1.18,0,0,0,.5));
  put(SPH,steelD,0,.9,.0).scale.set(.13,.04,.13);
  // mantel
  hcape=new THREE.Group();hcape.position.set(-.1,.9,0);put(BX(.015,.38,.22),red,0,-.19,0,0,0,0,hcape);put(BX(.012,.04,.23),gold,0,-.38,0,0,0,0,hcape);hrider.add(hcape);
  // armar (animeras) – höger bär lans, vänster sköld
  for(const sx of[-1,1]){const g=new THREE.Group();g.position.set(0,.86,sx*.15);put(CYb(.035,.03,.26,6),steel,0,-.13,0,0,0,0,g);put(SPH,steelD,0,-.27,0,0,0,0,g).scale.setScalar(.04);
-  if(sx==1){put(CYb(.012,.014,1.1,5),leather,.45,-.27,0,0,0,Math.PI/2,g);put(new THREE.ConeGeometry(.03,.14,6),steel,1.02,-.27,0,0,0,-Math.PI/2,g);const fl=put(BX(.14,.07,.01),red,.85,-.24,0,0,0,0,g)}
-  else{put(CYb(.13,.13,.02,10),blue,.04,-.15,-.06,Math.PI/2,0,0,g);put(BX(.02,.2,.03),gold,.04,-.15,-.075,0,0,0,g);put(BX(.02,.03,.16),gold,.04,-.12,-.075,0,0,0,g);put(CYb(.135,.135,.015,10),steel,.04,-.15,-.07,Math.PI/2,0,0,g)}
+  if(sx==1){KN.push(put(CYb(.012,.014,1.1,5),leather,.45,-.27,0,0,0,Math.PI/2,g),put(new THREE.ConeGeometry(.03,.14,6),steel,1.02,-.27,0,0,0,-Math.PI/2,g),put(BX(.14,.07,.01),red,.85,-.24,0,0,0,0,g))}
+  else{KN.push(put(CYb(.13,.13,.02,10),blue,.04,-.15,-.06,Math.PI/2,0,0,g),put(BX(.02,.2,.03),gold,.04,-.15,-.075,0,0,0,g),put(BX(.02,.03,.16),gold,.04,-.12,-.075,0,0,0,g),put(CYb(.135,.135,.015,10),steel,.04,-.15,-.07,Math.PI/2,0,0,g))}
   hrider.add(g);arms.push(g)}
+ // ----- utrustning för de andra hjälteklasserna (döljs/visas av heroClass) -----
+ const wood=M(0x6a4a22),bone=M(0xd8d0b8),beard=M(0xe8e8e8),glowO=new THREE.MeshBasicMaterial({color:0xffa040}),glowG=new THREE.MeshBasicMaterial({color:0x6aff8a}),eyeD=M(0x151515);
+ const G=(list,f)=>{const n0=hrider.children.length,a0=arms.map(a=>a.children.length);f();hrider.children.slice(n0).forEach(o=>list.push(o));arms.forEach((a,i)=>a.children.slice(a0[i]).forEach(o=>list.push(o)))};
+ // bågskytt: ansikte i grön kapuschong, båge i vänster hand, koger på ryggen
+ G(HG.archer,()=>{put(SPH,skin,.075,.955,0).scale.set(.065,.075,.075);for(const s2 of[-1,1])put(SPH,eyeD,.135,.975,s2*.028).scale.setScalar(.011);
+  put(new THREE.ConeGeometry(.08,.2,6),steel,-.07,1.06,0,0,0,1.1);put(new THREE.ConeGeometry(.02,.12,5),gold,-.02,1.12,.06,.4,0,.6);
+  put(new THREE.TorusGeometry(.24,.013,5,16,Math.PI),wood,.07,-.24,0,0,0,-Math.PI/2,arms[0]);put(CYb(.003,.003,.48,4),beard,.07,-.24,0,0,0,0,arms[0]);
+  put(CYb(.045,.04,.3,8),M(0x5a3a22),-.13,.86,.05,.35,0,.35);for(const z of[.02,.06,.09])put(new THREE.ConeGeometry(.015,.06,4),M(0xe0e0e0),-.07,1.03,z,.35,0,.35)});
+ // magiker: ansikte med vitt skägg, spetsig hatt med brätte, stav med glödande kula
+ G(HG.mage,()=>{put(SPH,skin,.075,.955,0).scale.set(.065,.075,.075);for(const s2 of[-1,1])put(SPH,eyeD,.135,.975,s2*.028).scale.setScalar(.011);
+  put(new THREE.ConeGeometry(.06,.2,6),beard,.11,.85,0,0,0,Math.PI);put(CYb(.2,.2,.02,14),steel,0,1.06,0);put(new THREE.ConeGeometry(.13,.36,10),steel,-.02,1.24,0,0,0,.18);
+  for(const[x,y]of[[.05,1.18],[-.02,1.28]])put(SPH,gold,x+.06,y,0).scale.setScalar(.018);
+  put(CYb(.014,.018,1,6),wood,.05,-.15,0,0,0,0,arms[1]);put(SPH,glowO,.05,.38,0,0,0,0,arms[1]).scale.setScalar(.06);put(new THREE.TorusGeometry(.07,.008,5,14),gold,.05,.38,0,Math.PI/2,0,0,arms[1])});
+ // nekromantiker: dödskalle med gröna ögon i mörk huva, benpiggar på axlarna, stav med dödskalle
+ G(HG.necro,()=>{put(SPH,bone,.07,.955,0).scale.set(.068,.08,.08);for(const s2 of[-1,1])put(SPH,glowG,.132,.975,s2*.027).scale.setScalar(.014);put(BX(.02,.025,.06),eyeD,.13,.915,0);
+  put(new THREE.ConeGeometry(.1,.24,6),steel,-.08,1.07,0,0,0,1.2);for(const s2 of[-1,1])put(new THREE.ConeGeometry(.025,.14,5),bone,0,.98,s2*.16,s2*.5,0,0);
+  put(CYb(.013,.016,1.05,6),M(0x2a2018),.05,-.12,0,0,0,0,arms[1]);put(SPH,bone,.05,.43,0,0,0,0,arms[1]).scale.set(.06,.065,.06);for(const s2 of[-1,1])put(SPH,glowG,.1,.44,s2*.022,0,0,0,arms[1]).scale.setScalar(.012);
+  put(new THREE.ConeGeometry(.02,.1,5),bone,.05,.52,0,0,0,0,arms[1])});
+ HMAT={steel,steelD,red,horse,horseD,mane};
 }
-const hglow=new THREE.Mesh(GLG,GLM);hglow.position.y=.05;hglow.scale.set(2.2,1,2.2);hm.add(hglow);cast(hm);
+// Byter hjältens utseende till vald klass: färger på rustning/kläder, mantel och häst, samt klassens utrustning.
+function heroClass(k){
+ k=HC[k]?k:'knight';const c=HC[k].col;
+ HMAT.steel.color.setHex(c[0]);HMAT.steelD.color.setHex(c[1]);HMAT.red.color.setHex(c[2]);HMAT.horse.color.setHex(c[3]);HMAT.horseD.color.setHex(c[4]);HMAT.mane.color.setHex(c[5]);
+ for(const kk in HG)for(const o of HG[kk])o.visible=kk==k}
+const hglow=new THREE.Mesh(GLG,GLM);hglow.position.y=.05;hglow.scale.set(2.2,1,2.2);hm.add(hglow);cast(hm);heroClass('knight');
 const hgl=new THREE.Mesh(GLG,new THREE.MeshBasicMaterial({map:GLT,color:0xffd040,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));hgl.position.y=.07;hgl.scale.set(2.8,1,2.8);hgl.visible=false;hm.add(hgl);
 const hgs=new THREE.Sprite(new THREE.SpriteMaterial({map:GLT,color:0xffc830,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));hgs.position.y=.65;hgs.scale.set(2,2,1);hgs.visible=false;hm.add(hgs);
 const hbc=document.createElement('canvas');hbc.width=128;hbc.height=48;
@@ -1853,7 +1888,33 @@ function orderBuild(c,r){
  S.o.push(o);S.h.go=null;S.dance=0;
 }
 function cancelOrders(){S.o.forEach(o=>gO.remove(o.m));S.o=[];S.h.go=null}
-const HS=()=>{const L=S.hlv||1;return L>=3?{spd:4.5,rng:6.5,cd:1,dm:2.6,sp:1}:L==2?{spd:4.5,rng:2.8,cd:.7,dm:1.6}:{spd:2.8,rng:1.5,cd:1.5,dm:1}};
+// Hjältens värden per klass och nivå (1–3): fart, räckvidd, nedkylning, skademultiplikator + specialförmåga
+const HSC={
+ knight:[{spd:2.8,rng:1.5,cd:1.5,dm:1},{spd:4.5,rng:2.8,cd:.7,dm:1.6},{spd:4.5,rng:6.5,cd:1,dm:2.6,sp:1}],
+ archer:[{spd:2.8,rng:3.6,cd:1.1,dm:.6},{spd:4.5,rng:4.4,cd:.75,dm:.85},{spd:4.5,rng:5.4,cd:.65,dm:1.1,multi:3}],
+ mage:[{spd:2.6,rng:3,cd:1.9,dm:.9,aoe:1.1},{spd:4.5,rng:3.6,cd:1.4,dm:1.2,aoe:1.4},{spd:4.5,rng:4.2,cd:1.2,dm:1.5,aoe:1.6,chain:3}],
+ necro:[{spd:2.8,rng:2.6,cd:1.2,dm:.85,slow:1},{spd:4.5,rng:3.2,cd:.9,dm:1.1,slow:1},{spd:4.5,rng:3.8,cd:.85,dm:1.4,slow:1,raise:1}]};
+const HS=()=>HSC[S.hc||'knight'][Math.min(3,S.hlv||1)-1];
+// projektiler som flyger från hjälten till målet (använder samma flygning som spjutet)
+function shotFx(x0,y0,x1,y1,kind){const m=new THREE.Group();
+ if(kind=='arrow'){const sh=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,.5,4),lam(0x7a5a32));sh.rotation.z=Math.PI/2;m.add(sh);const tp=new THREE.Mesh(new THREE.ConeGeometry(.02,.07,5),lam(0xc8d0d8));tp.rotation.z=-Math.PI/2;tp.position.x=.28;m.add(tp)}
+ else if(kind=='fire'){const b=new THREE.Mesh(SPH,new THREE.MeshBasicMaterial({color:0xff8a2a}));b.scale.setScalar(.09);m.add(b);const s=new THREE.Sprite(new THREE.SpriteMaterial({map:GLT,color:0xff6a1a,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));s.scale.set(.5,.5,1);m.add(s)}
+ m.rotation.y=-Math.atan2(y1-y0,x1-x0);m.position.set(x0-HW,.9,y0-HH);gF.add(m);(S.hs||(S.hs=[])).push({m,x0,y0,x1,y1,t:0,L:kind=='fire'?.3:.16})}
+// nekromantikerns skelett: går mot närmaste markfiende och slår tills tiden tar slut
+const SKM=lam(0xd8d0b8),SKE=new THREE.MeshBasicMaterial({color:0x6aff8a});
+function raiseSk(x,y){S.sk=S.sk||[];if(S.sk.length>=5){const o=S.sk.shift();gF.remove(o.m)}
+ const m=new THREE.Group(),P=(g,mt,px,py,pz,sx,sy,sz)=>{const o=new THREE.Mesh(g,mt);o.position.set(px,py,pz);o.scale.set(sx,sy,sz);m.add(o);return o};
+ P(SPH,SKM,.02,.5,0,.09,.1,.09);for(const s of[-1,1])P(SPH,SKE,.09,.52,s*.035,.018,.018,.018);
+ P(BXU,SKM,0,.33,0,.06,.2,.14);for(const y of[.28,.34,.4])P(BXU,SKM,.01,y,0,.07,.015,.17);
+ for(const s of[-1,1]){P(CYU,SKM,0,.12,s*.05,.018,.24,.018);}
+ const ar=new THREE.Group();ar.position.set(0,.42,.1);const a1=new THREE.Mesh(CYU,SKM);a1.scale.set(.015,.22,.015);a1.position.y=-.11;ar.add(a1);const sw=new THREE.Mesh(BXU,lam(0x8a8478));sw.scale.set(.02,.25,.04);sw.position.set(.08,-.2,0);sw.rotation.z=-1.2;ar.add(sw);m.add(ar);
+ cast(m);gF.add(m);S.sk.push({x,y,t:9,cd:.4,m,ar,a:0,b:tm});flash(x,y,.55,'#6aff8a',.7,.5)}
+function skStep(dt){if(!S.sk)return;
+ for(const s of S.sk){s.t-=dt;let b=null,bd=5;for(const c of S.en){if(c.dead||c.e.air)continue;const d=Math.hypot(c.x-s.x,c.y-s.y);if(d<bd){bd=d;b=c}}
+  if(b){s.a=Math.atan2(b.y-s.y,b.x-s.x);if(bd>.5){const m=Math.min(bd-.45,2.3*dt);s.x+=(b.x-s.x)/bd*m;s.y+=(b.y-s.y)/bd*m;s.mv=1}else{s.mv=0;s.cd-=dt;if(s.cd<=0){s.cd=.7;s.sw=tm;CUR='h';hit(b,Math.max(1,Math.round(heroD()*.45)),0);CUR=null}}}else s.mv=0;
+  const up=Math.min(1,(tm-s.b)/.5);s.m.position.set(s.x-HW,(up-1)*.6+(s.mv?Math.abs(Math.sin(tm*12+s.x))*.04:0),s.y-HH);s.m.rotation.y=-s.a;s.ar.rotation.z=-1.6*Math.sin(Math.min(1,(tm-(s.sw||-9))/.3)*Math.PI);
+  if(s.t<=0){gF.remove(s.m);flash(s.x,s.y,.4,'#6aff8a',.5,.4);s.d=1}}
+ S.sk=S.sk.filter(s=>!s.d)}
 function spearFx(x0,y0,x1,y1){const m=new THREE.Group(),sh=new THREE.Mesh(new THREE.CylinderGeometry(.015,.015,.9,5),lam(0x7a4a22));sh.rotation.z=Math.PI/2;m.add(sh);const tp=new THREE.Mesh(new THREE.ConeGeometry(.045,.16,6),lam(0xc8d0d8));tp.rotation.z=-Math.PI/2;tp.position.x=.52;m.add(tp);m.rotation.y=-Math.atan2(y1-y0,x1-x0);m.position.set(x0-HW,.9,y0-HH);gF.add(m);(S.hs||(S.hs=[])).push({m,x0,y0,x1,y1,t:0,L:.22})}
 function spearStep(dt){if(!S.hs)return;for(const q of S.hs){q.t+=dt;const k=Math.min(1,q.t/q.L);q.m.position.set(q.x0+(q.x1-q.x0)*k-HW,.9-.25*k,q.y0+(q.y1-q.y0)*k-HH);if(q.t>=q.L+.25){gF.remove(q.m);q.d=1}}S.hs=S.hs.filter(q=>!q.d)}
 function heroU(dt){
@@ -1871,7 +1932,19 @@ function heroU(dt){
  if(h.cd<=0&&S.st=='strid'){
   const hs=HS();let b=null,bd=hs.rng;
   for(const c of S.en){const d=Math.hypot(c.x-h.x,c.y-h.y);if(!c.dead&&d<bd){bd=d;b=c}}
-  if(b){h.cd=hs.cd;h.sw=tm;sfxAtk('hero',h.x);CUR='h';hit(b,Math.round(heroD()*hs.dm),0);CUR=null;if(hs.sp)spearFx(h.x,h.y,b.x,b.y);else S.fx.push({m:beam(h.x,h.y,b.x,b.y,0xffe9a0,.04),t:.1,o:1,L:.1})}
+  if(b){h.cd=hs.cd;h.sw=tm;h.a=Math.atan2(b.y-h.y,b.x-h.x);sfxAtk('hero',h.x);CUR='h';const D=Math.round(heroD()*hs.dm),k=S.hc||'knight';
+   if(k=='archer'){// pilar: vid trippelskott även mot de två närmaste andra fienderna inom räckhåll
+    const tg=[b,...S.en.filter(c=>c!==b&&!c.dead&&Math.hypot(c.x-h.x,c.y-h.y)<hs.rng).sort((p,q)=>Math.hypot(p.x-h.x,p.y-h.y)-Math.hypot(q.x-h.x,q.y-h.y))].slice(0,hs.multi||1);
+    for(const c of tg){hit(c,D,.15);shotFx(h.x,h.y,c.x,c.y,'arrow')}}
+   else if(k=='mage'){// eldklot: skadar alla i området (räknas som eld), kedjeblixt på nivå 3
+    shotFx(h.x,h.y,b.x,b.y,'fire');flash(b.x,b.y,hs.aoe,'#ff7a2a',.55,.35);
+    const bx=b.x,by=b.y;for(const c of S.en)if(!c.dead&&Math.hypot(c.x-bx,c.y-by)<hs.aoe)hit(c,D,0,1);
+    if(hs.chain){let p={x:bx,y:by};const done=new Set([b]);for(let i=0;i<hs.chain;i++){let n=null,nd=3;for(const c of S.en){if(c.dead||done.has(c))continue;const d=Math.hypot(c.x-p.x,c.y-p.y);if(d<nd){nd=d;n=c}}if(!n)break;done.add(n);hit(n,Math.round(D*.6),.3);S.fx.push({m:beam(p.x,p.y,n.x,n.y,0x9ad8ff,.035,.5),t:.15,o:1,L:.15});p=n}}}
+   else if(k=='necro'){// dränering: skada + saktar ner, och på nivå 3 reser sig dödade fiender som skelett
+    hit(b,D,.3);b.nsl=tm+1.6;S.fx.push({m:beam(h.x,h.y,b.x,b.y,0x6aff8a,.05),t:.18,o:1,L:.18});flash(b.x,b.y,.35,'#7a3aa0',.6,.3);
+    if(hs.raise&&b.dead&&!b.e.air)raiseSk(b.x,b.y)}
+   else{hit(b,D,0);if(hs.sp)spearFx(h.x,h.y,b.x,b.y);else S.fx.push({m:beam(h.x,h.y,b.x,b.y,0xffe9a0,.04),t:.1,o:1,L:.1})}
+   CUR=null}
  }
 }
 function stepE(c,dt){
@@ -2113,7 +2186,7 @@ function leak(c){S.ST.leaks++;let d=c.e.boss?(c.e.mini?3:5):1;c.dead=1;S.leak=1;
  if(d>0){S.lives-=d;baseHit(d)}}
 function update(dt){
  if(S.st=='slut'||S.st=='seger')return;
- CUR=null;heroU(dt);spearStep(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt);else if(T[t.k].digger)diggerU(t,dt);else if(T[t.k].shark)sharkU(t,dt);else if(T[t.k].fisher)fisherU(t,dt)}lumberGrow(dt);
+ CUR=null;heroU(dt);spearStep(dt);skStep(dt);for(const t of S.tw){if(T[t.k].wolf)wolfU(t,dt);else if(T[t.k].lumber)lumberU(t,dt);else if(T[t.k].crow)crowU(t,dt);else if(T[t.k].digger)diggerU(t,dt);else if(T[t.k].shark)sharkU(t,dt);else if(T[t.k].fisher)fisherU(t,dt)}lumberGrow(dt);
  pts(dt);rocks(dt);applyBuffs();
  if(S.st=='strid'){
   S.ST.time+=dt;const q=S.q;
@@ -2133,7 +2206,7 @@ function update(dt){
 mkE(c);S.en.push(c);
    }
   }
-  for(const c of S.en)c.sf=1;
+  for(const c of S.en)c.sf=c.nsl>tm?.55:1;
   for(const c of S.en)if(c.burn>0&&!c.dead){c.burn-=dt;const h0=c.hf;CUR=c.bk==null?null:c.bk;hit(c,c.bdps*dt,1,1);CUR=null;c.hf=h0}
   for(const t of S.tw){
    const d=T[t.k];if(d.wall||d.buff||d.wolf||d.lumber||d.dbl||d.crow||d.digger||d.shark||d.fisher)continue;CUR=t.k;
@@ -2295,6 +2368,13 @@ function render(){
 /* ---------- gränssnitt ---------- */
 function toast(m){const e=$('tt');e.textContent=m;e.style.opacity=1;clearTimeout(tq);tq=setTimeout(()=>e.style.opacity=0,1600)}
 function setH(id,h){if(sig[id]!==h){sig[id]=h;$(id).innerHTML=h}}
+// porträttet per hjälteklass: samma ansikte med andra färger (huva/hatt i stället för hjälm), skägg för magikern och dödskalle för nekromantikern
+function heroFace(){const k=S&&S.hc||'knight';if(k=='knight')return FACE;
+ const R=(s,a,b)=>s.split(a).join(b);let f=FACE;
+ const C={archer:['#4a6a34','#c9a24a','none','#ffffff','#2a6a2a','#e0b890'],mage:['#2c3f8f','#ffd84a','none','#ffffff','#5a3aa0','#e0b890'],necro:['#2a2630','none','#1a1a1a','#101010','#6aff8a','#c8c4b4']}[k];
+ f=R(f,'#aab4c0',C[0]);f=R(f,'fill="#c0392b"','fill="'+C[1]+'"');f=R(f,'fill="#8a94a2"','fill="'+C[2]+'"');f=R(f,'fill="#ffffff"','fill="'+C[3]+'"');f=R(f,'fill="#2a5a9a"','fill="'+C[4]+'"');f=R(f,'#e0b890',C[5]);
+ if(k=='mage')f=R(f,'<ellipse class="mo"','<path d="M17 39Q30 64 43 39Q37 47 30 47Q23 47 17 39Z" fill="#e8e8e8"/><ellipse class="mo"');
+ return f}
 const FACE='<svg class="face" viewBox="0 0 60 60"><g class="head"><path d="M30 8Q38 -2 50 6Q40 8 36 14Z" fill="#c0392b"/><ellipse cx="30" cy="32" rx="17" ry="20" fill="#e0b890"/><path d="M11 32Q10 4 30 4Q50 4 49 32L44 32Q44 13 30 13Q16 13 16 32Z" fill="#aab4c0"/><rect x="10" y="28" width="7" height="18" rx="3" fill="#aab4c0"/><rect x="43" y="28" width="7" height="18" rx="3" fill="#aab4c0"/><rect x="28.5" y="14" width="3" height="20" fill="#8a94a2"/><g class="brows"><path d="M17 23 26 26M43 23 34 26" stroke="#2a1f3a" stroke-width="2.5" stroke-linecap="round"/></g><g class="eyes"><ellipse cx="23" cy="31" rx="4" ry="3" fill="#ffffff"/><ellipse cx="37" cy="31" rx="4" ry="3" fill="#ffffff"/><circle cx="23" cy="31" r="1.6" fill="#2a5a9a"/><circle cx="37" cy="31" r="1.6" fill="#2a5a9a"/></g><ellipse class="mo" cx="30" cy="44" rx="4" ry="1.6" fill="#2a1020"/><path class="sm" d="M20 41Q30 54 40 41Z" fill="#2a1020" stroke="#2a1020" stroke-width="2" stroke-linejoin="round"/></g></svg><small>700 / 700</small><small>270 / 270</small>';
 const selT=()=>S.sel.filter(x=>x!==S.h);
 function cardList(){
@@ -2394,7 +2474,7 @@ function openBox(){
  if(S.bx)return;
  if(S.gold<BOXC){toast('Inte tillräckligt med guld');return}
  if(S.score<BOXP){toast('Kräver '+BOXP.toLocaleString('sv-SE')+' poäng');return}
- const IT=i=>i==='hero'?((S.hlv||1)<2?{i:'🐴',n:'Häst till hjälten',t:'Hjälten får en häst: snabbare, längre räckvidd och mer skada!'}:{i:'🔱',n:'Spjutkastning',t:'Hjälten kan nu kasta spjut med lång räckvidd och stor skada!'}):i==='aura'?AURA:i==='gold'?{i:'🪙',n:'Guld',t:''}:T[i];
+ const IT=i=>i==='hero'?(u=>({i:u[0],n:u[1],t:u[2]}))(HC[S.hc||'knight'].up[Math.min(1,(S.hlv||1)-1)]):i==='aura'?AURA:i==='gold'?{i:'🪙',n:'Guld',t:''}:T[i];
  const pool=T.map((d,i)=>d.pts?i:-1).filter(i=>i>=0);pool.push('aura','gold');if((S.hlv||1)<3)pool.push('hero');const w=pool.map(()=>1),tot=w.length;
  let r=Math.random()*tot,res=pool[pool.length-1];for(let j=0;j<pool.length;j++){r-=w[j];if(r<=0){res=pool[j];break}}
  S.gold-=BOXC;S.score-=BOXP;S.bx=1;S.menu='';sync();sfxBoxStart();
@@ -2463,6 +2543,8 @@ function sync(){
  if(end&&S.st=='slut'&&performance.now()<ENDAT){oh='';clearTimeout(sync.t);sync.t=setTimeout(sync,ENDAT-performance.now()+30)}
  else if(end){oh='';showLb()}
  else if(!MODE)oh='<h2>Välj spelläge</h2><div style="display:flex;gap:10px"><button data-a="m:pc" style="padding:12px 18px">🖥️ Dator<br><small>Mus och tangentbord</small></button><button data-a="m:mob" style="padding:12px 18px">📱 Mobil<br><small>Pekskärm, liggande läge</small></button></div>';
+ else if(!S.hc){let last='knight';try{last=localStorage.getItem('wh40khc')||'knight'}catch(x){}
+  oh='<h2>Välj hjälte</h2><div style="display:grid;grid-template-columns:repeat(2,minmax(0,220px));gap:8px">'+Object.entries(HC).map(([k,c])=>`<button data-a="hc:${k}" style="padding:10px 12px;text-align:left;${k==last?'outline:2px solid #ffd84a;':''}"><b style="font-size:1.1em">${c.i} ${c.n}</b><br><small style="display:block;line-height:1.3;margin-top:3px">${c.t}</small></button>`).join('')+'</div>'}
  else if(S.paused&&S.cheat){const ic='style="width:110px;font:inherit;padding:4px 6px;color:#f0e2b0;background:#0d0a07;border:1px solid #6e5a38;border-radius:3px;user-select:text;-webkit-user-select:text"';oh=`<h2>Fusk</h2><div style="display:grid;grid-template-columns:auto auto;gap:6px 10px;align-items:center;text-align:left"><label for="ch-g">Guld</label><input id="ch-g" type="number" min="0" step="100" value="${S.gold|0}" ${ic}><label for="ch-p">Poäng</label><input id="ch-p" type="number" min="0" step="1000" value="${S.score|0}" ${ic}><label for="ch-l">Nivå (1–${MAXL})</label><input id="ch-l" type="number" min="1" max="${MAXL}" step="1" value="${S.L}" ${ic}></div><small style="color:#bfb08a">Byter du nivå avbryts pågående strid och du hamnar i byggläge.</small><div style="display:flex;gap:8px"><button data-a="capply">Använd</button><button data-a="cback">Tillbaka</button></div>`}
  else if(S.paused)oh='<h2>Meny</h2><button data-a="res">Fortsätt</button><button data-a="cheat">Fusk</button><button data-a="mode">Byt spelläge</button><button data-a="new">Starta om</button><small style="color:#bfb08a;opacity:.75;max-width:280px">Drakmodell: "Red Dragon" av Tomek Zamojski (CC-BY 3.0), via Poly Pizza</small>';
  $('ov').classList.toggle('on',!!oh);setH('ov',oh);
@@ -2476,8 +2558,8 @@ function sync(){
  else if(S.sel.length>1)h=multi();
  else if(!S.sel.length)h='<i>Inget valt. Tryck på hjälten eller dra en ruta runt byggnader.</i>';
  else if(sl&&sl!==S.h)h=detail(sl.k,sl.l,sl)+(T[sl.k].rock?'<br><span style="color:#c07aff">Stenkast: '+(sl.rc>0?'klar om '+Math.ceil(sl.rc)+' s':'REDO')+'</span>':'')+(sl.bf>1?'<br><span style="color:#ffd84a">Buff: +'+Math.round((sl.bf-1)*100)+' % attackspeed, +'+Math.round((sl.bd-1)*100)+' % skada</span>':'')+'<br><i>Sälj för +'+Math.round(sl.sp*.7)+' guld (Delete)</i>';
- else h=`<b>${['Riddaren till fots','Riddaren på hästen','Riddaren med spjut'][(S.hlv||1)-1]}</b> (hjälte, nivå ${S.hlv||1} av 3)<br>Skada ${Math.round(heroD()*HS().dm)}, fart ${HS().spd}, räckvidd ${HS().rng}${HS().sp?' (kastar spjut)':''}<br>${(S.hlv||1)<3?'<small>Nästa nivå kommer ur Mystery box.</small><br>':''}<i>Högerklicka på marken för att gå. Tryck på hammaren (B) för att bygga. Dra en ruta för att markera flera.</i>`;
- p=S.base?`<svg viewBox="0 0 60 60" style="width:100%;height:auto"><polygon points="8,54 12,46 48,46 52,54" fill="#4a463f"/><polygon points="12,46 15,40 45,40 48,46" fill="#66625a"/><rect x="21" y="18" width="18" height="22" fill="#8a867a"/><rect x="20" y="16" width="20" height="3" fill="#4a463f"/><rect x="20" y="13" width="3" height="4" fill="#66625a"/><rect x="26" y="13" width="3" height="4" fill="#66625a"/><rect x="31" y="13" width="3" height="4" fill="#66625a"/><rect x="37" y="13" width="3" height="4" fill="#66625a"/><polygon points="30,3 21,13 39,13" fill="#c9a24a"/><rect x="29" y="0" width="2" height="5" fill="#e0c070"/><rect x="27.5" y="1.5" width="5" height="1.6" fill="#e0c070"/><rect x="27" y="24" width="6" height="9" rx="3" fill="#fff2a0"/><rect x="10" y="32" width="5" height="8" fill="#8a1f1a"/><rect x="45" y="32" width="5" height="8" fill="#8a1f1a"/><circle cx="12" cy="30" r="3" fill="#ff8a2a"/><circle cx="48" cy="30" r="3" fill="#ff8a2a"/></svg><small>${S.lives} / 20</small>`:S.sel.includes(S.h)?FACE+`<small style="color:#ffd84a">Nivå ${S.hlv||1} / 3</small>`:S.sel.length>1?`<div class="pi">👥</div><small>${S.sel.length} valda</small>`:sl?`<img src="${T[sl.k].img}" style="width:100%" alt=""><small>nivå ${sl.l}</small>`:'<div class="pi">😈</div><small>700 / 700</small><small>270 / 270</small>';
+ else h=`<b>${HC[S.hc||'knight'].lv[(S.hlv||1)-1]}</b> (hjälte, nivå ${S.hlv||1} av 3)<br>Skada ${Math.round(heroD()*HS().dm)}, fart ${HS().spd}, räckvidd ${HS().rng}${HS().sp?' (kastar spjut)':HS().multi?' (tre pilar)':HS().aoe?` (eldklot ${HS().aoe} rutor${HS().chain?', kedjeblixt':''})`:HS().slow?` (saktar ner${HS().raise?', väcker döda':''})`:''}<br>${(S.hlv||1)<3?'<small>Nästa nivå kommer ur Mystery box.</small><br>':''}<i>Högerklicka på marken för att gå. Tryck på hammaren (B) för att bygga. Dra en ruta för att markera flera.</i>`;
+ p=S.base?`<svg viewBox="0 0 60 60" style="width:100%;height:auto"><polygon points="8,54 12,46 48,46 52,54" fill="#4a463f"/><polygon points="12,46 15,40 45,40 48,46" fill="#66625a"/><rect x="21" y="18" width="18" height="22" fill="#8a867a"/><rect x="20" y="16" width="20" height="3" fill="#4a463f"/><rect x="20" y="13" width="3" height="4" fill="#66625a"/><rect x="26" y="13" width="3" height="4" fill="#66625a"/><rect x="31" y="13" width="3" height="4" fill="#66625a"/><rect x="37" y="13" width="3" height="4" fill="#66625a"/><polygon points="30,3 21,13 39,13" fill="#c9a24a"/><rect x="29" y="0" width="2" height="5" fill="#e0c070"/><rect x="27.5" y="1.5" width="5" height="1.6" fill="#e0c070"/><rect x="27" y="24" width="6" height="9" rx="3" fill="#fff2a0"/><rect x="10" y="32" width="5" height="8" fill="#8a1f1a"/><rect x="45" y="32" width="5" height="8" fill="#8a1f1a"/><circle cx="12" cy="30" r="3" fill="#ff8a2a"/><circle cx="48" cy="30" r="3" fill="#ff8a2a"/></svg><small>${S.lives} / 20</small>`:S.sel.includes(S.h)?heroFace()+`<small style="color:#ffd84a">Nivå ${S.hlv||1} / 3</small>`:S.sel.length>1?`<div class="pi">👥</div><small>${S.sel.length} valda</small>`:sl?`<img src="${T[sl.k].img}" style="width:100%" alt=""><small>nivå ${sl.l}</small>`:'<div class="pi">😈</div><small>700 / 700</small><small>270 / 270</small>';
  setH('inf',h);setH('pt',p);flyR();fitMenu();
  setH('cd',cardList().map((x,i)=>x?`<button class="cb${x.bt!=null&&S.bt===x.bt||x.a=='build'&&(S.menu||S.bt!=null)||x.a=='dance'&&S.dance?' on':''}${x.x!=null&&S.gold<x.x&&(x.bt!=null||x.a=='up'||x.a=='br')?' poor':''}" data-i="${i}" title="${x.n}"><span class="ic">${x.i}</span><span class="hk">${x.k}</span>${x.x!=null?`<em>${x.x}</em>`:''}</button>`:'<div></div>').join(''));
 }
@@ -2510,6 +2592,7 @@ $('bn').onclick=()=>act({a:'go'});
 $('ov').onclick=e=>{
  const b=e.target.closest('[data-a]'),a=b?b.dataset.a:'';
  if(!MODE){if(a.startsWith('m:'))setMode(a.slice(2))}
+ else if(!S.hc){if(a.startsWith('hc:')){S.hc=a.slice(3);heroClass(S.hc);try{localStorage.setItem('wh40khc',S.hc)}catch(x){}playVoice('s_hero',S.h.x)}}
  else if((S.st=='slut'&&performance.now()>ENDAT||S.st=='seger'))reset();
  else if(a=='new'){S.cheat=0;reset()}
  else if(a=='res'){S.paused=0;S.cheat=0}
