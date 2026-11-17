@@ -266,6 +266,7 @@ body:not(.mob) #bot,body.mob #bot{border:3px solid #2e241a;border-radius:14px 14
 <div id="bot"><canvas id="mm" width="204" height="84"></canvas><div id="pt"></div><div id="mid"><canvas id="pv"></canvas><div id="inf"></div></div><div class="cw"><div id="fy"></div><div id="cd"></div></div></div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 const $=id=>document.getElementById(id),cv=$('c'),wr=$('w');
 const COLS=34,ROWS=14,HW=COLS/2,HH=ROWS/2,BASE=[17,7],SPW=[[0,1],[0,12],[33,1],[33,12]];
@@ -829,6 +830,31 @@ function matType(col,kind){
  if(kind=='wolf'&&(t=='cloth'||t=='metal'||t=='wood'))t='skin';
  return t;
 }
+// ----- Laddade 3D-modeller (GLB) -----
+// Draken: "Red Dragon" av Tomek Zamojski (CC-BY 3.0), via Poly Pizza. Huvudet pekar mot +Z, vingarna längs X.
+const MDL={};
+function glbWingMat(col,fl){
+ const m=new THREE.MeshLambertMaterial({color:col});
+ m.onBeforeCompile=sh=>{sh.uniforms.uFl=fl;
+  sh.vertexShader='uniform float uFl;\n'+sh.vertexShader
+  .replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n float wS=sign(position.x),wW=smoothstep(1.1,2.4,abs(position.x))*smoothstep(2.4,3.3,position.y),wA=uFl*wW*wS,wc=cos(wA),ws=sin(wA);\n objectNormal=vec3(objectNormal.x*wc-objectNormal.y*ws,objectNormal.x*ws+objectNormal.y*wc,objectNormal.z);')
+  .replace('#include <begin_vertex>','#include <begin_vertex>\n {vec2 wp=vec2(1.1*wS,3.7),wq=transformed.xy-wp;transformed.xy=wp+vec2(wq.x*wc-wq.y*ws,wq.x*ws+wq.y*wc);}')};
+ m.customProgramCacheKey=()=>'glbWing';return m}
+function glbDragon(u,ad){
+ ad(new THREE.CylinderGeometry(.34,.4,.12,10),0x4a4238,0,.06,0);
+ u.wfl={value:.3};
+ const o=u.drg=new THREE.Group(),inner=new THREE.Group();inner.rotation.y=Math.PI/2;inner.scale.setScalar(.095);o.add(inner);o.position.y=.14;
+ for(const p of MDL.dragon){const m=new THREE.Mesh(p.geo,glbWingMat(p.col,u.wfl));m.userData.em=0;inner.add(m)}
+ u.orb=new THREE.Mesh(sph(.028),new THREE.MeshLambertMaterial({color:0xffb03a,emissive:0xff6a10}));u.orb.userData.em=0xff6a10;u.orb.position.set(.6,.3,0);o.add(u.orb);
+ u.mf=.6;u.mh=.5;return o}
+function loadGLB(){
+ if(!THREE.GLTFLoader)return;
+ new THREE.GLTFLoader().load('models/Draken.glb',gl=>{
+  const parts=[];gl.scene.updateMatrixWorld(true);
+  gl.scene.traverse(o=>{if(o.isMesh)parts.push({geo:o.geometry.clone().applyMatrix4(o.matrixWorld),col:o.material.color.clone().convertLinearToSRGB()})});
+  if(!parts.length)return;MDL.dragon=parts;
+  thumbs();pvCur=null;for(const t of S.tw)if(T[t.k].kind=='dragon')remodel(t);sync();
+ },undefined,e=>console.warn('Kunde inte ladda models/Draken.glb – använder den enkla draken',e))}
 function mkModel(k,lv,br){
  lv=lv||1;const d=T[k],g=new THREE.Group(),u=g.userData;
  {const sh=new THREE.Mesh(DISC,bas(0x000000,.12));sh.position.y=.02;sh.scale.set(.5,1,.5);g.add(sh)}
@@ -893,6 +919,8 @@ function mkModel(k,lv,br){
   const ga=u.arm=new THREE.Group();ga.position.set(0,.92,.3);
   const gr=new THREE.Mesh(new THREE.CylinderGeometry(.08,.1,.45,8),lam(0xb08a64));gr.position.y=.22;ga.add(gr);
   const gc=new THREE.Mesh(new THREE.CylinderGeometry(.06,.12,.6,8),lam(0x6a4a2a));gc.position.y=.7;ga.add(gc);g.add(ga);
+ }else if(d.kind=='dragon'&&MDL.dragon){
+  g.add(glbDragon(u,ad));
  }else if(d.kind=='dragon'){
   const c1=0x8a2a2a,c2=0x5a1a1a,cb=0xd8b46a;
   ad(new THREE.CylinderGeometry(.34,.4,.12,10),0x4a4238,0,.06,0);
@@ -1136,7 +1164,7 @@ function mkModel(k,lv,br){
   for(const s of[-1,1]){const sp=ad(new THREE.ConeGeometry(.04,.14,6),0x6a5a48,0,1.06,s*.32);sp.rotation.x=-s*.5;ad(bx(.18,.07,.16),0x5a3a22,.02,.03,s*.15)}
   for(const y of[.62,.7])ad(bx(.01,.01,.14),0x6a3a2a,.3,y,.08).visible=false;
   ad(bx(.02,.09,.01),0x7a3a2a,.28,.82,.08);ad(bx(.02,.07,.01),0x7a3a2a,.285,.76,.1);
- }else if(d.kind=='dragon'){
+ }else if(d.kind=='dragon'&&!u.drg){
   for(const x of[-.3,-.18,-.06,.06,.18]){const sp=ad(new THREE.ConeGeometry(.045,.13,5),0x3a1010,x,.8-.02*Math.abs(x)*2,0);sp.rotation.z=-.15}
   for(const s of[-1,1]){const h=ad(new THREE.ConeGeometry(.035,.2,6),0xe8dcc0,.55,1.17,s*.09);h.rotation.z=.6;ad(sph(.026),0xffd030,.71,1.05,s*.1,0xffa010);ad(sph(.012),0x111111,.725,1.05,s*.1)}
   for(const s of[-1,1])for(const x of[.2,-.2])for(let i=-1;i<=1;i++){const cl=ad(new THREE.ConeGeometry(.012,.045,4),0xe8dcc0,x+.07,.08,s*.2+i*.03);cl.rotation.z=-Math.PI/2}
@@ -1261,6 +1289,7 @@ function pvRender(){
  if(k==null)return;
  const w=pvC.clientWidth,h=pvC.clientHeight;
  if(w&&h&&(w!==pvW||h!==pvH)){pvW=w;pvH=h;PR.setPixelRatio(Math.min(devicePixelRatio||1,2));PR.setSize(w,h,false);pcam.aspect=w/h;pcam.updateProjectionMatrix()}
+ {const pu=pRoot.children[0]&&pRoot.children[0].userData;if(pu&&pu.drg)pu.wfl.value=.25+.45*Math.sin(tm*2.2)}
  pRoot.rotation.y=tm*.9;PR.render(ps,pcam);
 }
 const SHP={s:SPH,c:CON,y:CYU,b:BXU},MEYE=new THREE.MeshBasicMaterial({color:0xffe45a}),MBONE=lam(0xd8caa0),MPIP=new THREE.MeshBasicMaterial({color:0xffd84a}),TOR=new THREE.TorusGeometry(.25,.03,6,14),MSTUN=new THREE.MeshBasicMaterial({color:0xffffc8});
@@ -1954,8 +1983,8 @@ mkE(c);S.en.push(c);
     hit(b,dmg(t)*(b.e.air?fmv:1)*(cr?1+d.cr.m:1),d.ap,fa?1:0);
     if(fa){b.burn=3;b.bdps=dmg(t)*d.f*.35;b.bk=t.k}
     burst(b.x,b.y,cr?'#ffe27a':fa?'#ff8a2a':d.col,cr?8:2,b.e.air?1:.4);
-    const dr=d.kind=='dragon',ox=dr?t.x+Math.cos(t.a)*.8:t.x,oy=dr?t.y+Math.sin(t.a)*.8:t.y;
-    S.fx.push({m:beam(ox,oy,b.x,b.y,hex(cr?'#ffe27a':fa?'#ff7a20':dr?'#ff7a3a':d.col),cr?.07:dr?.11:d.ap>.5?.07:.03,dr?1:0),t:.1,o:1,L:.1});if(dr)flash(ox,oy,.4,'#ff8a3a',.7,.15);
+    const dr=d.kind=='dragon',mf=t.u.mf||.8,ox=dr?t.x+Math.cos(t.a)*mf:t.x,oy=dr?t.y+Math.sin(t.a)*mf:t.y;
+    S.fx.push({m:beam(ox,oy,b.x,b.y,hex(cr?'#ffe27a':fa?'#ff7a20':dr?'#ff7a3a':d.col),cr?.07:dr?.11:d.ap>.5?.07:.03,dr?(t.u.mh||1):0),t:.1,o:1,L:.1});if(dr)flash(ox,oy,.4,'#ff8a3a',.7,.15);
    }
   }
   for(const c of S.en)if(!c.dead)stepE(c,dt);
@@ -2009,6 +2038,7 @@ function render(){
    if(u.flame)u.flame.scale.set(1+.5*sw,1+1.5*sw,1+.5*sw);
    if(u.wL){const f=Math.sin(tm*3+t.c)*.3;u.wL.rotation.x=-.45+f;u.wR.rotation.x=.45-f}
    if(u.jaw)u.jaw.rotation.z=-.5*sw;
+   if(u.drg){u.wfl.value=.25+.45*Math.sin(tm*(2.2+4*sw)+t.c);u.drg.position.y=.14+.06*Math.sin(tm*2+t.c);u.drg.position.x=.06*sw;u.drg.rotation.z=-.12*sw}
    if(u.orb)u.orb.scale.setScalar(1+.8*sw);
    if(u.ring)u.ring.rotation.y=tm*3;
    if(u.fl)u.fl.position.y=.64+.06*Math.sin(tm*2+t.c);
@@ -2238,7 +2268,7 @@ function sync(){
  else if(end){oh='';showLb()}
  else if(!MODE)oh='<h2>Välj spelläge</h2><div style="display:flex;gap:10px"><button data-a="m:pc" style="padding:12px 18px">🖥️ Dator<br><small>Mus och tangentbord</small></button><button data-a="m:mob" style="padding:12px 18px">📱 Mobil<br><small>Pekskärm, liggande läge</small></button></div>';
  else if(S.paused&&S.cheat){const ic='style="width:110px;font:inherit;padding:4px 6px;color:#f0e2b0;background:#0d0a07;border:1px solid #6e5a38;border-radius:3px;user-select:text;-webkit-user-select:text"';oh=`<h2>Fusk</h2><div style="display:grid;grid-template-columns:auto auto;gap:6px 10px;align-items:center;text-align:left"><label for="ch-g">Guld</label><input id="ch-g" type="number" min="0" step="100" value="${S.gold|0}" ${ic}><label for="ch-p">Poäng</label><input id="ch-p" type="number" min="0" step="1000" value="${S.score|0}" ${ic}><label for="ch-l">Nivå (1–${MAXL})</label><input id="ch-l" type="number" min="1" max="${MAXL}" step="1" value="${S.L}" ${ic}></div><small style="color:#bfb08a">Byter du nivå avbryts pågående strid och du hamnar i byggläge.</small><div style="display:flex;gap:8px"><button data-a="capply">Använd</button><button data-a="cback">Tillbaka</button></div>`}
- else if(S.paused)oh='<h2>Meny</h2><button data-a="res">Fortsätt</button><button data-a="cheat">Fusk</button><button data-a="mode">Byt spelläge</button><button data-a="new">Starta om</button>';
+ else if(S.paused)oh='<h2>Meny</h2><button data-a="res">Fortsätt</button><button data-a="cheat">Fusk</button><button data-a="mode">Byt spelläge</button><button data-a="new">Starta om</button><small style="color:#bfb08a;opacity:.75;max-width:280px">Drakmodell: "Red Dragon" av Tomek Zamojski (CC-BY 3.0), via Poly Pizza</small>';
  $('ov').classList.toggle('on',!!oh);setH('ov',oh);
  if(S.base&&S.sel.length){S.base=0;CAMLOCK=0}
  const sl=S.sel.length==1?S.sel[0]:null;let h,p;
@@ -2759,7 +2789,7 @@ function loop(ts){
  render();requestAnimationFrame(loop);
 }
 {const lb2=document.createElement('div');lb2.id='lb';wr.appendChild(lb2);const sc2=document.createElement('div');sc2.id='sc';wr.appendChild(sc2);const ib=document.createElement('div');ib.id='ib';wr.appendChild(ib);const bx=document.createElement('div');bx.id='bx';wr.appendChild(bx);const wb=document.createElement('div');wb.id='wb';wr.appendChild(wb)}
-thumbs();reset();try{const m=localStorage.getItem('wh40kmode');if(m)setMode(m)}catch(x){}sync();
+thumbs();loadGLB();reset();try{const m=localStorage.getItem('wh40kmode');if(m)setMode(m)}catch(x){}sync();
 addEventListener('resize',()=>{rs();fitMenu()});
 requestAnimationFrame(t=>{last=t;rs();loop(t)});
 </script>
