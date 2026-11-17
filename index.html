@@ -421,7 +421,6 @@ const tc=document.createElement('canvas');tc.width=1904;tc.height=784;
  const b=tc.getContext('2d'),K=56;let sd=11;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
  const W=COLS*K,H=ROWS*K;
  b.lineWidth=1.5;
- for(let i=0;i<700;i++){const x=rnd()*W,y=rnd()*H,h=4+rnd()*5,s=(rnd()-.5)*3;b.strokeStyle='hsla('+(95+rnd()*20)+',42%,'+(30+rnd()*14)+'%,.45)';b.beginPath();b.moveTo(x,y);b.lineTo(x+s,y-h);b.stroke()}
  {const id=b.getImageData(0,0,W,H),D=id.data,hs=(x,y,z)=>{let h=(x*374761393+y*668265263+z*1274126177)|0;h=(h^(h>>>13))*1274126177|0;return((h^(h>>>16))>>>0)/4294967295},
   vn=(x,y,z)=>{const xi=Math.floor(x),yi=Math.floor(y),fx=x-xi,fy=y-yi,u=fx*fx*(3-2*fx),v=fy*fy*(3-2*fy);return(hs(xi,yi,z)*(1-u)+hs(xi+1,yi,z)*u)*(1-v)+(hs(xi,yi+1,z)*(1-u)+hs(xi+1,yi+1,z)*u)*v};
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
@@ -466,7 +465,52 @@ function pathOf(pts,P){P.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i+
 const SHORE0=outline(COLS/2+3.4,ROWS/2+3.4,3.0,.5,1.7);
 {const sh=new THREE.Shape();sh.moveTo(-70,-70);sh.lineTo(70,-70);sh.lineTo(70,70);sh.lineTo(-70,70);sh.lineTo(-70,-70);
  sh.holes.push(pathOf(SHORE0,new THREE.Path()));
- const outer=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),lam(0x15200f));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
+ const outer=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:spookyGround(),color:0xa8a8a8}));outer.position.y=-.22;outer.receiveShadow=true;sc.add(outer)}
+// Kuslig skogsmark: mörk mylla med mjuka fläckar, några rötter, glesa löv och enstaka bleka svampar. Enkel och sömlös, upprepas var 7:e ruta.
+function spookyGround(){
+ const S=512,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
+ let sd=91;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const wrap=(f)=>{for(const dx of[-S,0,S])for(const dy of[-S,0,S])f(dx,dy)};
+ x.fillStyle='#0d0e09';x.fillRect(0,0,S,S);
+ for(let i=0;i<16;i++){const px=r()*S,py=r()*S,rad=50+r()*110,col=['26,30,16','22,15,26','30,22,13','15,19,14'][i%4],a=.35+r()*.35;
+  wrap((dx,dy)=>{const g=x.createRadialGradient(px+dx,py+dy,0,px+dx,py+dy,rad);g.addColorStop(0,`rgba(${col},${a})`);g.addColorStop(1,`rgba(${col},0)`);x.fillStyle=g;x.fillRect(px+dx-rad,py+dy-rad,rad*2,rad*2)})}
+ x.lineCap='round';
+ for(let i=0;i<6;i++){const px=r()*S,py=r()*S,a=r()*6.3,l=30+r()*70,b=(r()-.5)*60,w=1+r()*2.5;x.strokeStyle=`rgba(${20+r()*14|0},${14+r()*10|0},${8+r()*6|0},.9)`;x.lineWidth=w;
+  wrap((dx,dy)=>{x.beginPath();x.moveTo(px+dx,py+dy);x.quadraticCurveTo(px+dx+Math.cos(a)*l/2-Math.sin(a)*b,py+dy+Math.sin(a)*l/2+Math.cos(a)*b,px+dx+Math.cos(a)*l,py+dy+Math.sin(a)*l);x.stroke()})}
+ const leaf=['58,40,22','70,48,26','46,40,26','60,30,24','34,30,20'];
+ for(let i=0;i<70;i++){const px=r()*S,py=r()*S,a=r()*3.14,w=2+r()*4,h=1+r()*2,col=leaf[i%leaf.length],al=.3+r()*.35;x.fillStyle=`rgba(${col},${al})`;
+  wrap((dx,dy)=>{x.beginPath();x.ellipse(px+dx,py+dy,w,h,a,0,6.3);x.fill()})}
+ for(let i=0;i<2;i++){const px=r()*S,py=r()*S,n=2+(r()*3|0);for(let k=0;k<n;k++){const ox=px+(r()-.5)*14,oy=py+(r()-.5)*14,rr=1.5+r()*2;
+  wrap((dx,dy)=>{x.fillStyle='rgba(150,160,130,.55)';x.beginPath();x.arc(ox+dx,oy+dy,rr,0,6.3);x.fill();x.fillStyle='rgba(190,210,160,.35)';x.beginPath();x.arc(ox+dx-.5,oy+dy-.5,rr*.5,0,6.3);x.fill()})}}
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1/7,1/7);t.anisotropy=4;return t}
+// Krypande markdimma i skogen runt banan
+const MIST=[];
+(function(){
+ let sd=113;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const mat=new THREE.MeshBasicMaterial({map:GLT,color:0x737e70,transparent:true,opacity:.19,depthWrite:false});
+ for(let i=0;i<46;i++){let x=0,z=0;for(let k=0;k<50;k++){x=(r()*2-1)*(HW+20);z=(r()*2-1)*(HH+16);if(Math.abs(x)>HW+5.5||Math.abs(z)>HH+5.5)break}
+  const m=new THREE.Mesh(GLG,mat),s=5+r()*6;m.position.set(x,.12+r()*.35,z);m.scale.set(s,1,s*(.6+r()*.5));m.rotation.y=r()*6;m.renderOrder=2;sc.add(m);
+  MIST.push({m,x,z,s,ph:r()*6.3,sp:.15+r()*.25})}
+})();
+// Tung, mörk dimma där skogen tar slut: genomskinliga lager i olika höjd som tätnar utåt (inget syns av spelplanen),
+// plus stora mörka dimmoln som driver långsamt längs kanten.
+(function(){
+ const A=HW+10,B=HH+8,RAMP=11,W=2*(HW+48),D=2*(HH+38),CW=256,CH=Math.round(CW*D/W);
+ const c=document.createElement('canvas');c.width=CW;c.height=CH;const x=c.getContext('2d'),img=x.createImageData(CW,CH);
+ for(let j=0;j<CH;j++)for(let i=0;i<CW;i++){const wx=(i+.5)/CW*W-W/2,wz=(j+.5)/CH*D-D/2,dx=Math.max(0,Math.abs(wx)-A),dz=Math.max(0,Math.abs(wz)-B),d=Math.hypot(dx,dz),k=Math.min(1,d/RAMP),a=k*k*(3-2*k);
+  const p=(j*CW+i)*4;img.data[p]=img.data[p+1]=img.data[p+2]=255;img.data[p+3]=a*255}
+ x.putImageData(img,0,0);const tx=new THREE.CanvasTexture(c);
+ const geo=new THREE.PlaneGeometry(W,D).rotateX(-Math.PI/2);
+ for(const[y,o]of[[.15,.5],[.8,.4],[1.6,.35],[2.5,.35],[3.5,.35],[4.6,.4]]){
+  const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:tx,color:0x0e0910,transparent:true,opacity:o,depthWrite:false}));m.position.y=y;m.renderOrder=3;sc.add(m)}
+ let sd=211;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ const mat=new THREE.MeshBasicMaterial({map:GLT,color:0x120c14,transparent:true,opacity:.55,depthWrite:false});
+ for(let i=0;i<40;i++){const side=i%4,t=r()*2-1,o=A+2+r()*8;let px,pz;
+  if(side<2){px=t*(A+6);pz=(side?1:-1)*(B+2+r()*8)}else{px=(side==2?1:-1)*o;pz=t*(B+6)}
+  const m=new THREE.Mesh(GLG,mat),s=9+r()*8;m.position.set(px,.5+r()*2.5,pz);m.scale.set(s,1,s*(.6+r()*.4));m.rotation.y=r()*6;m.renderOrder=3;sc.add(m);
+  MIST.push({m,x:px,z:pz,s,ph:r()*6.3,sp:.08+r()*.12})}
+})();
+function mistStep(){for(const q of MIST){const t=tm*q.sp+q.ph;q.m.position.x=q.x+Math.sin(t)*1.6;q.m.position.z=q.z+Math.cos(t*.7)*1.1;q.m.rotation.y+=.0006;const k=1+.12*Math.sin(t*1.3);q.m.scale.x=q.s*k}}
 const MINEPOS=[[-14,-12.2],[0,-12.2],[14,-12.2],[-11,12.2],[4,12.2],[11,12.6],[-22.6,2.6],[22.6,-2.6]];
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
 const WT={value:0};
@@ -479,7 +523,8 @@ function sway(m){if(m.userData.sw)return;m.userData.sw=1;m.onBeforeCompile=sh=>{
  transformed.x+=(sin(ph_)*a_+sin(ph_*2.7+1.3)*a_*.25)/sc_;
  transformed.z+=(cos(ph_*.83+.6)*a_*.6)/sc_;}
  #endif`)}}
-function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5,1.4,1.82]:[.3,.95,1.5,1.175,1.675];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);(q.b?FOR.m2:FOR.m).forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true})}
+function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5,1.4,1.82]:[.3,.95,1.5,1.175,1.675];d.rotation.set(0,q.ry,0);d.scale.setScalar(s);(q.b?FOR.m2:FOR.m).forEach((m,k)=>{d.position.set(q.x,ys[k]*s,q.z);d.updateMatrix();m.setMatrixAt(q.i,d.matrix);m.instanceMatrix.needsUpdate=true});
+ const G=q.b?FOR.gm2:FOR.gm;if(G&&q.v!=null){d.position.set(q.x,0,q.z);d.updateMatrix();G[q.v].setMatrixAt(q.gi,d.matrix);G[q.v].instanceMatrix.needsUpdate=true}}
 (function(){
  let sd=5;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D();
  const N=68,NL=68,M=0,c1=new THREE.InstancedMesh(new THREE.ConeGeometry(.265,.46,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),c2=new THREE.InstancedMesh(new THREE.ConeGeometry(.19,.36,7),new THREE.MeshLambertMaterial({color:0xf4f8ff,emissive:0x2a3340,transparent:true,opacity:0}),200),trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.08,.12,.6,6),lam(0x5a3a22),N),f1=new THREE.InstancedMesh(new THREE.ConeGeometry(.5,.9,7),lam(0x2f5a2a),N),f2=new THREE.InstancedMesh(new THREE.ConeGeometry(.36,.7,7),lam(0x3a6a30),N),rk=new THREE.InstancedMesh(new THREE.DodecahedronGeometry(.4),lam(0x77736a),M);
@@ -532,11 +577,13 @@ function treeSet(q,g){q.g=g;const s=Math.max(.001,q.s*g),d=FORD,ys=q.b?[.4,1,1.5
 })();
 (function(){
  let sd=41;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647,dm=new THREE.Object3D(),N=240,BR=4;
- const mat=lam(0x3b3229),tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.05,.13,2.4,6),mat,N),bg=new THREE.InstancedMesh(new THREE.CylinderGeometry(.015,.045,1,5).translate(0,.5,0),mat,N*BR),bg2=new THREE.InstancedMesh(new THREE.CylinderGeometry(.01,.025,.6,4).translate(0,.3,0),mat,N*BR);
- let n=0;
+ const mat=lam(0x332a22),tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.05,.13,2.4,6),mat,N),bg=new THREE.InstancedMesh(new THREE.CylinderGeometry(.015,.045,1,5).translate(0,.5,0),mat,N*BR),bg2=new THREE.InstancedMesh(new THREE.CylinderGeometry(.01,.025,.6,4).translate(0,.3,0),mat,N*BR);
+ let n=0,gone=0;
  const DP=[];let tries=0;
- while(n<N&&tries++<4000){const x=(rnd()*2-1)*(HW+36),z=(rnd()*2-1)*(HH+27);if(Math.abs(x)<HW+13&&Math.abs(z)<HH+10.5)continue;
+ while(n+gone<N&&tries++<4000){const x=(rnd()*2-1)*(HW+36),z=(rnd()*2-1)*(HH+27);if(Math.abs(x)<HW+13&&Math.abs(z)<HH+10.5)continue;
   if(DP.some(q=>Math.hypot(x-q[0],z-q[1])<1.5))continue;DP.push([x,z]);
+  // längst ut i den täta dimman (se dimman nedan) står bara var fjärde träd kvar
+  if(Math.hypot(Math.max(0,Math.abs(x)-(HW+10)),Math.max(0,Math.abs(z)-(HH+8)))>8&&rnd()<.75){gone++;continue}
   const s=.8+rnd()*.9,ry=rnd()*6,lean=(rnd()-.5)*.12;
   dm.position.set(x,1.2*s,z);dm.rotation.set(lean,ry,lean*.6);dm.scale.setScalar(s);dm.updateMatrix();tr.setMatrixAt(n,dm.matrix);
   for(let k=0;k<BR;k++){const h=(1.1+k*.35+rnd()*.2)*s,yaw=ry+k*1.7+rnd()*.8,tilt=.75+rnd()*.5;
@@ -574,11 +621,15 @@ const RIMP=outline(COLS/2+.45,ROWS/2+.45,1.0,.25,.6);
  const gvt=new THREE.CanvasTexture(gvc);gvt.wrapS=gvt.wrapT=THREE.RepeatWrapping;gvt.repeat.set(.5,.5);
  const cap=new THREE.Mesh(new THREE.ShapeGeometry(sh).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:gvt}));cap.position.y=-.02;cap.receiveShadow=true;sc.add(cap)}
 const MOATW=3.2;
-const WTX=(()=>{const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');x.fillStyle='#143247';x.fillRect(0,0,128,128);let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;x.lineWidth=2;for(let i=0;i<46;i++){const px=rnd()*128,py=rnd()*128,l=8+rnd()*18;x.strokeStyle='rgba(150,200,230,'+(.05+rnd()*.1)+')';x.beginPath();x.moveTo(px,py);x.quadraticCurveTo(px+l/2,py-3,px+l,py);x.stroke()}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(10,5);return t})();
+// Stilla, grumligt träskvatten: bara mjuka fläckar som långsamt flyter förbi (sömlöst)
+const WTX=(()=>{const S=256,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ x.fillStyle='#173540';x.fillRect(0,0,S,S);
+ for(let i=0;i<22;i++){const px=rnd()*S,py=rnd()*S,rad=30+rnd()*60,col=rnd()<.5?'14,34,36':'34,62,70',a=.25+rnd()*.3;for(const dx of[-S,0,S])for(const dy of[-S,0,S]){const g=x.createRadialGradient(px+dx,py+dy,0,px+dx,py+dy,rad);g.addColorStop(0,`rgba(${col},${a})`);g.addColorStop(1,`rgba(${col},0)`);x.fillStyle=g;x.fillRect(px+dx-rad,py+dy-rad,rad*2,rad*2)}}
+ const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(6,3);return t})();
 let WTR=null,WTR2=null,TIDE=-.36;
-const WTX2=WTX.clone();WTX2.needsUpdate=true;WTX2.repeat.set(7,3.5);
-{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040b12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);WTR=water;
- {const w2=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX2,transparent:true,opacity:.55,depthWrite:false,emissive:0x061622}));w2.position.y=-.352;sc.add(w2);WTR2=w2}
+const WTX2=WTX.clone();WTX2.needsUpdate=true;WTX2.repeat.set(4.3,2.6);WTX2.rotation=.35;
+{const water=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX,emissive:0x040c12}));water.position.y=-.36;water.receiveShadow=true;sc.add(water);WTR=water;
+ {const w2=new THREE.Mesh(new THREE.PlaneGeometry(COLS+.6+MOATW*2+2,ROWS+.6+MOATW*2+2).rotateX(-Math.PI/2),new THREE.MeshLambertMaterial({map:WTX2,transparent:true,opacity:.5,depthWrite:false,emissive:0x05121c}));w2.position.y=-.352;sc.add(w2);WTR2=w2}
  const bank=new THREE.Mesh(new THREE.BoxGeometry(COLS+1.2+MOATW*2+2,.16,ROWS+1.2+MOATW*2+2),lam(0x3a3224));bank.position.y=-.66;sc.add(bank)}
 const FOAM=[],FP1=[[0,-.02],[.3,-.13],[.6,-.3],[.9,-.52]],FP2=[[0,-.22],[.35,-.38],[.7,-.52],[1,-.66]];
 const prof=(P,y)=>{if(y>=P[0][1])return P[0][0];for(let k=1;k<P.length;k++)if(y>=P[k][1]){const a=P[k-1],b=P[k],t=(a[1]-y)/(a[1]-b[1]);return a[0]+(b[0]-a[0])*t}return P[P.length-1][0]};
@@ -607,13 +658,18 @@ const AQ=[];let PADB=null,PADS=[],WPTS=[],WOK=()=>true;
  const ins=(p,x,z)=>{let c=false;for(let i=0,j=p.length-1;i<p.length;j=i++){const[xi,zi]=p[i],[xj,zj]=p[j];if((zi>z)!=(zj>z)&&x<(xj-xi)*(z-zi)/(zj-zi)+xi)c=!c}return c};
  const okp=(x,z,m)=>{if(Math.abs(x)>HW-1.5&&Math.abs(Math.abs(z)-5.5)<1.3)return false;for(const[a,b]of[[m,0],[-m,0],[0,m],[0,-m]]){if(!ins(SH,x+a,-(z+b))||ins(RIM,x+a,-(z+b)))return false}return true};
  const pts=(n,m,minD,arr)=>{const o=[];let t=0;while(o.length<n&&t++<6000){const x=(rnd()*2-1)*(HW+4.2),z=(rnd()*2-1)*(HH+4.2);if(!okp(x,z,m))continue;if(arr.concat(o).some(q=>Math.hypot(q[0]-x,q[1]-z)<minD))continue;o.push([x,z])}return o};
- const pads=pts(10,.35,2.5,[]),weeds=pts(46,.2,.9,pads);PADS=pads;WPTS=pts(90,.5,.7,[]);WOK=(x,z)=>okp(x,z,.3);
+ const pads=pts(5,.35,2.5,[]),weeds=pts(20,.2,.9,pads);PADS=pads;WPTS=pts(90,.5,.7,[]);WOK=(x,z)=>okp(x,z,.3);
  const pg=new THREE.CircleGeometry(.3,14,.5,5.5).rotateX(-Math.PI/2),pm=new THREE.InstancedMesh(pg,new THREE.MeshLambertMaterial({color:0xffffff,side:THREE.DoubleSide}),pads.length),col=new THREE.Color();
- const pd=[];pads.forEach((p,i)=>{const s=.6+rnd()*.8,ry=rnd()*6;pd.push({x:p[0],z:p[1],s,ry,ph:rnd()*6,f:.8+rnd()*.6});dm.position.set(p[0],-.345,p[1]);dm.scale.set(s,1,s);dm.rotation.set(0,ry,0);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.5,.22+rnd()*.1);pm.setColorAt(i,col)});
- const fli=pads.map((_,i)=>i).filter(()=>rnd()<.25),fl=fli.map(i=>pads[i]),fm=new THREE.InstancedMesh(new THREE.SphereGeometry(.07,7,5),new THREE.MeshLambertMaterial({color:0xffb0cc,emissive:0x4a1a28}),Math.max(1,fl.length));
- fl.forEach((p,i)=>{dm.position.set(p[0],-.31,p[1]);dm.scale.set(1,.7,1);dm.rotation.set(0,0,0);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});fm.count=fl.length;PADB={pm,fm,pd,fli,dm};
- const NW=weeds.length*5,wm=new THREE.InstancedMesh(new THREE.ConeGeometry(.035,1,4).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0xffffff}),NW);let wi=0;
- weeds.forEach(p=>{for(let k=0;k<5;k++){const h=.45+rnd()*.35,a=rnd()*6,t=.12+rnd()*.28;dm.position.set(p[0]+(rnd()-.5)*.25,-.49,p[1]+(rnd()-.5)*.25);dm.scale.set(1,h,1);dm.rotation.set(Math.sin(a)*t,0,Math.cos(a)*t);dm.updateMatrix();wm.setMatrixAt(wi,dm.matrix);col.setHSL(.3+rnd()*.06,.5,.16+rnd()*.1);wm.setColorAt(wi++,col)}});
+ const pd=[];pads.forEach((p,i)=>{const s=.4+rnd()*.3,ry=rnd()*6;pd.push({x:p[0],z:p[1],s,ry,ph:rnd()*6,f:.8+rnd()*.6});dm.position.set(p[0],-.345,p[1]);dm.scale.set(s,1,s);dm.rotation.set(0,ry,0);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix);col.setHSL(.27+rnd()*.07,.5,.22+rnd()*.1);pm.setColorAt(i,col)});
+ // en näckrosblomma på varje blad: två kransar med spetsiga kronblad och en gul mitt
+ const flower=(()=>{const parts=[],pet=new THREE.SphereGeometry(1,6,4),cOut=new THREE.Color(0xf6dce8),cIn=new THREE.Color(0xfff2f6),cMid=new THREE.Color(0xffd23a),m=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler();
+  const add=(n,len,tilt,off,c,y)=>{for(let k=0;k<n;k++){const a=k/n*6.2832+off;e.set(0,-a,tilt);q.setFromEuler(e);const g=pet.clone().translate(1,0,0).scale(len,len*.32,len*.4);g.applyMatrix4(m.makeRotationFromQuaternion(q));g.translate(0,y,0);parts.push({g,col:c})}};
+  add(8,.05,.35,0,cOut,0);add(6,.038,.75,.3,cIn,.008);parts.push({g:new THREE.SphereGeometry(.018,6,4).translate(0,.02,0),col:cMid});
+  return glbBake(parts)})();
+ const fli=pads.map((_,i)=>i),fm=new THREE.InstancedMesh(flower,new THREE.MeshLambertMaterial({vertexColors:true,emissive:0x2a1a20}),Math.max(1,fli.length));
+ fli.forEach((pi,i)=>{const p=pads[pi];dm.position.set(p[0],-.33,p[1]);dm.scale.set(1,1,1);dm.rotation.set(0,0,0);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});fm.count=fli.length;PADB={pm,fm,pd,fli,dm};
+ const NW=weeds.length*4,wm=new THREE.InstancedMesh(new THREE.ConeGeometry(.035,1,4).translate(0,.5,0),new THREE.MeshLambertMaterial({color:0xffffff}),NW);let wi=0;
+ weeds.forEach(p=>{for(let k=0;k<4;k++){const h=.45+rnd()*.35,a=rnd()*6,t=.12+rnd()*.28;dm.position.set(p[0]+(rnd()-.5)*.25,-.49,p[1]+(rnd()-.5)*.25);dm.scale.set(1,h,1);dm.rotation.set(Math.sin(a)*t,0,Math.cos(a)*t);dm.updateMatrix();wm.setMatrixAt(wi,dm.matrix);col.setHSL(.3+rnd()*.06,.5,.16+rnd()*.1);wm.setColorAt(wi++,col)}});
  for(const m of[pm,fm,wm]){m.frustumCulled=false;sc.add(m);AQ.push(m)}
 })();
 let ICE=0;
@@ -845,7 +901,6 @@ function glbDragon(u,ad){
  u.wfl={value:.3};
  const o=u.drg=new THREE.Group(),inner=new THREE.Group();inner.rotation.y=Math.PI/2;inner.scale.setScalar(.095);o.add(inner);o.position.y=.14;
  for(const p of MDL.dragon){const m=new THREE.Mesh(p.geo,glbWingMat(p.col,u.wfl));m.userData.em=0;inner.add(m)}
- u.orb=new THREE.Mesh(sph(.028),new THREE.MeshLambertMaterial({color:0xffb03a,emissive:0xff6a10}));u.orb.userData.em=0xff6a10;u.orb.position.set(.6,.3,0);o.add(u.orb);
  u.mf=.6;u.mh=.5;return o}
 function loadGLB(){
  if(!THREE.GLTFLoader)return;
@@ -854,7 +909,60 @@ function loadGLB(){
   gl.scene.traverse(o=>{if(o.isMesh)parts.push({geo:o.geometry.clone().applyMatrix4(o.matrixWorld),col:o.material.color.clone().convertLinearToSRGB()})});
   if(!parts.length)return;MDL.dragon=parts;
   thumbs();pvCur=null;for(const t of S.tw)if(T[t.k].kind=='dragon')remodel(t);sync();
- },undefined,e=>console.warn('Kunde inte ladda models/Draken.glb – använder den enkla draken',e))}
+ },undefined,e=>console.warn('Kunde inte ladda models/Draken.glb – använder den enkla draken',e));
+ glbLoad('models/trees1.glb',gl=>forestSwap(glbPines(gl),false));
+ glbLoad('models/trees2.glb',gl=>{const P=glbMeshes(gl);forestSwap([glbNorm(glbBake(P.map(p=>({g:p.g,col:p.col}))),2)],true)});
+ glbLoad('models/base.glb',baseSwap);
+}
+// ----- Skogen: trees1 (granar), trees2 (lövträd), båda av Quaternius (CC0) -----
+function glbLoad(u,cb){new THREE.GLTFLoader().load(u,gl=>{try{cb(gl)}catch(e){console.warn('Fel i '+u,e)}},undefined,e=>console.warn('Kunde inte ladda '+u+' – behåller de enkla träden',e))}
+// Basen: "Temple" av Quaternius (CC0) ersätter den enkla borgen. Den lysande kristallen svävar kvar ovanför taket.
+function baseSwap(gl){
+ const P=glbMeshes(gl);if(!P.length)return;
+ const bb=new THREE.Box3();for(const p of P){p.g.computeBoundingBox();bb.union(p.g.boundingBox)}
+ const c=bb.getCenter(new THREE.Vector3()),s=1.25/Math.max(bb.max.x-bb.min.x,bb.max.z-bb.min.z);
+ base.children.forEach(o=>{if(o.isMesh&&o!==baseCore)o.visible=false});
+ bMesh.length=0;
+ for(const p of P){const g=p.g.translate(-c.x,-bb.min.y,-c.z).scale(s,s,s);g.computeBoundingSphere();
+  const m=new THREE.Mesh(g,new THREE.MeshLambertMaterial({color:p.col}));m.castShadow=m.receiveShadow=true;base.add(m);
+  m.userData.c0=m.material.color.clone();m.userData.e0=m.material.emissive.clone();bMesh.push(m)}
+ base.userData.coreY=(bb.max.y-bb.min.y)*s+.28}
+function glbMeshes(gl){const P=[];gl.scene.updateMatrixWorld(true);gl.scene.traverse(o=>{if(o.isMesh)P.push({g:o.geometry.clone().applyMatrix4(o.matrixWorld),m:o.material,col:o.material.color.clone().convertLinearToSRGB()})});return P}
+// delar en geometri i sammanhängande bitar (listor med vertexindex, tre per triangel)
+function glbIslands(gg){
+ const pos=gg.attributes.position,n=pos.count,idx=gg.index?gg.index.array:Array.from({length:n},(_,i)=>i);
+ const par=new Int32Array(n).map((_,i)=>i),f=i=>{while(par[i]!==i){par[i]=par[par[i]];i=par[i]}return i},un=(a,b)=>{a=f(a);b=f(b);if(a!==b)par[a]=b};
+ const key=new Map();for(let i=0;i<n;i++){const k=Math.round(pos.getX(i)*1e4)+','+Math.round(pos.getY(i)*1e4)+','+Math.round(pos.getZ(i)*1e4);if(key.has(k))un(i,key.get(k));else key.set(k,i)}
+ for(let t=0;t<idx.length;t+=3){un(idx[t],idx[t+1]);un(idx[t],idx[t+2])}
+ const comp=new Map();for(let t=0;t<idx.length;t+=3){const r=f(idx[t]);if(!comp.has(r))comp.set(r,[]);comp.get(r).push(idx[t],idx[t+1],idx[t+2])}
+ return[...comp.values()]}
+// slår ihop delar till en geometri med vertexfärger: [{g,tri?,col}]
+function glbBake(list){
+ const all=list.map(p=>({...p,tri:p.tri||(p.g.index?Array.from(p.g.index.array):Array.from({length:p.g.attributes.position.count},(_,i)=>i))}));
+ let n=0;for(const p of all)n+=p.tri.length;const P=new Float32Array(n*3),N=new Float32Array(n*3),C=new Float32Array(n*3);let k=0;
+ for(const p of all){const a=p.g.attributes.position,b=p.g.attributes.normal;for(const i of p.tri){P.set([a.getX(i),a.getY(i),a.getZ(i)],k*3);N.set([b.getX(i),b.getY(i),b.getZ(i)],k*3);C.set([p.col.r,p.col.g,p.col.b],k*3);k++}}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(P,3));g.setAttribute('normal',new THREE.BufferAttribute(N,3));g.setAttribute('color',new THREE.BufferAttribute(C,3));return g}
+// står på marken, centrerad, med höjden H
+function glbNorm(g,H){g.computeBoundingBox();const b=g.boundingBox,c=b.getCenter(new THREE.Vector3()),s=H/(b.max.y-b.min.y);g.translate(-c.x,-b.min.y,-c.z);g.scale(s,s,s);g.computeBoundingSphere();return g}
+// trees1 är en grupp med tio granar: dela upp i en gran per stam
+function glbPines(gl){
+ const P=glbMeshes(gl),wood=P.find(p=>/wood/i.test(p.m.name))||P[0],tr=[];
+ const ctr=(g,t)=>{let x=0,z=0;for(const i of t){x+=g.attributes.position.getX(i);z+=g.attributes.position.getZ(i)}return[x/t.length,z/t.length]};
+ for(const t of glbIslands(wood.g))tr.push({c:ctr(wood.g,t),parts:[{g:wood.g,tri:t,col:wood.col}]});
+ for(const p of P)if(p!==wood)for(const t of glbIslands(p.g)){const c=ctr(p.g,t);let best=tr[0],bd=1e9;for(const q of tr){const d=Math.hypot(q.c[0]-c[0],q.c[1]-c[1]);if(d<bd){bd=d;best=q}}best.parts.push({g:p.g,tri:t,col:p.col})}
+ return tr.map(q=>glbNorm(glbBake(q.parts),1.9))}
+// byter granarna (b=false) eller lövträden (b=true) mot de nya modellerna, en InstancedMesh per variant
+function forestSwap(geos,b){
+ if(!geos.length)return;const old=b?FOR.m2:FOR.m,mat=new THREE.MeshLambertMaterial({vertexColors:true}),col=new THREE.Color();sway(mat);
+ let sd=b?77:31;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ // varje variant får exakt de träd som använder den, så inga osynliga träd ritas
+ let trs=FOR.tr.filter(q=>!!q.b===b);
+ if(b){const drop=new Set(trs.filter((_,j)=>j%5!=0));trs=trs.filter(q=>!drop.has(q));FOR.tr=FOR.tr.filter(q=>!drop.has(q))}// bara vart femte lövträd (trees2 är tung)
+ const cnt=geos.map(()=>0);trs.forEach((q,j)=>{q.v=j%geos.length;q.gi=cnt[q.v]++});
+ const ms=geos.map((g,v)=>{const m=new THREE.InstancedMesh(g,mat,Math.max(1,cnt[v]));m.count=cnt[v];m.castShadow=m.receiveShadow=true;const k=b?.7:.58;for(let i=0;i<m.count;i++){col.setRGB(k+rnd()*.15,k+rnd()*.15,k+rnd()*.12);m.setColorAt(i,col)}sc.add(m);return m});
+ old.slice(0,3).forEach(m=>{m.visible=false});
+ if(b)FOR.gm2=ms;else FOR.gm=ms;
+ for(const q of trs)treeSet(q,q.g)}
 function mkModel(k,lv,br){
  lv=lv||1;const d=T[k],g=new THREE.Group(),u=g.userData;
  {const sh=new THREE.Mesh(DISC,bas(0x000000,.12));sh.position.y=.02;sh.scale.set(.5,1,.5);g.add(sh)}
@@ -2011,7 +2119,7 @@ function mini(){
  mmc.fillStyle='#3cff3c';mmc.fillRect(S.h.x*K-2,S.h.y*K-2,4,4);
 }
 function render(){
- hmkStep();WTX.offset.set(tm*.03,tm*.018);WTX2.offset.set(-tm*.024,tm*.032);
+ hmkStep();WTX.offset.set(tm*.014,Math.sin(tm*.25)*.04);WTX2.offset.set(-tm*.01,tm*.012+Math.sin(tm*.31)*.03);
  const h=S.h,hp=tm<S.happy,dn=S.dance;
  hm.position.set(h.x-HW,0,h.y-HH);hm.rotation.y=dn?tm*4:-h.a;
  const mvg=h.px!=null&&Math.hypot(h.x-h.px,h.y-h.py)>.001;h.px=h.x;h.py=h.y;
@@ -2072,7 +2180,7 @@ function render(){
  }
  gridM.material.opacity+=((S.bt!=null?.5:0)-gridM.material.opacity)*.2;gridM.visible=gridM.material.opacity>.01;
  prings.forEach((r,i)=>{r.rotation.z=tm*(i%2?-2:2.4)});
- bring.position.y=.9+.15*Math.sin(tm*2);bring.rotation.z=tm;baseDmg(.016);if(baseCore){baseCore.rotation.y=tm*1.6;baseCore.position.y=1.84+.04*Math.sin(tm*3)}for(const f of baseFl)f.scale.set(1,.85+.25*Math.sin(tm*9+f.userData.ph),1);bcn.material.opacity=.1+.04*Math.sin(tm*3);
+ bring.position.y=.9+.15*Math.sin(tm*2);bring.rotation.z=tm;baseDmg(.016);if(baseCore){baseCore.rotation.y=tm*1.6;baseCore.position.y=(base.userData.coreY||1.84)+.04*Math.sin(tm*3)}for(const f of baseFl)f.scale.set(1,.85+.25*Math.sin(tm*9+f.userData.ph),1);bcn.material.opacity=.1+.04*Math.sin(tm*3);
  portals.forEach(p=>{p.scale.setScalar(.35+.06*Math.sin(tm*4)+NIGHT*(.15+.08*Math.sin(tm*9)));p.material.color.setRGB(.77+.23*NIGHT,.37-.2*NIGHT,.82-.62*NIGHT)});
  S.sel.forEach((s,i)=>{const m=rings[i]||(rings[i]=mkRing());m.visible=true;m.position.set(s.x-HW,.06,s.y-HH);const q=s===h?.5:.6;m.scale.set(q,1,q)});
  for(let i=S.sel.length;i<rings.length;i++)rings[i].visible=false;
@@ -2712,7 +2820,7 @@ function padStep(){if(!PADB)return;const{pm,fm,pd,fli,dm}=PADB;
  pd.forEach((q,i)=>{const t=tm*q.f+q.ph;q.y=-.33+Math.sin(t*1.7)*.014+Math.sin(t*2.9+1)*.005;q.rx=Math.sin(t*1.3)*.04;q.rz=Math.cos(t*1.1+.5)*.04;
   dm.position.set(q.x,q.y,q.z);dm.scale.set(q.s,1,q.s);dm.rotation.set(q.rx,q.ry+Math.sin(t*.4)*.12,q.rz);dm.updateMatrix();pm.setMatrixAt(i,dm.matrix)});
  pm.instanceMatrix.needsUpdate=true;
- fli.forEach((pi,i)=>{const q=pd[pi];dm.position.set(q.x,q.y+.035,q.z);dm.scale.set(1,.7,1);dm.rotation.set(q.rx,0,q.rz);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});
+ fli.forEach((pi,i)=>{const q=pd[pi],a=q.ry+Math.sin(tm*q.f*.4+q.ph)*.12;dm.position.set(q.x+Math.cos(a)*.04*q.s,q.y+.01,q.z-Math.sin(a)*.04*q.s);dm.scale.set(1,1,1);dm.rotation.set(q.rx,a,q.rz);dm.updateMatrix();fm.setMatrixAt(i,dm.matrix)});
  fm.instanceMatrix.needsUpdate=true}
 const FISH={f:[],sp:[],t:3,init:0};
 function fishInit(){FISH.init=1;
@@ -2751,7 +2859,7 @@ function fishStep(dt){
   Object.assign(f,{on:1,k:0,sp2:0,x0:q[0],z0:q[1],x1,z1,len,h:.45+Math.random()*.35,dur:.75+len*.15,ry:-a});
   f.g.visible=true;splash(q[0],q[1]);break}
 }
-function tideStep(dt){faunaStep(dt);padStep();fishStep(dt);WT.value=tm;
+function tideStep(dt){faunaStep(dt);padStep();fishStep(dt);mistStep();WT.value=tm;
  TIDE=-.25;
  if(WTR){WTR.position.y=TIDE;WTR2.position.y=TIDE+.008;const d=TIDE+.36;AQ[0].position.y=d;AQ[1].position.y=d}
 }
