@@ -273,6 +273,24 @@ body.mob #fy .fb b{font-size:8.5px!important;line-height:1.05!important}
 body.mob #fy .fb em,body.mob #fy .fb i{font-size:8px!important}
 body.mob #fy .fb div{font-size:20px!important;line-height:1.1!important}
 body.mob.menuon #mid{display:none!important}
+body.mob{--bh:40px!important}
+body.mob #bot{left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content!important;max-width:calc(100vw - 16px);padding:2px 8px!important;gap:6px}
+body.mob #bot::after{display:none!important}
+body.mob #cd{grid-template-columns:repeat(8,32px)!important;grid-auto-rows:32px!important;gap:3px!important}
+body.mob .cb .ic{font-size:16px!important}
+body.mob #pt{width:34px!important;height:32px!important;padding:0!important}
+body.mob #pt .pi{font-size:18px!important}
+body.mob #fy #fg{gap:4px!important}
+body.mob #fy .fb b{font-size:7.5px!important}
+body.mob #fy .fb em,body.mob #fy .fb i{font-size:7px!important}
+body.mob #fy .fb img{width:calc(var(--cwid,50px)*.42)!important;height:calc(var(--cwid,50px)*.42)!important}
+body.mob #fy .fb{height:calc(var(--cwid,50px)*1.02)!important}
+body.mob #fy{bottom:44px!important}
+body.mob #mid{width:min(360px,52vw)!important;min-height:0!important;padding:4px!important}
+body.mob #mid #pv{width:48px!important;height:48px!important}
+body.mob #inf{font-size:9.5px!important}
+body.mob #pbt,body.mob #pbx{padding:5px 10px!important;font-size:12px!important;border-width:1px!important;border-radius:8px!important}
+body.mob #pbc{top:calc(env(safe-area-inset-top,0px) + 30px)!important;gap:6px!important}
 body.mob.mbuild #bot{display:none!important}
 body.mob #pbt[disabled]{opacity:.75;background:#3a3a30!important;border-color:#8a8a70!important;font-weight:normal!important}
 </style></head><body>
@@ -2604,7 +2622,7 @@ function fitMenu(){
  const g=$('fg');if(!g)return;
  const num=(v,d)=>{v=+v;return isFinite(v)&&v>0?v:d},mob=MODE=='mob',n=T.length,vw=num(innerWidth,900),vh=num(innerHeight,500);
  const bh=num($('bot').offsetHeight,120),th=num($('top').offsetHeight,28);
- if(mob){const cnt=g.children.length||1,w=Math.max(54,Math.min(64,Math.floor((vw-40-(cnt-1)*5)/cnt)));g.style.setProperty('--cwid',w+'px');g.style.gridTemplateColumns='repeat('+cnt+','+w+'px)';return[cnt,w,vw,vh]}
+ if(mob){const cnt=g.children.length||1,w=Math.max(46,Math.min(52,Math.floor((vw-40-(cnt-1)*4)/cnt)));g.style.setProperty('--cwid',w+'px');g.style.gridTemplateColumns='repeat('+cnt+','+w+'px)';return[cnt,w,vw,vh]}
  const aw=mob?vw-36:Math.min(vw-50,num($('cd').getBoundingClientRect().right,vw)-30),ah=mob?vh-56-th-24:vh-bh-th-70;
  let best=0,bc=n;
  for(let c=1;c<=n;c++){const r=Math.ceil(n/c),w=Math.min((aw-(c-1)*6)/c,(ah-(r-1)*6)/(r*1.2));if(w>best){best=w;bc=c}}
