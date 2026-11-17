@@ -273,6 +273,12 @@ body.mob #fy .fb b{font-size:8.5px!important;line-height:1.05!important}
 body.mob #fy .fb em,body.mob #fy .fb i{font-size:8px!important}
 body.mob #fy .fb div{font-size:20px!important;line-height:1.1!important}
 body.mob.menuon #mid{display:none!important}
+.fyx{display:none}
+body.mob.menuon #pt,body.mob.menuon #mm,body.mob.menuon #cd,body.mob.menuon #mid{display:none!important}
+body.mob.menuon #bot{background:none!important;border-color:transparent!important;box-shadow:none!important}
+body.mob.menuon #bot::before,body.mob.menuon #bot::after{display:none!important}
+body.mob.menuon #fy{bottom:max(6px,env(safe-area-inset-bottom,0px))!important;padding-right:30px!important}
+body.mob .fyx{display:block;position:absolute;top:3px;right:3px;width:22px;height:22px;padding:0;font-size:12px;line-height:20px;border-radius:50%;background:#5a2a22;border:1px solid #c07060;color:#fff}
 body.mob{--bh:40px!important}
 body.mob #bot{left:50%!important;right:auto!important;transform:translateX(-50%);width:max-content!important;max-width:calc(100vw - 16px);padding:2px 8px!important;gap:6px}
 body.mob #bot::after{display:none!important}
@@ -2731,7 +2737,7 @@ function openBox(){
 function flyR(){
  const L=S.menu?flyList():[];
  $('fy').classList.toggle('on',!!S.menu);document.body.classList.toggle('menuon',!!S.menu);
- setH('fy',S.menu?`<div class="ti">Bygg: välj vad du vill placera (håll musen över för förhandsvisning). Klicka utanför för att stänga.</div><div id="fg">`+L.map((x,i)=>fbHtml(x,i)).join('')+'</div>':'');
+ setH('fy',S.menu?`<div class="ti">Bygg: välj vad du vill placera (håll musen över för förhandsvisning). Klicka utanför för att stänga.</div><div id="fg">`+L.map((x,i)=>fbHtml(x,i)).join('')+'</div><button class="fyx" data-x="1" title="Stäng">✖</button>':'');
 }
 function enemyInfo(c){
  const e=c.e,pc=Math.max(0,c.hp/c.max),w=[],ar=c.ar!=null?c.ar:(e.a||0),sp=e.s*(c.spd||1);
@@ -2808,9 +2814,9 @@ function sync(){
 $('mact').onclick=e=>{const b=e.target.closest('button');if(b)act(cardList()[+b.dataset.i])};
 $('mx').onclick=e=>{e.stopPropagation();S.sel=[S.h];S.tgt=null;sync()};
 $('cd').onclick=e=>{const b=e.target.closest('button');if(b)act(cardList()[+b.dataset.i])};
-$('fy').onclick=e=>{if(MODE=='mob')return;const b=e.target.closest('button');if(b)act(flyList()[+b.dataset.i])};
-{let fd=null;$('fy').addEventListener('pointerdown',e=>{if(MODE!='mob')return;const b=e.target.closest('button');fd=b?{i:+b.dataset.i,x:e.clientX,y:e.clientY}:null},true);
- $('fy').addEventListener('pointerup',e=>{if(MODE!='mob'||!fd)return;const d=fd;fd=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<18){e.preventDefault();act(flyList()[d.i])}},true);
+$('fy').onclick=e=>{if(MODE=='mob')return;const b=e.target.closest('button');if(b&&b.dataset.x){S.menu='';sync();return}if(b)act(flyList()[+b.dataset.i])};
+{let fd=null;$('fy').addEventListener('pointerdown',e=>{if(MODE!='mob')return;const b=e.target.closest('button');fd=b?{i:+b.dataset.i,c:!!b.dataset.x,x:e.clientX,y:e.clientY}:null},true);
+ $('fy').addEventListener('pointerup',e=>{if(MODE!='mob'||!fd)return;const d=fd;fd=null;if(Math.hypot(e.clientX-d.x,e.clientY-d.y)<18){e.preventDefault();if(d.c){S.menu='';sync()}else act(flyList()[d.i])}},true);
  $('fy').addEventListener('pointercancel',()=>{fd=null},true)}
 $('fy').onpointerover=e=>{if(MODE=='mob'||e.pointerType=='touch')return;const b=e.target.closest('.fb'),v=b&&b.dataset.b!=null?+b.dataset.b:null;if(v!==S.pvk){S.pvk=v;sync()}};
 $('fy').onpointerleave=()=>{if(S.pvk!=null){S.pvk=null;sync()}};
