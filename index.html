@@ -1423,9 +1423,13 @@ let BMG=null;
 function throwBoom(t,b,Rg){
  if(!BMG){BMG=new THREE.Group();const wm=lam(0x9a6a32),sm=lam(0xc03a2a);for(const s2 of[-1,1]){const w=new THREE.Mesh(new THREE.BoxGeometry(.34,.04,.08),wm);w.position.set(.1,0,s2*.07);w.rotation.y=s2*.6;BMG.add(w);const st=new THREE.Mesh(new THREE.BoxGeometry(.07,.045,.085),sm);st.position.set(.22,0,s2*.14);st.rotation.y=s2*.6;BMG.add(st)}}
  const m=BMG.clone();if(t.l>=4)m.children.forEach((c,i)=>{if(i%2==0){c.material=lam(0xd4a84a)}});gF.add(m);
- const dx=b.x-t.x,dy=b.y-t.y,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,D=Rg;
+ let best=b,bn=-1;
+ for(const c of S.en){if(c.dead||Math.hypot(c.x-t.x,c.y-t.y)>Rg)continue;const L0=Math.hypot(c.x-t.x,c.y-t.y)||1,qx=(c.x-t.x)/L0,qy=(c.y-t.y)/L0;let n=0;
+  for(const e of S.en){if(e.dead)continue;const px=e.x-t.x,py=e.y-t.y,pr=px*qx+py*qy;if(pr<-.3||pr>Rg+.3)continue;if(Math.abs(px*qy-py*qx)<.8)n++}
+  if(n>bn||(n==bn&&c===b)){bn=n;best=c}}
+ const dx=best.x-t.x,dy=best.y-t.y,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,D=Rg;
  t.bs=-(t.bs||1);t.bmOut=1;
- (S.bm||(S.bm=[])).push({src:t.k,tw:t,m,t:0,T:D/7,sx:t.x,sy:t.y,ex:t.x+ux*D,ey:t.y+uy*D,nx:-uy*t.bs,ny:ux*t.bs,cw:.22*D,v:dmg(t),ap:T[t.k].ap||0,n:0,h1:new Set(),h2:new Set()});
+ (S.bm||(S.bm=[])).push({src:t.k,tw:t,m,t:0,T:D/7,sx:t.x,sy:t.y,ex:t.x+ux*D,ey:t.y+uy*D,nx:-uy*t.bs,ny:ux*t.bs,cw:.08*D,v:dmg(t),ap:T[t.k].ap||0,n:0,h1:new Set(),h2:new Set()});
 }
 function booms(dt){
  if(!S.bm||!S.bm.length)return;
@@ -1434,7 +1438,7 @@ function booms(dt){
   if(k<1){const e=Math.sin(k*Math.PI/2);px=b.sx+(b.ex-b.sx)*e+b.nx*Math.sin(k*Math.PI)*b.cw;py=b.sy+(b.ey-b.sy)*e+b.ny*Math.sin(k*Math.PI)*b.cw}
   else{const k2=Math.min(1,k-1),e=1-Math.cos(k2*Math.PI/2);px=b.ex+(b.sx-b.ex)*e-b.nx*Math.sin(k2*Math.PI)*b.cw;py=b.ey+(b.sy-b.ey)*e-b.ny*Math.sin(k2*Math.PI)*b.cw}
   b.m.position.set(px-HW,.55+.15*Math.sin(Math.min(2,k)*Math.PI),py-HH);b.m.rotation.y+=dt*22;
-  if(b.n<10){const hs=k<1?b.h1:b.h2;for(const c of S.en){if(c.dead||hs.has(c)||b.n>=10)continue;if(Math.hypot(c.x-px,c.y-py)<.6){hs.add(c);b.n++;CUR=b.src;hit(c,b.v,b.ap);CUR=null;burst(c.x,c.y,'#e8b060',3,c.e.air?1:.5)}}}
+  if(b.n<10){const hs=k<1?b.h1:b.h2;for(const c of S.en){if(c.dead||hs.has(c)||b.n>=10)continue;if(Math.hypot(c.x-px,c.y-py)<.75){hs.add(c);b.n++;CUR=b.src;hit(c,b.v,b.ap);CUR=null;burst(c.x,c.y,'#e8b060',3,c.e.air?1:.5)}}}
   if(k>=2){gF.remove(b.m);b.done=1;if(b.tw)b.tw.bmOut=0}
  }
  S.bm=S.bm.filter(b=>!b.done);
