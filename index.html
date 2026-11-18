@@ -361,6 +361,7 @@ body:not(.mob) #top .rs>span{font-size:14px;height:29px;padding:0 11px;display:i
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
 <script>
 const $=id=>document.getElementById(id),cv=$('c'),wr=$('w');
 const COLS=34,ROWS=14,HW=COLS/2,HH=ROWS/2,BASE=[COLS/2,7],SPW=[[0,1],[0,12],[COLS-1,1],[COLS-1,12]],Q2=Math.round(COLS*8/34);
@@ -1096,7 +1097,56 @@ function loadGLB(){
  glbLoad('models/trees1.glb',gl=>forestSwap(glbPines(gl),false));
  glbLoad('models/trees2.glb',gl=>{const P=glbMeshes(gl);forestSwap([glbNorm(glbBake(P.map(p=>({g:p.g,col:p.col}))),2)],true)});
  glbLoad('models/base.glb',baseSwap);
- glbLoad('models/bridge.glb',bridgeSwap);}
+ glbLoad('models/bridge.glb',bridgeSwap);
+ glbLoad(encodeURI('models/riddar_till_fots.glb'),heroGlb);
+ for(const kind in GLBU)glbLoad(encodeURI(GLBU[kind].file),gl=>{if(!THREE.SkeletonUtils)return;MDL[kind]={scene:gl.scene,anims:gl.animations};thumbs();pvCur=null;for(const t of S.tw)if(T[t.k].kind==kind)remodel(t);sync()});}
+// Jätten: "Low Poly Animated Simple Golem" av Leonardo Carvalho (Sketchfab, Free Standard). Animerad: Idle och Attack.
+// Animerade GLB-gubbar. h = höjd i rutor, idle/atk = animationernas namn, yaw = vridning så att gubben tittar mot +x.
+const GLBU={
+ giant:{file:'models/jatten.glb',h:1.25,idle:/idle$/i,atk:/attack$/i,yaw:Math.PI/2},
+ squire:{file:'models/knekt.glb',h:.8,idle:/\|idle$/i,atk:/\|stab$/i,yaw:-Math.PI/2},
+ knight:{file:'models/riddaren.glb',h:1,idle:/^idle_combat$/i,atk:/^atack_overhead$/i,yaw:-Math.PI/2,tint:{material_1:.4},same:{material_2:'material_1'}},
+ archer:{file:'models/älvskytten.glb',h:.95,idle:/skeleton idle$/i,atk:/skeleton shooting$/i,yaw:Math.PI/2}};
+// Hjälten "Riddaren till fots": animerad modell (Idle, Walk, Sword_swing). Visas bara för riddaren på nivå 1.
+const hglb=new THREE.Group();hglb.visible=false;hm.add(hglb);let HG1=null;
+function heroGlb(gl){
+ const o=gl.scene;
+ o.traverse(m=>{if(m.isMesh){m.material=[].concat(m.material).map(om=>{if(om.map&&om.map.encoding!==THREE.LinearEncoding){om.map.encoding=THREE.LinearEncoding;om.map.needsUpdate=true}return new THREE.MeshLambertMaterial({map:om.map||null,color:om.color?om.color.clone():0xffffff,skinning:!!m.isSkinnedMesh,transparent:!!om.transparent,alphaTest:om.alphaTest||0,side:om.side})});if(m.material.length==1)m.material=m.material[0];m.frustumCulled=false;m.castShadow=true}});
+ const mx=new THREE.AnimationMixer(o),A=re=>{const cl=gl.animations.find(a=>re.test(a.name));return cl?mx.clipAction(cl):null};
+ const H={mx,idle:A(/^idle$/i),walk:A(/^walk$/i),atk:A(/^sword_swing$/i),cur:null,lsw:null,lt:null};
+ if(H.atk){H.atk.setLoop(THREE.LoopOnce,1);H.atk.clampWhenFinished=true}
+ mx.addEventListener('finished',e=>{if(e.action===H.atk&&H.cur){H.cur.reset().fadeIn(.15).play();H.atk.fadeOut(.15)}});
+ if(H.idle){H.idle.play();H.cur=H.idle}mx.update(0);
+ o.updateMatrixWorld(true);const bb=new THREE.Box3(),v=new THREE.Vector3();
+ o.traverse(m=>{if(!m.isMesh)return;const p=m.geometry.attributes.position;for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);if(m.isSkinnedMesh)m.boneTransform(i,v);v.applyMatrix4(m.matrixWorld);bb.expandByPoint(v)}});
+ const sz=bb.getSize(new THREE.Vector3()),c=bb.getCenter(new THREE.Vector3()),k=1.05/sz.y;
+ o.scale.multiplyScalar(k);o.position.set(-c.x*k,-bb.min.y*k,-c.z*k);
+ const w=new THREE.Group();w.add(o);w.rotation.y=Math.PI/2;hglb.add(w);HG1=H}
+function heroGlbStep(mvg){
+ const H=HG1,use=!!H&&(S.hc||'knight')=='knight'&&(S.hlv||1)==1&&!S.dance;
+ hglb.visible=use;hrider.visible=!use;if(use)hfl.forEach(g=>{g.visible=false});
+ if(!use){if(H)H.lt=null;return}
+ const want=mvg&&H.walk?H.walk:H.idle;
+ if(want&&want!==H.cur){if(H.cur)H.cur.fadeOut(.2);want.reset().fadeIn(.2).play();H.cur=want}
+ if(S.h.sw!=null&&S.h.sw!==H.lsw){if(H.atk&&tm-S.h.sw<.5){const per=HS().cd||1;H.atk.timeScale=Math.max(1,H.atk.getClip().duration/(per*.9));if(H.cur)H.cur.fadeOut(.08);H.atk.reset().setEffectiveWeight(1).fadeIn(.08).play()}H.lsw=S.h.sw}
+ H.mx.update(Math.max(0,Math.min(.1,tm-(H.lt==null?tm:H.lt))));H.lt=tm}
+function glbUnit(kind,u,d){
+ const src=MDL[kind],cf=GLBU[kind],o=THREE.SkeletonUtils.clone(src.scene),w=new THREE.Group();
+ const byName={};o.traverse(m=>{if(m.isMesh)[].concat(m.material).forEach(om=>{byName[om.name]=om})});
+ o.traverse(m=>{if(m.isMesh){const ms=[].concat(m.material).map(om=>{if(cf.same&&cf.same[om.name]&&byName[cf.same[om.name]]){const nm=om.name;om=byName[cf.same[nm]]}if(om.map&&om.map.encoding!==THREE.LinearEncoding){om.map.encoding=THREE.LinearEncoding;om.map.needsUpdate=true}const col=om.color?om.color.clone():new THREE.Color(0xffffff);if(cf.tint&&cf.tint[om.name]!=null)col.multiplyScalar(cf.tint[om.name]);return new THREE.MeshLambertMaterial({map:om.map||null,color:col,skinning:!!m.isSkinnedMesh,transparent:!!om.transparent,alphaTest:om.alphaTest||0,side:om.side})});m.material=ms.length>1?ms:ms[0];m.userData.em=0;m.frustumCulled=false}});
+ const mx=u.gmix=new THREE.AnimationMixer(o),A=re=>{const cl=src.anims.find(a=>re.test(a.name));return cl?mx.clipAction(cl):null};
+ u.gIdle=A(cf.idle);u.gAtk=A(cf.atk);
+ if(u.gIdle)u.gIdle.play();if(u.gAtk){u.gAtk.setLoop(THREE.LoopOnce,1);u.gAtk.clampWhenFinished=true}
+ mx.addEventListener('finished',e=>{if(e.action===u.gAtk&&u.gIdle){u.gIdle.reset().fadeIn(.2).play();u.gAtk.fadeOut(.2)}});
+ // attacken hinner alltid klart före nästa slag
+ u.gHit=()=>{if(!u.gAtk)return;const dur=u.gAtk.getClip().duration,per=d&&d.f?1/d.f:1;u.gAtk.timeScale=Math.max(1,dur/(per*.9));if(u.gIdle)u.gIdle.fadeOut(.1);u.gAtk.reset().setEffectiveWeight(1).fadeIn(.1).play()};
+ mx.update(0);
+ if(!src.fit){// mät den riktiga storleken i stå-posen (även för gubbar med skelett)
+  o.updateMatrixWorld(true);const bb=new THREE.Box3(),v=new THREE.Vector3();
+  o.traverse(m=>{if(!m.isMesh)return;const p=m.geometry.attributes.position;for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);if(m.isSkinnedMesh)m.boneTransform(i,v);v.applyMatrix4(m.matrixWorld);bb.expandByPoint(v)}});
+  const sz=bb.getSize(new THREE.Vector3()),c=bb.getCenter(new THREE.Vector3()),k=cf.h/sz.y;src.fit={k,x:-c.x*k,y:-bb.min.y*k,z:-c.z*k}}
+ const F=src.fit;o.scale.multiplyScalar(F.k);o.position.set(F.x,F.y,F.z);
+ w.add(o);w.rotation.y=cf.yaw;return w}
 // ----- Skogen: trees1 (granar), trees2 (lövträd), båda av Quaternius (CC0) -----
 function glbLoad(u,cb){new THREE.GLTFLoader().load(u,gl=>{try{cb(gl)}catch(e){console.warn('Fel i '+u,e)}},undefined,e=>console.warn('Kunde inte ladda '+u+' – behåller de enkla träden',e))}
 // Basen: "Temple" av Quaternius (CC0) ersätter den enkla borgen. Den lysande kristallen svävar kvar ovanför taket.
@@ -1177,6 +1227,8 @@ function mkModel(k,lv,br){
   const tip=new THREE.Mesh(sph(.05),new THREE.MeshBasicMaterial({color:d.ap>.5?0xff6a5a:0xffd88a}));tip.position.set(d.bl+.02,0,0);tip.scale.setScalar(d.ap>.5?1.8:1);u.pv.add(tip);
   [[-.3,-.3],[.3,-.3],[-.3,.3],[.3,.3]].forEach(([x,z])=>ad(new THREE.CylinderGeometry(.06,.07,.34,6),0x4a3f33,x,.17,z));
   ad(bx(.02,.34,.02),0x4a3f33,-.3,.5,-.3);ad(bx(.01,.12,.18),d.col,-.3,.58,-.2);
+ }else if(GLBU[d.kind]&&MDL[d.kind]){
+  g.add(glbUnit(d.kind,u,d));if(d.kind=='giant')u.rock=ad(new THREE.DodecahedronGeometry(.13),0x8a8478,.05,1.38,0);
  }else if(d.kind=='knight'){
   ad(bx(.12,.3,.12),0x6a6a74,0,.15,.09);ad(bx(.12,.3,.12),0x6a6a74,0,.15,-.09);
   ad(bx(.3,.38,.3),0xb8c4d0,0,.49,0);ad(sph(.14),0xd0d8e0,0,.82,0);ad(bx(.04,.1,.2),0xb33a2a,0,.97,0);
@@ -1449,7 +1501,7 @@ function mkModel(k,lv,br){
  // ----- extra detaljer per typ -----
  const GOLD=0xd4a84a,STEEL=0xb8c4d0,DARK=0x2a2a30,LEA=0x5a3a1a,EYEW=0xffffff;
  const eyes=(x,y,z,r)=>{for(const s of[-1,1]){ad(sph(r),EYEW,x,y,s*z);ad(sph(r*.5),0x151515,x+r*.6,y,s*z)}};
- if(d.kind=='knight'){
+ if(GLBU[d.kind]&&MDL[d.kind]){}else if(d.kind=='knight'){
   ad(bx(.01,.22,.04),GOLD,.151,.5,0);ad(bx(.01,.04,.14),GOLD,.151,.56,0);
   ad(new THREE.CylinderGeometry(.12,.15,.05,10),STEEL,0,.7,0);
   ad(bx(.06,.06,.02),GOLD,.16,.33,0);
@@ -1483,7 +1535,7 @@ function mkModel(k,lv,br){
   for(const y of[.38,.58])ad(bx(.3,.025,.025),0x2a2a30,-.2,y,0).visible=false;
   for(const s of[-1,1]){ad(bx(.16,.05,.12),0x1a1a1a,.02,.03,s*.09);ad(bx(.03,.3,.02),0xd4a84a,.15,.45,s*.1)}
   ad(bx(.02,.2,.04),0xffd030,.16,.45,0,0x7a5a10);
- }else if(d.kind=='giant'){
+ }else if(d.kind=='giant'&&!MDL.giant){
   ad(bx(.38,.05,.44),0x3a2410,0,.57,0);
   const sk=ad(sph(.055),0xe8e0c0,.2,.54,0);sk.scale.set(.8,1,1);
   for(const y of[-.12,0,.12])ad(sph(.016),0x111111,.255,.54,y).visible=false;
@@ -1721,6 +1773,18 @@ function trailAt(tr,hx,hy,d){
  }
  return[ax,ay];
 }
+// Hjältens dödar ger extra guld: +50 % av fiendens guld. Mynt sprutar ur hjälten och "+X" stiger upp.
+const HERO_BONUS=.5;
+function heroCoins(n){
+ const h=S.h,cm=new THREE.MeshLambertMaterial({color:0xffd23a,emissive:0x6a4a00});
+ for(let i=0,k=Math.min(10,3+Math.ceil(n/4));i<k;i++){const m=new THREE.Mesh(COIN,cm),a=Math.random()*6.283,v=.6+Math.random()*1.1;
+  m.position.set(h.x-HW,1,h.y-HH);m.rotation.set(Math.random()*3,Math.random()*3,0);gF.add(m);
+  S.pt.push({m,s:1,vx:Math.cos(a)*v,vz:Math.sin(a)*v,vy:2.6+Math.random()*1.6,t:.8,L:.8,spin:8+Math.random()*8})}
+ const c=document.createElement('canvas');c.width=192;c.height=72;const x=c.getContext('2d');
+ x.font='bold 46px Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.lineWidth=7;x.strokeStyle='#3a2600';x.strokeText('+'+n+' 🪙',96,38);x.fillStyle='#ffe066';x.fillText('+'+n+' 🪙',96,38);
+ const tx=new THREE.CanvasTexture(c),sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tx,transparent:true,depthTest:false}));sp.renderOrder=9;sp.scale.set(1.5,.56,1);
+ sp.position.set(h.x-HW,1.35,h.y-HH);gF.add(sp);(S.gtx||(S.gtx=[])).push({m:sp,t:1.1,L:1.1})}
+const COIN=new THREE.CylinderGeometry(.09,.09,.025,12);
 function burst(x,y,col,n,h){
  const m0=new THREE.MeshBasicMaterial({color:hex(col)});
  for(let i=0;i<n;i++){
@@ -1731,7 +1795,9 @@ function burst(x,y,col,n,h){
 }
 function pts(dt){
  for(const p of S.pt){p.t-=dt;p.vy-=9*dt;p.m.position.x+=p.vx*dt;p.m.position.z+=p.vz*dt;p.m.position.y=Math.max(.02,p.m.position.y+p.vy*dt);p.m.scale.setScalar(p.s*Math.max(0,p.t/p.L));if(p.t<=0)gF.remove(p.m)}
+ for(const p of S.pt)if(p.spin){p.m.rotation.x+=p.spin*dt;p.m.rotation.y+=p.spin*.6*dt}
  S.pt=S.pt.filter(p=>p.t>0);
+ if(S.gtx){for(const g of S.gtx){g.t-=dt;g.m.position.y+=.7*dt;g.m.material.opacity=Math.min(1,g.t/(g.L*.5));if(g.t<=0){gF.remove(g.m);g.m.material.map.dispose();g.m.material.dispose()}}S.gtx=S.gtx.filter(g=>g.t>0)}
 }
 function flash(x,y,r,col,o,L){const m=new THREE.Mesh(DISC,bas(hex(col),o));m.position.set(x-HW,.08,y-HH);m.scale.set(r,1,r);gF.add(m);S.fx.push({m,t:L,o,L})}
 function heroDetail(){
@@ -1745,6 +1811,7 @@ function heroDetail(){
  if(fire)sp.push('Eld: 2,5× mot vinterfiender');
  if(hs.slow)sp.push('Saktar fiender 45 % i 1,6 s');
  if(hs.raise)sp.push('Dödade markfiender reser sig som skelett och slåss en stund');
+ sp.push('🪙 +'+Math.round(HERO_BONUS*100)+' % guld för varje fiende hjälten dödar');
  const v=x=>x>0?Math.round(x).toLocaleString('sv-SE')+'/s':'<span style="opacity:.45">0</span>';
  const c=(i,lb,x,col)=>`<span style="white-space:nowrap">${i} <span style="opacity:.75">${lb}</span> <b style="color:${col}">${x}</b></span>`;
  const nm=`<b style="color:#ffd84a">${HC[k].lv[L-1]}</b> <small style="color:#9a8f78">– hjälte, nivå ${L} av 3, ${Math.round(D).toLocaleString('sv-SE')} skada per träff</small>`;
@@ -2186,7 +2253,7 @@ function stKill(g){const r=stRow();if(r)r.k++;S.ST.kills++;S.ST.gk+=g;const l=st
 function hit(c,d,p,f){
  if(c.dead)return;
  const hp0=c.hp;if(c.e.winter)d*=f?2.5:.35;c.hp-=d*(1-(c.ar!=null?c.ar:(c.e.a||0))*(1-(p||0)));c.hf=tm;stDmg(Math.max(0,Math.min(hp0,hp0-c.hp)));
- if(c.hp<=0){c.dead=1;stKill(Math.round(c.gd));sfxDeath(c);if(S.np==2&&S.bot&&CURB){S.bot.g+=Math.round(c.gd);flash(c.x,c.y,.22,'#7ab8ff',.4,.5)}else{S.gold+=Math.round(c.gd);{const gp=diggerPct();if(gp>0){const ex=Math.max(1,Math.round(c.gd*gp));S.gold+=ex;S.ST.gb+=ex;flash(c.x,c.y,.22,'#ffd84a',.4,.7)}}}S.score+=Math.round(c.gd)*2+(c.e.boss?30000:0);S.rp=(S.rp||0)+Math.round(c.gd)*2+(c.e.boss?30000:0);if(c.e.boss)toast('Boss besegrad! +30 000 poäng');burst(c.x,c.y,c.e.col,c.e.boss?24:c.e.air?8:10,c.e.air?1:.4);flash(c.x,c.y,c.e.boss?.7:.35,'#3a5a22',.45,1.4)}
+ if(c.hp<=0){c.dead=1;stKill(Math.round(c.gd));sfxDeath(c);if(S.np==2&&S.bot&&CURB){S.bot.g+=Math.round(c.gd);flash(c.x,c.y,.22,'#7ab8ff',.4,.5)}else{S.gold+=Math.round(c.gd);if(CUR=='h'){const hb=Math.max(1,Math.round(c.gd*HERO_BONUS));S.gold+=hb;S.ST.hb=(S.ST.hb||0)+hb;heroCoins(hb)}{const gp=diggerPct();if(gp>0){const ex=Math.max(1,Math.round(c.gd*gp));S.gold+=ex;S.ST.gb+=ex;flash(c.x,c.y,.22,'#ffd84a',.4,.7)}}}S.score+=Math.round(c.gd)*2+(c.e.boss?30000:0);S.rp=(S.rp||0)+Math.round(c.gd)*2+(c.e.boss?30000:0);if(c.e.boss)toast('Boss besegrad! +30 000 poäng');burst(c.x,c.y,c.e.col,c.e.boss?24:c.e.air?8:10,c.e.air?1:.4);flash(c.x,c.y,c.e.boss?.7:.35,'#3a5a22',.45,1.4)}
 }
 function build(c,r,k,quiet){
  const t={c,r,x:c+.5,y:r+.5,k,l:1,cd:0,a:0,sp:T[k].c,born:tm};
@@ -2621,6 +2688,7 @@ function render(){
  else{arms[0].rotation.z=-.25;arms[1].rotation.z=.25-.9*Math.sin(Math.min(1,(tm-(h.sw||-9))/.3)*Math.PI)}
  {const HL=S.hlv||1;hhorse.visible=HL>=2;hrider.position.y=HL>=2?0:-.2;hrl.forEach(o=>{o.visible=HL>=2});hfl.forEach((g,i)=>{g.visible=HL<2;g.rotation.z=mvg?Math.sin(tm*12+(i?Math.PI:0))*.6:0});if(hbl!==HL)hbDraw(HL);const g3=HL>=3;hgl.visible=hgs.visible=g3;if(g3){hgl.material.opacity=.3+.08*Math.sin(tm*2);hgs.material.opacity=.16+.05*Math.sin(tm*2)}}
  hcape.rotation.z=.12+(mvg?.3+.12*Math.sin(tm*12):.04*Math.sin(tm*2));htail.rotation.y=Math.sin(tm*(mvg?8:2))*(mvg?.45:.25);htail.rotation.z=mvg?.25:0;
+ heroGlbStep(mvg);
  hlegs.forEach((g,i)=>{g.rotation.z=mvg?Math.sin(tm*14+(i%2?Math.PI:0)+(i>1?Math.PI*.5:0))*.55:0});
  const pc=$('pt').classList;pc.toggle('dance',!!dn);pc.toggle('happy',hp&&!dn);
  for(const t of S.tw){
@@ -2636,6 +2704,7 @@ function render(){
    if(u.arm)u.arm.rotation.z=-.15-2*sw;
    if(u.belly)u.belly.scale.setScalar(1+.3*sw);
    if(u.rock)u.rock.visible=!(t.rc>0);
+   if(u.gmix){const thr=(t.rc||0)>(u.prc||0)+1;u.prc=t.rc||0;if(t.fl!==u.lfl||thr){const nw=t.fl!=null&&u.lfl!==undefined;u.lfl=t.fl;if(nw||thr)u.gHit()}u.gmix.update(Math.max(0,Math.min(.1,tm-(u.glt==null?tm:u.glt))));u.glt=tm}
    if(u.bmh)u.bmh.visible=!t.bmOut;
    if(u.flame)u.flame.scale.set(1+.5*sw,1+1.5*sw,1+.5*sw);
    if(u.wL){const f=Math.sin(tm*3+t.c)*.3;u.wL.rotation.x=-.45+f;u.wR.rotation.x=.45-f}
