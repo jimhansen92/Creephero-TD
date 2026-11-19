@@ -351,11 +351,25 @@ body:not(.mob) #top{height:42px;padding:0 12px;font-size:14px}
 body:not(.mob) #top .rs{gap:7px}
 body:not(.mob) #top button{font-size:14px;height:31px;padding:0 11px}
 body:not(.mob) #top .rs>span{font-size:14px;height:29px;padding:0 11px;display:inline-flex;align-items:center}
+/* ---- Övre HUD: tjockare, med inbyggd speltidsklocka i mitten ---- */
+#top{position:relative}
+body:not(.mob) #top{height:52px;padding:0 14px;font-size:15px}
+body:not(.mob) #top button{font-size:15px;height:36px;padding:0 13px}
+body:not(.mob) #top .rs>span{font-size:15px;height:34px;padding:0 12px}
+#clk{position:absolute;left:0;right:0;top:0;bottom:0;margin:auto;width:max-content;height:max-content;display:flex;align-items:center;gap:8px;padding:5px 20px 5px 16px;
+ border-radius:0 0 14px 14px;background:linear-gradient(#120d08,#2a2016);border:2px solid #2e241a;border-top:none;
+ box-shadow:inset 0 3px 8px #000d,inset 0 -1px 0 #8a7a6244,0 1px 0 #ffffff14;color:#f4e3b0;pointer-events:none}
+body:not(.mob) #clk{top:-2px;bottom:auto;margin:0 auto;height:44px;box-sizing:border-box}
+#clk .ci{font-size:16px;filter:drop-shadow(0 1px 1px #000)}
+#clk b{font:700 22px/1 "Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.5px;min-width:3.3ch;text-align:center;color:#ffe9a8;text-shadow:0 0 6px #ffcf5a55}
+body.mob #clk{padding:1px 10px;gap:4px;border-radius:0 0 9px 9px;top:0;bottom:auto;margin:0 auto}
+body.mob #clk .ci{font-size:11px}
+body.mob #clk b{font-size:14px}
 </style></head><body>
 <div id="rot">Vrid telefonen till liggande läge</div>
 <div id="app">
 <div id="pbc" style="display:none;position:absolute;top:calc(env(safe-area-inset-top,0px) + 46px);left:50%;transform:translateX(-50%);z-index:30;gap:8px"><button id="pbt" style="padding:10px 18px;font-size:16px;font-weight:bold;background:#2f6a2a;border:2px solid #8ad06a;color:#fff;border-radius:10px">✔ Bygg</button><button id="pbx" style="padding:10px 14px;font-size:16px;background:#5a2a22;border:2px solid #c07060;color:#fff;border-radius:10px">✖ Klar</button></div>
-<div id="top"><div class="rs"><button id="mn">Meny (F10)</button><button id="sp"></button><button id="fs">⛶</button><button id="snd" title="Ljud av/på">🔊</button><button id="stb" title="Resultattavla (Tab)">📊</button><button id="cfm" title="Bekräfta bygge (mobil)" style="display:none"></button></div><div class="rs" id="rs"></div></div>
+<div id="top"><div class="rs"><button id="mn">Meny (F10)</button><button id="sp"></button><button id="fs">⛶</button><button id="snd" title="Ljud av/på">🔊</button><button id="stb" title="Resultattavla (Tab)">📊</button><button id="cfm" title="Bekräfta bygge (mobil)" style="display:none"></button></div><div id="clk" title="Speltid"><span class="ci">⏳</span><b id="clkt">0:00</b></div><div class="rs" id="rs"></div></div>
 <div id="w"><canvas id="c"></canvas><div id="zb"><button id="zi">＋</button><button id="zo">－</button><button id="zf">◎</button></div><div id="sb"></div><div id="vg"></div><div id="fl"></div><div id="tt"></div><button id="bn"></button><div id="ov"></div></div>
 <div id="bot"><canvas id="mm" width="204" height="84"></canvas><div id="pt"></div><div id="mid"><canvas id="pv"></canvas><div id="inf"></div><div id="mact"></div><button id="mx" title="Stäng">✖</button></div><div class="cw"><div id="fy"></div><div id="cd"></div></div></div>
 </div>
@@ -499,7 +513,7 @@ RING=new THREE.RingGeometry(.97,1,56).rotateX(-Math.PI/2),SRG=new THREE.RingGeom
 CON=new THREE.ConeGeometry(1,1,8),CYU=new THREE.CylinderGeometry(1,1,1,8),BXU=new THREE.BoxGeometry(1,1,1);
 const lam=c=>new THREE.MeshLambertMaterial({color:c}),bas=(c,o)=>new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:o==null?1:o});
 const hex=c=>new THREE.Color(c).getHex();
-const cast=o=>{o.traverse(m=>{if(m.isMesh&&m.material&&!m.material.transparent&&!m.material.isMeshBasicMaterial){m.castShadow=true;m.receiveShadow=true}})};
+const cast=o=>{o.traverse(m=>{if(m.isMesh&&m.material&&!m.material.transparent&&!m.material.isMeshBasicMaterial){m.castShadow=!m.userData.noCast;m.receiveShadow=true}})};
 // Slår ihop flera små delar (med samma material) till en geometri, så att de ritas med ett enda anrop i stället för ett per del.
 function mergeGeo(meshes){
  let n=0;const gs=meshes.map(o=>{o.updateMatrix();const g=(o.geometry.index?o.geometry.toNonIndexed():o.geometry.clone()).applyMatrix4(o.matrix);n+=g.attributes.position.count;return g});
@@ -598,29 +612,31 @@ function spookyGround(){
   wrap((dx,dy)=>{x.fillStyle='rgba(150,160,130,.55)';x.beginPath();x.arc(ox+dx,oy+dy,rr,0,6.3);x.fill();x.fillStyle='rgba(190,210,160,.35)';x.beginPath();x.arc(ox+dx-.5,oy+dy-.5,rr*.5,0,6.3);x.fill()})}}
  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1/7,1/7);t.anisotropy=4;return t}
 // Krypande markdimma i skogen runt banan
-const MIST=[];
+const MIST=[],MISTL=[];
+// Svag krypande markdimma i skogen, ritad i ett enda anrop (InstancedMesh)
 (function(){
  let sd=113;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
- const mat=new THREE.MeshBasicMaterial({map:GLT,color:0x737e70,transparent:true,opacity:.19,depthWrite:false});
- for(let i=0;i<46;i++){let x=0,z=0;for(let k=0;k<50;k++){x=(r()*2-1)*(HW+20);z=(r()*2-1)*(HH+16);if(Math.abs(x)>HW+5.5||Math.abs(z)>HH+5.5)break}
-  const m=new THREE.Mesh(GLG,mat),s=5+r()*6;m.position.set(x,.12+r()*.35,z);m.scale.set(s,1,s*(.6+r()*.5));m.rotation.y=r()*6;m.renderOrder=2;sc.add(m);
-  MIST.push({m,x,z,s,ph:r()*6.3,sp:.15+r()*.25})}
+ const spot=()=>{let x=0,z=0;for(let k=0;k<50;k++){x=(r()*2-1)*(HW+20);z=(r()*2-1)*(HH+16);if(Math.abs(x)>HW+5.5||Math.abs(z)>HH+5.5)break}return[x,z]};
+ for(const[n,col,op,y0,y1,s0,s1,sp]of[[46,0x737e70,.19,.12,.47,5,11,.15]]){
+  const mat=new THREE.MeshBasicMaterial({map:GLT,color:col,transparent:true,opacity:op,depthWrite:false}),m=new THREE.InstancedMesh(GLG,mat,n),P=[];
+  for(let i=0;i<n;i++){const[x,z]=spot(),s=s0+r()*(s1-s0);P.push({x,z,y:y0+r()*(y1-y0),s,sz:s*(.6+r()*.5),ry:r()*6,ph:r()*6.3,sp:sp+r()*.2})}
+  m.renderOrder=2;m.frustumCulled=false;sc.add(m);MISTL.push({m,P,d:new THREE.Object3D()})}
 })();
-// Tung, mörk dimma där skogen tar slut: genomskinliga lager i olika höjd som tätnar utåt (inget syns av spelplanen),
-// plus stora mörka dimmoln som driver långsamt längs kanten.
+// Skogen tonar bort på djupet: genomskinliga mörka lager i olika höjd som börjar vid skogskanten och tätnar mjukt
+// ju längre in man kommer (spelplanen och vallgraven påverkas inte), plus mörka dimmoln som driver längst ut.
 (function(){
- const A=HW+10,B=HH+8,RAMP=11,W=2*(HW+48),D=2*(HH+38),CW=256,CH=Math.round(CW*D/W);
+ const A=HW+2.8,B=HH+2.8,RAMP=14,W=2*(HW+48),D=2*(HH+38),CW=256,CH=Math.round(CW*D/W);
  const c=document.createElement('canvas');c.width=CW;c.height=CH;const x=c.getContext('2d'),img=x.createImageData(CW,CH);
- for(let j=0;j<CH;j++)for(let i=0;i<CW;i++){const wx=(i+.5)/CW*W-W/2,wz=(j+.5)/CH*D-D/2,dx=Math.max(0,Math.abs(wx)-A),dz=Math.max(0,Math.abs(wz)-B),d=Math.hypot(dx,dz),k=Math.min(1,d/RAMP),a=k*k*(3-2*k);
+ for(let j=0;j<CH;j++)for(let i=0;i<CW;i++){const wx=(i+.5)/CW*W-W/2,wz=(j+.5)/CH*D-D/2,dx=Math.max(0,Math.abs(wx)-A),dz=Math.max(0,Math.abs(wz)-B),d=Math.hypot(dx,dz),k=Math.min(1,d/RAMP),a=Math.pow(k,.9);
   const p=(j*CW+i)*4;img.data[p]=img.data[p+1]=img.data[p+2]=255;img.data[p+3]=a*255}
  x.putImageData(img,0,0);const tx=new THREE.CanvasTexture(c);
  const geo=new THREE.PlaneGeometry(W,D).rotateX(-Math.PI/2);
- for(const[y,o]of[[.15,.5],[.8,.4],[1.6,.35],[2.5,.35],[3.5,.35],[4.6,.4]]){
+ for(const[y,o]of[[.15,.72],[.8,.6],[1.6,.54],[2.5,.54],[3.5,.54],[4.6,.58]]){
   const m=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({map:tx,color:0x0e0910,transparent:true,opacity:o,depthWrite:false}));m.position.y=y;m.renderOrder=3;sc.add(m)}
  let sd=211;const r=()=>(sd=(sd*16807)%2147483647)/2147483647;
  const mat=new THREE.MeshBasicMaterial({map:GLT,color:0x120c14,transparent:true,opacity:.55,depthWrite:false});
- for(let i=0;i<40;i++){const side=i%4,t=r()*2-1,o=A+2+r()*8;let px,pz;
-  if(side<2){px=t*(A+6);pz=(side?1:-1)*(B+2+r()*8)}else{px=(side==2?1:-1)*o;pz=t*(B+6)}
+ for(let i=0;i<40;i++){const side=i%4,t=r()*2-1,o=HW+12+r()*8;let px,pz;
+  if(side<2){px=t*(HW+16);pz=(side?1:-1)*(HH+10+r()*8)}else{px=(side==2?1:-1)*o;pz=t*(HH+14)}
   const m=new THREE.Mesh(GLG,mat),s=9+r()*8;m.position.set(px,.5+r()*2.5,pz);m.scale.set(s,1,s*(.6+r()*.4));m.rotation.y=r()*6;m.renderOrder=3;sc.add(m);
   MIST.push({m,x:px,z:pz,s,ph:r()*6.3,sp:.08+r()*.12})}
 })();
@@ -643,7 +659,9 @@ const MIST=[];
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.setAttribute('normal',new THREE.Float32BufferAttribute(pos.map((_,k)=>k%3==1?1:0),3));
   const m=new THREE.Mesh(g,mat);m.receiveShadow=true;m.renderOrder=1;sc.add(m)}
 })();
-function mistStep(){for(const q of MIST){const t=tm*q.sp+q.ph;q.m.position.x=q.x+Math.sin(t)*1.6;q.m.position.z=q.z+Math.cos(t*.7)*1.1;q.m.rotation.y+=.0006;const k=1+.12*Math.sin(t*1.3);q.m.scale.x=q.s*k}}
+function mistStep(){
+ for(const L of MISTL){const d=L.d;L.P.forEach((q,i)=>{const t=tm*q.sp+q.ph,k=1+.12*Math.sin(t*1.3);d.position.set(q.x+Math.sin(t)*1.6,q.y,q.z+Math.cos(t*.7)*1.1);d.rotation.set(0,q.ry+tm*.02,0);d.scale.set(q.s*k,1,q.sz);d.updateMatrix();L.m.setMatrixAt(i,d.matrix)});L.m.instanceMatrix.needsUpdate=true}
+ for(const q of MIST){const t=tm*q.sp+q.ph;q.m.position.x=q.x+Math.sin(t)*1.6;q.m.position.z=q.z+Math.cos(t*.7)*1.1;q.m.rotation.y+=.0006;const k=1+.12*Math.sin(t*1.3);q.m.scale.x=q.s*k}}
 const MINEPOS=[[-14,-12.2],[0,-12.2],[14,-12.2],[-11,12.2],[4,12.2],[11,12.6],[-22.6,2.6],[22.6,-2.6]];
 const FOR={tr:[],m:[]},FORD=new THREE.Object3D();
 const WT={value:0};
@@ -1074,7 +1092,8 @@ function matType(col,kind){
 // Draken: "Red Dragon" av Tomek Zamojski (CC-BY 3.0), via Poly Pizza. Huvudet pekar mot +Z, vingarna längs X.
 const MDL={};
 function glbWingMat(col,fl){
- const m=new THREE.MeshLambertMaterial({color:col});
+ // Draken.glb har delade hörn utan normaler (mycket mindre fil); de platta ytorna räknas ut per pixel (flatShading)
+ const m=new THREE.MeshPhongMaterial({color:col,flatShading:true,shininess:4,specular:0x111111});
  m.onBeforeCompile=sh=>{sh.uniforms.uFl=fl;
   sh.vertexShader='uniform float uFl;\n'+sh.vertexShader
   .replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n float wS=sign(position.x),wW=smoothstep(1.1,2.4,abs(position.x))*smoothstep(2.4,3.3,position.y),wA=uFl*wW*wS,wc=cos(wA),ws=sin(wA);\n objectNormal=vec3(objectNormal.x*wc-objectNormal.y*ws,objectNormal.x*ws+objectNormal.y*wc,objectNormal.z);')
@@ -1099,7 +1118,7 @@ function loadGLB(){
  glbLoad('models/base.glb',baseSwap);
  glbLoad('models/bridge.glb',bridgeSwap);
  glbLoad(encodeURI('models/riddar_till_fots.glb'),heroGlb);
- for(const kind in GLBU)glbLoad(encodeURI(GLBU[kind].file),gl=>{if(!THREE.SkeletonUtils)return;MDL[kind]={scene:gl.scene,anims:gl.animations};thumbs();pvCur=null;for(const t of S.tw)if(T[t.k].kind==kind)remodel(t);sync()});}
+ for(const kind in GLBU)glbLoad(encodeURI(GLBU[kind].file),gl=>{if(!THREE.SkeletonUtils)return;MDL[kind]={scene:mergeSkinned(gl.scene),anims:gl.animations};thumbs();pvCur=null;for(const t of S.tw)if(T[t.k].kind==kind)remodel(t);sync()});}
 // Jätten: "Low Poly Animated Simple Golem" av Leonardo Carvalho (Sketchfab, Free Standard). Animerad: Idle och Attack.
 // Animerade GLB-gubbar. h = höjd i rutor, idle/atk = animationernas namn, yaw = vridning så att gubben tittar mot +x.
 const GLBU={
@@ -1110,7 +1129,7 @@ const GLBU={
 // Hjälten "Riddaren till fots": animerad modell (Idle, Walk, Sword_swing). Visas bara för riddaren på nivå 1.
 const hglb=new THREE.Group();hglb.visible=false;hm.add(hglb);let HG1=null;
 function heroGlb(gl){
- const o=gl.scene;
+ const o=mergeSkinned(gl.scene);
  o.traverse(m=>{if(m.isMesh){m.material=[].concat(m.material).map(om=>{if(om.map&&om.map.encoding!==THREE.LinearEncoding){om.map.encoding=THREE.LinearEncoding;om.map.needsUpdate=true}return new THREE.MeshLambertMaterial({map:om.map||null,color:om.color?om.color.clone():0xffffff,skinning:!!m.isSkinnedMesh,transparent:!!om.transparent,alphaTest:om.alphaTest||0,side:om.side})});if(m.material.length==1)m.material=m.material[0];m.frustumCulled=false;m.castShadow=true}});
  const mx=new THREE.AnimationMixer(o),A=re=>{const cl=gl.animations.find(a=>re.test(a.name));return cl?mx.clipAction(cl):null};
  const H={mx,idle:A(/^idle$/i),walk:A(/^walk$/i),atk:A(/^sword_swing$/i),cur:null,lsw:null,lt:null};
@@ -1130,6 +1149,26 @@ function heroGlbStep(mvg){
  if(want&&want!==H.cur){if(H.cur)H.cur.fadeOut(.2);want.reset().fadeIn(.2).play();H.cur=want}
  if(S.h.sw!=null&&S.h.sw!==H.lsw){if(H.atk&&tm-S.h.sw<.5){const per=HS().cd||1;H.atk.timeScale=Math.max(1,H.atk.getClip().duration/(per*.9));if(H.cur)H.cur.fadeOut(.08);H.atk.reset().setEffectiveWeight(1).fadeIn(.08).play()}H.lsw=S.h.sw}
  H.mx.update(Math.max(0,Math.min(.1,tm-(H.lt==null?tm:H.lt))));H.lt=tm}
+// Slår ihop delar med skelett (SkinnedMesh) som delar samma ben, material och bindningsläge till en enda del,
+// så att t.ex. jättens 24 delar ritas med ett anrop i stället för 24 (gubben rör sig exakt som förut).
+function mergeSkinned(root){
+ root.updateMatrixWorld(true);const groups=new Map();
+ root.traverse(o=>{if(!o.isSkinnedMesh||Array.isArray(o.material)||!o.skeleton)return;const g=o.geometry;if(!g.attributes.skinIndex||!g.attributes.skinWeight)return;
+  const key=o.skeleton.bones.map(b=>b.uuid).join()+'|'+o.material.uuid+'|'+o.bindMatrix.elements.map(v=>v.toFixed(5)).join()+'|'+Object.keys(g.attributes).sort().join();
+  if(!groups.has(key))groups.set(key,[]);groups.get(key).push(o)});
+ let merged=0;
+ for(const list of groups.values()){if(list.length<2)continue;
+  const names=Object.keys(list[0].geometry.attributes),out={};let nv=0,ni=0;
+  for(const o of list){nv+=o.geometry.attributes.position.count;ni+=o.geometry.index?o.geometry.index.count:o.geometry.attributes.position.count}
+  for(const nm of names){const a0=list[0].geometry.attributes[nm],C=nm=='skinIndex'?Uint16Array:Float32Array;out[nm]={arr:new C(nv*a0.itemSize),size:a0.itemSize,norm:false}}
+  const idx=nv>65535?new Uint32Array(ni):new Uint16Array(ni);let vo=0,io=0;
+  for(const o of list){const g=o.geometry,c=g.attributes.position.count;
+   for(const nm of names){const a=g.attributes[nm],t=out[nm];for(let i=0;i<c;i++)for(let k=0;k<t.size;k++)t.arr[(vo+i)*t.size+k]=a.getComponent?a.getComponent(i,k):[a.getX(i),a.getY(i),a.getZ(i),a.getW(i)][k]}
+   if(g.index){for(let i=0;i<g.index.count;i++)idx[io+i]=g.index.getX(i)+vo;io+=g.index.count}else{for(let i=0;i<c;i++)idx[io+i]=vo+i;io+=c}
+   vo+=c}
+  const ng=new THREE.BufferGeometry();for(const nm of names)ng.setAttribute(nm,new THREE.BufferAttribute(out[nm].arr,out[nm].size));ng.setIndex(new THREE.BufferAttribute(idx,1));ng.computeBoundingSphere();
+  list[0].geometry=ng;for(let i=1;i<list.length;i++)list[i].parent.remove(list[i]);merged+=list.length-1}
+ return root}
 function glbUnit(kind,u,d){
  const src=MDL[kind],cf=GLBU[kind],o=THREE.SkeletonUtils.clone(src.scene),w=new THREE.Group();
  const byName={};o.traverse(m=>{if(m.isMesh)[].concat(m.material).forEach(om=>{byName[om.name]=om})});
@@ -1146,6 +1185,8 @@ function glbUnit(kind,u,d){
   o.traverse(m=>{if(!m.isMesh)return;const p=m.geometry.attributes.position;for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);if(m.isSkinnedMesh)m.boneTransform(i,v);v.applyMatrix4(m.matrixWorld);bb.expandByPoint(v)}});
   const sz=bb.getSize(new THREE.Vector3()),c=bb.getCenter(new THREE.Vector3()),k=cf.h/sz.y;src.fit={k,x:-c.x*k,y:-bb.min.y*k,z:-c.z*k}}
  const F=src.fit;o.scale.multiplyScalar(F.k);o.position.set(F.x,F.y,F.z);
+ // gubbar med många delar kastar ingen egen skugga (skuggfläcken under dem räcker) – halverar deras ritanrop
+ {let n=0;o.traverse(m=>{if(m.isMesh)n++});if(n>4)o.traverse(m=>{if(m.isMesh)m.userData.noCast=1})}
  w.add(o);w.rotation.y=cf.yaw;return w}
 // ----- Skogen: trees1 (granar), trees2 (lövträd), båda av Quaternius (CC0) -----
 function glbLoad(u,cb){new THREE.GLTFLoader().load(u,gl=>{try{cb(gl)}catch(e){console.warn('Fel i '+u,e)}},undefined,e=>console.warn('Kunde inte ladda '+u+' – behåller de enkla träden',e))}
@@ -1206,7 +1247,7 @@ function forestSwap(geos,b){
  let trs=FOR.tr.filter(q=>!!q.b===b);
  if(b){const drop=new Set(trs.filter((_,j)=>j%5!=0));trs=trs.filter(q=>!drop.has(q));FOR.tr=FOR.tr.filter(q=>!drop.has(q))}// bara vart femte lövträd (trees2 är tung)
  const cnt=geos.map(()=>0);trs.forEach((q,j)=>{q.v=j%geos.length;q.gi=cnt[q.v]++});
- const ms=geos.map((g,v)=>{const m=new THREE.InstancedMesh(g,mat,Math.max(1,cnt[v]));m.count=cnt[v];m.castShadow=m.receiveShadow=true;const k=b?.55:.46;for(let i=0;i<m.count;i++){col.setRGB(k+rnd()*.12,k+rnd()*.12,k+rnd()*.1);m.setColorAt(i,col)}sc.add(m);return m});
+ const ms=geos.map((g,v)=>{const m=new THREE.InstancedMesh(g,mat,Math.max(1,cnt[v]));m.count=cnt[v];m.castShadow=m.receiveShadow=true;const k=b?.44:.37;for(let i=0;i<m.count;i++){col.setRGB(k+rnd()*.1,k+rnd()*.1,k+rnd()*.08);m.setColorAt(i,col)}sc.add(m);return m});
  old.slice(0,3).forEach(m=>{m.visible=false});
  if(b)FOR.gm2=ms;else FOR.gm=ms;
  for(const q of trs)treeSet(q,q.g)}
@@ -3485,8 +3526,14 @@ function nightStep(dt){
 }
 function loop(ts){
  const raw=(ts-last)/1000,rdt=Math.min(raw,.05);last=ts;tm+=rdt;nightStep(rdt);
- if(MODE=='mob'&&!LOWQ&&!S.paused&&raw<.5){SLOW=raw>.04?SLOW+raw:Math.max(0,SLOW-raw*.5);if(SLOW>4){LOWQ=1;try{rs()}catch(x){}toast('Sänkt grafikkvalitet för jämnare gång')}}
+ // Automatisk kvalitetssänkning (alla lägen) när spelet går under ~25 bilder/s i flera sekunder:
+ // steg 1 = lägre upplösning och skuggor uppdateras varannan bild, steg 2 = inga skuggor alls.
+ if(MODE&&LOWQ<2&&!S.paused&&raw<.5&&document.visibilityState!='hidden'){SLOW=raw>.04?SLOW+raw:Math.max(0,SLOW-raw*.5);if(SLOW>4){LOWQ++;SLOW=0;try{rs()}catch(x){}
+  if(LOWQ>=2){R.shadowMap.enabled=false;sc.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>{m.needsUpdate=true})});toast('Skuggor avstängda för jämnare gång')}else toast('Sänkt grafikkvalitet för jämnare gång')}}
+ if(LOWQ==1){R.shadowMap.autoUpdate=false;loop.fr=(loop.fr||0)+1;if(loop.fr%2==0)R.shadowMap.needsUpdate=true}
  if(!S.paused&&MODE)for(let i=0;i<S.sp;i++)update(rdt);
+ if(!S.paused&&MODE&&S.st!='slut'&&S.st!='seger'&&!$('ov').classList.contains('on'))S.ptime=(S.ptime||0)+rdt;
+ {const sec=Math.floor(S.ptime||0);if(sec!==loop.ls){loop.ls=sec;const h=Math.floor(sec/3600),m=Math.floor(sec/60)%60,ss=sec%60;$('clkt').textContent=(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(ss).padStart(2,'0')}}
  if(ts-ls>250){ls=ts;sync();mini()}
  render();requestAnimationFrame(loop);
 }
